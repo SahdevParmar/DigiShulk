@@ -5,12 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="includes/style.css">
-
 </head>
 <body>
-    <div>
-    <h1>A project by Sahdev Parmar, Shubham Yadav and Yashraj Solanki.👋✌️</h1>
-    <a href="includes/main.php" class="main_button">OPEN</a>
-    </div>
+    
 </body>
 </html>
