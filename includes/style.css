@@ -14,3 +14,17 @@ h1 {
     color: #fff;
 
 }
+
+.main_button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.main_button:hover {
+    background-color: #7a8a35;
+}
