@@ -4,24 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
-        body {
-            background-color: #242424;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 85vh;
+    <link rel="stylesheet" href="include/style.css">
 
-        }
-        h1 {
-            color: #fff;
-
-        }
-
-    </style>
 </head>
 <body>
     <div>

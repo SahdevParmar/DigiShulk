@@ -1,0 +1,16 @@
+body {
+    background-color: #242424;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 85vh;
+
+}
+
+h1 {
+    color: #fff;
+
+}
