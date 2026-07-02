@@ -25,7 +25,7 @@
 </head>
 <body>
     <div>
-    <h1>A project by Sahdev Parmar,Shubham Yadav and Yashraj Solanki.👋✌️</h1>
+    <h1>A project by Sahdev Parmar, Shubham Yadav and Yashraj Solanki.👋✌️</h1>
     
     </div>
 </body>
