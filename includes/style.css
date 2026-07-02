@@ -15,7 +15,7 @@ h1 {
 
 }
 
-#main_button {
+.main_button {
     display: inline-block;
     padding: 10px 20px;
     background-color: #4CAF50;
@@ -27,4 +27,21 @@ h1 {
 
 .main_button:hover {
     background-color: #7a8a35;
+}
+
+.button-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    /* Removes the default link underline */
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.button-link:hover {
+    background-color: #0056b3;
+    /* Darkens the button when hovered */
 }
