@@ -10,7 +10,7 @@
 <body>
     <div>
     <h1>A Project by Sahdev Parmar, Shubham Yadav and Yashraj Solanki.👋✌️</h1>
-    <button onclick="window.location.href='includes/main.php'">OPEN</button>
+    <button onclick="window.location.href='includes/main.php'" class="main_button">OPEN</button>
 </div>
 </body>
 </html>
