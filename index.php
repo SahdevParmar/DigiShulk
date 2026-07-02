@@ -9,10 +9,8 @@
 </head>
 <body>
     <div>
-    <h1>A project by Sahdev Parmar, Shubham Yadav and Yashraj Solanki.👋✌️</h1>
-    <a href="includes/main.php" class="main_button">OPEN</a>
-    <a href="https://example.com" class="button-link">Go to Other Page</a>
-
+    <h1>A Project by Sahdev Parmar, Shubham Yadav and Yashraj Solanki.👋✌️</h1>
+    <button onclick="window.location.href='includes/main.php'">OPEN</button>
 </div>
 </body>
 </html>
