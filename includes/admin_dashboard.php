@@ -6,6 +6,7 @@ if(!isset($_SESSION['role'])|| $_SESSION['role']!='admin'){
     header("Location: logout.php");
     exit();
 }
+include 'header.php';
 echo "<a href='logout.php'>Logout</a><br>";
 echo "<a href='add_inspector.php'>Add New Inspector</a>";
 

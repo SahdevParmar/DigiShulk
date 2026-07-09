@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="style.css">
 
+
 <?php
     session_start();
     if(!isset($_SESSION['role']) || $_SESSION['role']!='inspector'){
@@ -7,6 +8,9 @@
         exit();
     }
     ?>
+    <?php
+include 'header.php';
+?>
 <div class="card">
 <h1>New Entry</h1>
 <a href="logout.php">Logout</a>
