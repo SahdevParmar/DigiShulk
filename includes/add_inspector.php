@@ -2,6 +2,10 @@
 <link rel="stylesheet" href="style.css">
 <?php
 session_start();
+if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
+    header("Location: logout.php");
+    exit();
+}
 include 'db_connect.php';
 
 
