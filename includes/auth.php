@@ -14,7 +14,7 @@ $stmt->bind_param("s", $user);
 $stmt->execute();
 $result=$stmt->get_result();
 if($row=$result->fetch_assoc()){
-    if($pass==$row['password']){
+    if(password_verify($pass,$row['password'])){
         $_SESSION['user_id']=$row['id'];
         $_SESSION['role']=$row['role'];
 

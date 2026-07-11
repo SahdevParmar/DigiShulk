@@ -12,6 +12,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     $shop_name=$_POST['shop_name'];
     $shop_address=$_POST['shop_address'];
     $phone=$_POST['phone'];
+    $payment_mode=$_POST['payment_mode'];
 
     
 
@@ -22,8 +23,8 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     $result=$stmt->get_result()->fetch_assoc();
     $total_amount=$area * $result['price_per_sqft'];
 
-    $stmt = $conn->prepare("INSERT INTO transactions (inspector_id, stall_type, area_sqft, total_amount, shop_name, shop_address, shopkeeper_phone, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
-    $stmt->bind_param("isidsss", $_SESSION['user_id'], $stall_type, $area, $total_amount, $shop_name, $shop_address, $phone);
+    $stmt = $conn->prepare("INSERT INTO transactions (inspector_id, stall_type, area_sqft, total_amount, shop_name, shop_address, shopkeeper_phone,payment_mode, status) VALUES (?,?, ?, ?, ?, ?, ?, ?, 'pending')");
+    $stmt->bind_param("isidssss", $_SESSION['user_id'], $stall_type, $area, $total_amount, $shop_name, $shop_address, $phone,$payment_mode);
     $stmt->execute();
 
     $transaction_id=$conn->insert_id;

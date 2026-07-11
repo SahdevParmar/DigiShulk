@@ -17,13 +17,18 @@ if($_SERVER["REQUEST_METHOD"]=="GET"){
 
 if($_SERVER["REQUEST_METHOD"]=="POST"){
     if(isset($_POST['update_password'])){
-        $new_pass=$_POST['password'];
-        $stmt=$conn->prepare("Update users set password =? where id=?");
-        $stmt->bind_param("si",$new_pass,$id);
-        if($stmt->execute()){
+        if(!empty($_POST['password'])){
+
+            $new_pass=password_hash($_POST['password'],PASSWORD_DEFAULT);
+            $stmt=$conn->prepare("Update users set password =? where id=?");
+            $stmt->bind_param("si",$new_pass,$id);
+            if($stmt->execute()){
             echo "Password updated successfully!";
-        } else {
-            echo "Error updating password: ".$stmt->error;
+                } else {
+                    echo "Error updating password: ".$stmt->error;
+                    }   
+        }else{
+            echo"no changes made- password field was empty.";
         }
         exit();
     }
@@ -40,15 +45,21 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
         exit();
     }
 }
+if(!isset($user)){
+    $stmt=$conn->prepare("select * from users where id=?");
+    $stmt->bind_param("i",$id);
+    $stmt->execute();
+    $user=$stmt->get_result()->fetch_assoc();
+}
 
-
+include 'header.php';
 ?>
 <form method="POST">
     <h2>Edit Inspector Password</h2>
     <label>Username:</label>
     <input type="text" name="username" value="<?php echo $user['username'];?>" readonly>
     <label>Password:</label>
-    <input type="password" name="password" value="<?php echo $user['password'];?>" required>
+    <input type="password" name="password" placeholder="Leave blank to keep current password">
     
     <button type="submit" name="update_password">Update Password</button>
 </form>

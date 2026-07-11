@@ -26,6 +26,11 @@ include 'header.php';
         <option value="Mandap">Festival Mandap</option>
         <option value="Chhajli">Chhajli</option>
     </select>
+    <label for="payment_mode">Payment Mode:</label>
+    <select name="payment_mode" required>
+        <option value="cash">Cash</option>
+        <option value="upi">UPI/QR</option>
+    </select>
     <label> Enter Size(in sq ft):</label>
     <input type="number" name="size" placeholder="Size in sq ft" required>
     <button type="submit">Calculate</button>
