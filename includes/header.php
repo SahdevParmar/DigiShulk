@@ -44,6 +44,11 @@ if (isset($_SESSION['user_id'])) {
         <div class="logo"></div>
         <div class="emptySpace"></div>
         <nav>
+            <button id="openSearch" class="search-btn">
+
+                🔍 Search
+
+            </button>
             <?php if(isset($_SESSION['role']) && $_SESSION['role']=='admin'): ?>
                 <a href="admin_dashboard.php"><?php echo __('home'); ?></a>
                 <a href="add_inspector.php"><?php echo __('manage'); ?></a>
@@ -68,3 +73,31 @@ if (isset($_SESSION['user_id'])) {
         </nav>
     </header>
 </div>
+<!-- Spotlight Search -->
+
+<div id="searchOverlay" class="search-overlay">
+
+    <div class="search-modal">
+
+        <input
+            type="text"
+            id="spotlight"
+            placeholder="Search anything..."
+            autocomplete="off">
+
+        <div id="searchResults">
+
+            <div class="search-empty">
+
+                Start typing to search...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<script src="assets/js/search.js"></script>
+</body>
+</html>

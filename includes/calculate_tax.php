@@ -17,7 +17,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     
 
 
-    $stmt=$conn->prepare("SELECT price_per_sqft FROM rates where stall_type=?");
+    $stmt = $conn->prepare("SELECT price_per_sqft FROM rates WHERE stall_type=? LIMIT 1");
     $stmt->bind_param("s",$stall_type);
     $stmt->execute();
     $result=$stmt->get_result()->fetch_assoc();
