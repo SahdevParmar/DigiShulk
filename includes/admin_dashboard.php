@@ -52,7 +52,6 @@ $result=$stmt->get_result();
             <td><?php echo $row['username'];?></td>
             <td><?php echo $row['shop_name'];?></td>
             <td><?php echo $row['total_amount'];?></td>
-            <td><span class="badge badge-<?php echo $row['status']; ?>"><?php echo $row['status']; ?></span></td>
             <?php $stampClass = $row['status']=='paid' ? 'stamp-paid' : 'stamp-pending'; ?>
             <td><span class="stamp <?php echo $stampClass; ?>"><?php echo $row['status']; ?></span></td>
             <td><?php echo $row['created_at']; ?></td>
