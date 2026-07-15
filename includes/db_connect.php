@@ -1,6 +1,4 @@
 
-<link rel="stylesheet" href="style.css">
-
 <?php
 $servername="sql103.infinityfree.com";
 $username="if0_42310664";
