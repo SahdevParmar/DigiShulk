@@ -37,7 +37,7 @@ include 'header.php'
     <?php
     if($message):
     ?>
-    <p style="color:yellow;font-weight:bold;" <?php echo $message; ?>></p>
+    <p style="color:yellow;font-weight:bold;"><?php echo $message; ?></p>
     <?php endif; ?>
     <h3>Languages</h3>
     <form method="POST">

@@ -55,6 +55,7 @@ $result=$stmt->get_result();
             <td><span class="badge badge-<?php echo $row['status']; ?>"><?php echo $row['status']; ?></span></td>
             <?php $stampClass = $row['status']=='paid' ? 'stamp-paid' : 'stamp-pending'; ?>
             <td><span class="stamp <?php echo $stampClass; ?>"><?php echo $row['status']; ?></span></td>
+            <td><?php echo $row['created_at']; ?></td>
             <?php
             if($row['status']=='paid'){
                  $total+=$row['total_amount'];
