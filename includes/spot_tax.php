@@ -44,13 +44,15 @@ include 'header.php';
                 placeholder="<?php echo __('phone'); ?>"
                 required>
 
-            <label>Item / Stall Type</label>
-            <input
-                type="text"
-                id="stall_type"
-                name="stall_type"
-                placeholder="Tea Stall, Fruit Cart, Banner..."
-                required>
+           <label>Select Stall Type:</label>
+            <select name="stall_type" id="stall_type" required onchange="toggleOtherType()">
+                <option value="Rekdi">Rekdi</option>
+                <option value="Mandap">Mandap</option>
+                <option value="Chhajli">Chhajli</option>
+                <option value="Other">Other (type manually)</option>
+            </select>
+            <input type="text" name="stall_type_other" id="stall_type_other" 
+                        placeholder="Describe the stall/item type" style="display:none;">
             <input type="hidden" id="shop_id" name="shop_id">
 
             <label><?php echo __('payment_mode'); ?></label>
@@ -74,6 +76,7 @@ include 'header.php';
 
     </div>
 </div>
+
 <script src="assets/js/spot_tax.js"></script>
 </body>
 </html>

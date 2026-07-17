@@ -1,3 +1,15 @@
+function toggleOtherType() {
+    const select = document.getElementById('stall_type');
+    const otherBox = document.getElementById('stall_type_other');
+    if (select.value === 'Other') {
+        otherBox.style.display = 'block';
+        otherBox.required = true;
+    } else {
+        otherBox.style.display = 'none';
+        otherBox.required = false;
+        otherBox.value = '';
+    }
+}
 document.addEventListener("DOMContentLoaded", () => {
 
     const params = new URLSearchParams(window.location.search);
