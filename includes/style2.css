@@ -243,7 +243,7 @@ select:focus {
 
 .dashboard-card {
 
-    background: linear-gradient(180deg, #ffffff, #fbfcfe);
+    background: #ffffff;
 
     border: 1px solid var(--border);
 
@@ -273,9 +273,9 @@ select:focus {
 
     height: 5px;
 
-    width: 100%;
+    width: 4px;
 
-    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    background: var(--primary);
 
 }
 
@@ -825,4 +825,59 @@ tr:hover {
 
     color: white;
 
+}
+
+.landing-page {
+    min-height: calc(100vh - 50px);
+    display: grid;
+    place-items: center;
+}
+
+.landing-card {
+    width: min(560px, 100%);
+    padding: 48px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+}
+
+.landing-card .logo { margin-bottom: 32px; }
+
+.landing-kicker {
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.landing-description,
+.landing-credit { color: var(--muted); line-height: 1.6; }
+.landing-description { margin: 16px 0 28px; }
+
+.landing-action {
+    display: inline-block;
+    padding: 13px 22px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.landing-action:hover { background: var(--primaryHover); }
+.landing-credit { margin-top: 32px; font-size: 13px; }
+
+@media (max-width: 760px) {
+    body { padding: 14px; }
+    .navbar { align-items: flex-start; flex-wrap: wrap; padding: 14px; }
+    .emptySpace { display: none; }
+    .navbar nav { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+    .navbar a, .search-btn { padding: 9px 12px; font-size: 14px; }
+    .dashboard-card, .card { padding: 20px; }
+    .dashboard-card h1 { font-size: 32px; }
+    .table-card { overflow-x: auto; }
+    .modern-table { min-width: 700px; }
+    .landing-card { padding: 28px; }
 }

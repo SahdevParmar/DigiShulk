@@ -4,24 +4,28 @@
 session_start();
 include 'db_connect.php';  
 
-if(!isset($_SESSION['user_id'])) die("Unauthorized");
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'inspector') {
+    http_response_code(403);
+    exit('Unauthorized');
+}
 
-if($_SERVER["REQUEST_METHOD"]=="POST"){
-    $stall_type = $_POST['stall_type'];
+if($_SERVER["REQUEST_METHOD"] === "POST"){
+    $stall_type = trim($_POST['stall_type'] ?? '');
     
     // If "Other" was picked, use their typed description instead
     if($stall_type === 'Other' && !empty($_POST['stall_type_other'])){
         $stall_type = trim($_POST['stall_type_other']);
     }
     
-    $area = $_POST['size'];
-    $shop_name = $_POST['shop_name'];
-    $shop_address = $_POST['shop_address'];
-    $phone = $_POST['phone'];
-    $payment_mode = $_POST['payment_mode'];
+    $area = filter_input(INPUT_POST, 'size', FILTER_VALIDATE_FLOAT);
+    $shop_name = trim($_POST['shop_name'] ?? '');
+    $shop_address = trim($_POST['shop_address'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $payment_mode = $_POST['payment_mode'] ?? '';
     $total_amount = floatval($_POST['amount']);
 
-    if($total_amount <= 0){
+    if ($shop_name === '' || $shop_address === '' || $phone === '' || !$area || $area <= 0 ||
+        $total_amount <= 0 || !in_array($payment_mode, ['cash', 'upi'], true)) {
         die("Invalid amount entered.");
     }
 

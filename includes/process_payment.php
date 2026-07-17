@@ -3,12 +3,20 @@ session_start();
 include 'db_connect.php';
 include 'config.php';
 
-if(!isset($_SESSION['user_id'])) die("Unauthorized");
+if(!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'inspector') {
+    http_response_code(403);
+    exit('Unauthorized');
+}
 
-$transaction_id = $_GET['id'];
+$transaction_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-$stmt = $conn->prepare("SELECT * FROM transactions WHERE id = ?");
-$stmt->bind_param("i", $transaction_id);
+if (!$transaction_id) {
+    http_response_code(400);
+    exit('Invalid transaction.');
+}
+
+$stmt = $conn->prepare("SELECT * FROM transactions WHERE id = ? AND inspector_id = ?");
+$stmt->bind_param("ii", $transaction_id, $_SESSION['user_id']);
 $stmt->execute();
 $txn = $stmt->get_result()->fetch_assoc();
 
@@ -84,8 +92,8 @@ document.getElementById('payBtn').onclick = function(e){
         // Auto-fills the shopkeeper's details we already have —
         // skips the "enter your number" screen entirely
         "prefill": {
-            "contact": "<?php echo $txn['shopkeeper_phone']; ?>",
-            "name": "<?php echo htmlspecialchars($txn['shop_name']); ?>"
+        "contact": <?php echo json_encode($txn['shopkeeper_phone']); ?>,
+        "name": <?php echo json_encode($txn['shop_name']); ?>
         },
 
         // Hides Cards/Netbanking/Wallet/Pay Later — leaves only UPI

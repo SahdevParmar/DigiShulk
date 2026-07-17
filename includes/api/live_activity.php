@@ -4,7 +4,8 @@ session_start();
 
 require_once "../db_connect.php";
 
-if(!isset($_SESSION['user_id'])){
+if(($_SESSION['role'] ?? '') !== 'admin'){
+    http_response_code(403);
     exit;
 }
 

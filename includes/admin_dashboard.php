@@ -71,20 +71,13 @@ if($conn->query("SHOW TABLES LIKE 'rmc_seizures'")->num_rows){
 
 }
 
-//search
-$query="select t.*,u.username from transactions t join users u on t.inspector_id=u.id";
-
-if(isset($_GET['search'])&& !empty($_GET['search'])){
-$search="%".$_GET['search']."%";
-$query.=" where(shop_name like ? or shopkeeper_phone like ?) order by t.created_at desc";
-$stmt=$conn->prepare($query);
-$stmt->bind_param("ss",$search,$search);
-$stmt->execute();
-$result=$stmt->get_result();
-}else{
-    $query.=" order by t.created_at desc";
-    $result=$conn->query($query);
-}
+// Navigation and records are searched through the shared Spotlight Search (Ctrl + K).
+$result = $conn->query(
+    "SELECT t.*, u.username
+     FROM transactions t
+     JOIN users u ON t.inspector_id = u.id
+     ORDER BY t.created_at DESC"
+);
 
 ?>
 
@@ -127,15 +120,6 @@ $result=$stmt->get_result();
 
 <br>
 
-<form method="GET">
-    <div style="display:flex;gap:10px;">
-        <input type="text" name="search" placeholder="Search">
-
-        <button type="submit">Search</button>
-    </div>
-</form>
-<br>
-
 <div class="table-card">
 
 <table class="modern-table">
@@ -151,8 +135,8 @@ $result=$stmt->get_result();
     $total=0;
     while($row=$result->fetch_assoc()): ?>
         <tr>
-            <td><?php echo $row['username'];?></td>
-            <td><?php echo $row['shop_name'];?></td>
+            <td><?php echo htmlspecialchars($row['username']);?></td>
+            <td><?php echo htmlspecialchars($row['shop_name']);?></td>
             <td>
 
                 <span class="amount">
@@ -164,7 +148,7 @@ $result=$stmt->get_result();
             </td>
             <?php $stampClass = $row['status']=='paid' ? 'stamp-paid' : 'stamp-pending'; ?>
             <td><span class="stamp <?php echo $stampClass; ?>"><?php echo $row['status']; ?></span></td>
-            <td><?php echo $row['created_at']; ?></td>
+            <td><?php echo htmlspecialchars($row['created_at']); ?></td>
             <td>
 
             <a class="view-btn" href="receipt.php?id=<?php echo $row['id']; ?>">👁 View</a>
@@ -184,6 +168,11 @@ $result=$stmt->get_result();
 <br>
 <div class="total-collection">Total Collection for Selection: ₹<?php echo number_format($total,2);?></div>
 <script>
+function escapeHtml(value) {
+    const element = document.createElement('div');
+    element.textContent = value ?? '';
+    return element.innerHTML;
+}
 
 function loadActivity() {
 
@@ -194,6 +183,13 @@ function loadActivity() {
             let html = "";
 
             data.forEach(item => {
+                item = {
+                    ...item,
+                    username: escapeHtml(item.username),
+                    total_amount: escapeHtml(item.total_amount),
+                    shop_name: escapeHtml(item.shop_name),
+                    created_at: escapeHtml(item.created_at)
+                };
 
                 html += `
                 <div class="activity-item activity-success">

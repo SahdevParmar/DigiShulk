@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['admin', 'inspector'], true)) {
+    header('Location: logout.php');
+    exit();
+}
+
 include 'db_connect.php';
 include 'header.php';
 
@@ -10,6 +17,12 @@ $payment_mode = $_GET['payment_mode'] ?? '';
 $sql = "SELECT * FROM transactions WHERE 1=1";
 $params = [];
 $types = "";
+
+if ($_SESSION['role'] === 'inspector') {
+    $sql .= " AND inspector_id = ?";
+    $params[] = (int) $_SESSION['user_id'];
+    $types .= "i";
+}
 
 if(!empty($date_from)){ $sql .= " AND date(created_at)>= ?"; $params[]=$date_from; $types.="s"; }
 if(!empty($date_to)){ $sql .= " AND date(created_at)<=?"; $params[]=$date_to; $types.="s"; }
@@ -27,11 +40,11 @@ $result = $stmt->get_result();
         <form method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
             <div>
                 <label><?php echo __('from'); ?></label>
-                <input type="date" name="date_from" value="<?php echo $date_from; ?>">
+                <input type="date" name="date_from" value="<?php echo htmlspecialchars($date_from); ?>">
             </div>
             <div>
                 <label><?php echo __('to'); ?></label>
-                <input type="date" name="date_to" value="<?php echo $date_to; ?>">
+                <input type="date" name="date_to" value="<?php echo htmlspecialchars($date_to); ?>">
             </div>
             <div>
                 <label><?php echo __('status'); ?></label>
@@ -70,7 +83,7 @@ $result = $stmt->get_result();
                 <tr style="color: var(--ink); text-align: center;">
                     <td><?php echo htmlspecialchars($row['shop_name']); ?></td>
                     <td>₹<?php echo $row['total_amount']; ?></td>
-                    <td><span class="badge badge-<?php echo $row['status']; ?>"><?php echo __($row['status']); ?></span></td>
+                    <td><span class="badge badge-<?php echo htmlspecialchars($row['status']); ?>"><?php echo __($row['status']); ?></span></td>
                     <td><?php echo __($row['payment_mode']); ?></td>
                     <td><?php echo $row['created_at']; ?></td>
                 </tr>

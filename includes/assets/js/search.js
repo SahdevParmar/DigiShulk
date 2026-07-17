@@ -2,6 +2,7 @@ const overlay = document.getElementById("searchOverlay");
 const input = document.getElementById("spotlight");
 const results = document.getElementById("searchResults");
 const openBtn = document.getElementById("openSearch");
+const quickActionsTemplate = results.innerHTML;
 
 function openSearch() {
     overlay.style.display = "flex";
@@ -11,7 +12,7 @@ function openSearch() {
 function closeSearch() {
     overlay.style.display = "none";
     input.value = "";
-    results.innerHTML = "";
+    results.innerHTML = quickActionsTemplate;
 }
 
 openBtn.addEventListener("click", openSearch);
@@ -43,7 +44,7 @@ input.addEventListener("input", function () {
 
     if (q.length < 2) {
 
-        results.innerHTML = document.getElementById("quickActions").outerHTML;
+        results.innerHTML = quickActionsTemplate;
 
         return;
 
@@ -70,13 +71,18 @@ input.addEventListener("input", function () {
                 div.className = "search-item";
                 div.style.cursor = "pointer";
 
-                div.innerHTML = `
-            <span style="font-size:22px">${item.icon}</span>
-            <div>
-                <strong>${item.title}</strong><br>
-                <small>${item.subtitle}</small>
-            </div>
-        `;
+                const icon = document.createElement("span");
+                icon.style.fontSize = "22px";
+                icon.textContent = item.icon || "";
+
+                const text = document.createElement("div");
+                const title = document.createElement("strong");
+                title.textContent = item.title || "";
+                const subtitle = document.createElement("small");
+                subtitle.textContent = item.subtitle || "";
+
+                text.append(title, document.createElement("br"), subtitle);
+                div.append(icon, text);
 
                 div.onclick = function () {
 

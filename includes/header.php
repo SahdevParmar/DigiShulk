@@ -23,13 +23,13 @@ if (isset($_SESSION['user_id'])) {
             margin: 0 8px;
         }
         .server-lang-select {
-            background: var(--bg-soft) !important;
-            color: var(--text-light) !important;
-            font-family: 'Space Grotesk', sans-serif !important;
+            background: #ffffff !important;
+            color: var(--text) !important;
+            font-family: Inter, sans-serif !important;
             font-weight: 600 !important;
             font-size: 0.9rem !important;
             padding: 6px 14px !important;
-            border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid var(--border) !important;
             border-radius: 999px !important;
             cursor: pointer !important;
             width: auto !important;
