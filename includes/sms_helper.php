@@ -9,7 +9,7 @@ function send_payment_sms($phone, $amount){
     $params = [
         "authorization" => FAST2SMS_API_KEY,
         "message" => $message,
-        "language" => "unicode", // required for Gujarati script to send correctly
+        "language" => "unicode",
         "route" => "q",
         "numbers" => $phone
     ];
@@ -19,6 +19,6 @@ function send_payment_sms($phone, $amount){
     $response = curl_exec($ch);
     curl_close($ch);
 
-    return $response;
+    return $response; // we'll actually use this return value now, see below
 }
 ?>

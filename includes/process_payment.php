@@ -74,30 +74,39 @@ $stmt->execute();
 <script>
 document.getElementById('payBtn').onclick = function(e){
     var options = {
-    "key": "<?php echo RAZORPAY_KEY_ID; ?>",
-    "amount": "<?php echo $amount_paise; ?>",
-    "currency": "INR",
-    "order_id": "<?php echo $order['id']; ?>",
-    "name": "RMC DigiShulk",
-    "description": "Spot Tax Payment",
-    "prefill": {
-        "contact": "<?php echo $txn['shopkeeper_phone']; ?>",
-        "name": "<?php echo htmlspecialchars($txn['shop_name']); ?>"
-    },
-    "method": {
-        "upi": true,
-        "card": false,
-        "netbanking": false,
-        "wallet": false,
-        "paylater": false,
-        "emi": false
-    },
-    "handler": function(response){
-        document.querySelector('.card').innerHTML =
-            "<h2>Payment submitted!</h2><p>Confirming with RMC servers...</p>" +
-            "<a href='dashboard.php'>Return to Dashboard</a>";
-    },
-    "theme": { "color": "#2563eb" }
+        "key": "<?php echo RAZORPAY_KEY_ID; ?>",
+        "amount": "<?php echo $amount_paise; ?>",
+        "currency": "INR",
+        "order_id": "<?php echo $order['id']; ?>",
+        "name": "RMC DigiShulk",
+        "description": "Spot Tax Payment",
+
+        // Auto-fills the shopkeeper's details we already have —
+        // skips the "enter your number" screen entirely
+        "prefill": {
+            "contact": "<?php echo $txn['shopkeeper_phone']; ?>",
+            "name": "<?php echo htmlspecialchars($txn['shop_name']); ?>"
+        },
+
+        // Hides Cards/Netbanking/Wallet/Pay Later — leaves only UPI
+        "config": {
+            "display": {
+                "hide": [
+                    { "method": "card" },
+                    { "method": "netbanking" },
+                    { "method": "wallet" },
+                    { "method": "paylater" },
+                    { "method": "emi" }
+                ]
+            }
+        },
+
+        "handler": function(response){
+            document.querySelector('.card').innerHTML =
+                "<h2>Payment submitted!</h2><p>Confirming with RMC servers...</p>" +
+                "<a href='dashboard.php'>Return to Dashboard</a>";
+        },
+        "theme": { "color": "#2563eb" }
     };
     var rzp = new Razorpay(options);
     rzp.open();
