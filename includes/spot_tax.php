@@ -53,6 +53,8 @@ include 'header.php';
             </select>
             <input type="text" name="stall_type_other" id="stall_type_other" 
                         placeholder="Describe the stall/item type" style="display:none;">
+            <label>Amount to Charge (₹)</label>
+            <input type="number" name="amount" step="0.01" min="1" placeholder="Enter amount" required>
             <input type="hidden" id="shop_id" name="shop_id">
 
             <label><?php echo __('payment_mode'); ?></label>
@@ -76,7 +78,20 @@ include 'header.php';
 
     </div>
 </div>
-
+<script>
+function toggleOtherType(){
+    const select = document.getElementById('stall_type');
+    const otherBox = document.getElementById('stall_type_other');
+    if(select.value === 'Other'){
+        otherBox.style.display = 'block';
+        otherBox.required = true;
+    } else {
+        otherBox.style.display = 'none';
+        otherBox.required = false;
+        otherBox.value = '';
+    }
+}
+</script>
 <script src="assets/js/spot_tax.js"></script>
 </body>
 </html>
