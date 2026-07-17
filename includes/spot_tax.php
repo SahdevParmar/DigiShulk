@@ -17,18 +17,41 @@ include 'header.php';
 
         <form action="calculate_tax.php" method="POST">
 
-            <input type="text" name="shop_name"
-                placeholder="<?php echo __('shop_name'); ?>" required>
+            <div class="autocomplete-wrapper">
 
-            <input type="text" name="shop_address"
-                placeholder="<?php echo __('address'); ?>" required>
+            <input
+                type="text"
+                id="shop_name"
+                name="shop_name"
+                placeholder="<?php echo __('shop_name'); ?>"
+                autocomplete="off"
+                required>
 
-            <input type="tel" name="phone"
-                placeholder="<?php echo __('phone'); ?>" required>
+            <div id="shopSuggestions" class="autocomplete-box"></div>
+
+            </div>
+
+            <input
+                type="text"
+                id="shop_address"
+                name="shop_address"
+                placeholder="<?php echo __('address'); ?>"
+                required>
+           <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="<?php echo __('phone'); ?>"
+                required>
 
             <label>Item / Stall Type</label>
-            <input type="text" name="stall_type"
-                placeholder="Rekdi, Cabin, Banner, Other..." required>
+            <input
+                type="text"
+                id="stall_type"
+                name="stall_type"
+                placeholder="Tea Stall, Fruit Cart, Banner..."
+                required>
+            <input type="hidden" id="shop_id" name="shop_id">
 
             <label><?php echo __('payment_mode'); ?></label>
 
@@ -41,6 +64,7 @@ include 'header.php';
 
             <input type="number" name="size"
                 placeholder="<?php echo __('size_placeholder'); ?>" required>
+                
 
             <button type="submit">
                 Create Collection
@@ -50,6 +74,6 @@ include 'header.php';
 
     </div>
 </div>
-
+<script src="assets/js/spot_tax.js"></script>
 </body>
 </html>

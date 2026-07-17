@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="style.css">
+
 <?php
 session_start();
 include 'db_connect.php';
@@ -8,14 +8,75 @@ if(!isset($_SESSION['role'])|| $_SESSION['role']!='admin'){
 }
 include 'header.php';
 
+/* ---------- Dashboard Statistics ---------- */
 
+// Today's Collection
+$todayCollection = 0;
+
+$res = $conn->query("
+SELECT SUM(total_amount) total
+FROM transactions
+WHERE DATE(created_at)=CURDATE()
+AND status='paid'
+");
+
+if($row = $res->fetch_assoc()){
+    $todayCollection = $row['total'] ?? 0;
+}
+
+
+// Today's Transactions
+$todayTransactions = 0;
+
+$res = $conn->query("
+SELECT COUNT(*) total
+FROM transactions
+WHERE DATE(created_at)=CURDATE()
+");
+
+if($row = $res->fetch_assoc()){
+    $todayTransactions = $row['total'];
+}
+
+
+// Online Inspectors
+$onlineInspectors = 0;
+
+$res = $conn->query("
+SELECT COUNT(*) total
+FROM users
+WHERE role='inspector'
+AND last_active >= DATE_SUB(NOW(), INTERVAL 30 SECOND)
+");
+
+if($row = $res->fetch_assoc()){
+    $onlineInspectors = $row['total'];
+}
+
+
+// Today's Seizures
+$todaySeizures = 0;
+
+if($conn->query("SHOW TABLES LIKE 'rmc_seizures'")->num_rows){
+
+    $res = $conn->query("
+    SELECT COUNT(*) total
+    FROM rmc_seizures
+    WHERE seizure_date = CURDATE()
+    ");
+
+    if($row = $res->fetch_assoc()){
+        $todaySeizures = $row['total'];
+    }
+
+}
 
 //search
 $query="select t.*,u.username from transactions t join users u on t.inspector_id=u.id";
 
 if(isset($_GET['search'])&& !empty($_GET['search'])){
 $search="%".$_GET['search']."%";
-$query.=" where(shop_name like ? or Shopkeeper_phone like ?) order by t.created_at desc";
+$query.=" where(shop_name like ? or shopkeeper_phone like ?) order by t.created_at desc";
 $stmt=$conn->prepare($query);
 $stmt->bind_param("ss",$search,$search);
 $stmt->execute();
@@ -27,6 +88,45 @@ $result=$stmt->get_result();
 
 ?>
 
+<div class="dashboard-grid">
+
+    <div class="dashboard-card">
+        <h3>💰 Today's Collection</h3>
+        <h1>₹<?php echo number_format($todayCollection,2); ?></h1>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>🟢 Online Inspectors</h3>
+        <h1><?php echo $onlineInspectors; ?></h1>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>🧾 Today's Collections</h3>
+        <h1><?php echo $todayTransactions; ?></h1>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>🚨 Today's Seizures</h3>
+        <h1><?php echo $todaySeizures; ?></h1>
+    </div>
+
+</div>
+
+<br>
+<div class="dashboard-card">
+
+    <h2>📡 Live Activity</h2>
+
+    <div id="liveActivity">
+
+        Loading...
+
+    </div>
+
+</div>
+
+<br>
+
 <form method="GET">
     <div style="display:flex;gap:10px;">
         <input type="text" name="search" placeholder="Search">
@@ -36,14 +136,16 @@ $result=$stmt->get_result();
 </form>
 <br>
 
+<div class="table-card">
 
-<table border="1">
+<table class="modern-table">
     <tr>
         <th>Inspector</th>
         <th>Shop Name</th>
         <th>Amount</th>
         <th>Status</th>
         <th>Time</th>
+        <th>Receipt</th>
     </tr>
     <?php 
     $total=0;
@@ -51,17 +153,87 @@ $result=$stmt->get_result();
         <tr>
             <td><?php echo $row['username'];?></td>
             <td><?php echo $row['shop_name'];?></td>
-            <td><?php echo $row['total_amount'];?></td>
+            <td>
+
+                <span class="amount">
+
+                    ₹<?php echo number_format($row['total_amount'],2); ?>
+
+                </span>
+
+            </td>
             <?php $stampClass = $row['status']=='paid' ? 'stamp-paid' : 'stamp-pending'; ?>
             <td><span class="stamp <?php echo $stampClass; ?>"><?php echo $row['status']; ?></span></td>
             <td><?php echo $row['created_at']; ?></td>
+            <td>
+
+            <a class="view-btn" href="receipt.php?id=<?php echo $row['id']; ?>">👁 View</a>
+
+            </td>
             <?php
             if($row['status']=='paid'){
                  $total+=$row['total_amount'];
             }
             ?>
+
         </tr>
         <?php endwhile;?>
-</table>
+    </table>
+
+</div>
 <br>
 <div class="total-collection">Total Collection for Selection: ₹<?php echo number_format($total,2);?></div>
+<script>
+
+function loadActivity() {
+
+    fetch("api/live_activity.php")
+        .then(r => r.json())
+        .then(data => {
+
+            let html = "";
+
+            data.forEach(item => {
+
+                html += `
+                <div class="activity-item activity-success">
+
+                    <div class="activity-icon">💰</div>
+
+                    <div class="activity-content">
+
+                        <div class="activity-title">
+                            <strong>${item.username}</strong> collected ₹${item.total_amount}
+                        </div>
+
+                        <div class="activity-subtitle">
+                            ${item.shop_name}
+                        </div>
+
+                        <div class="activity-time">
+                            ${item.created_at}
+                        </div>
+
+                    </div>
+
+                </div>
+                `;
+
+            });
+
+            document.getElementById("liveActivity").innerHTML = html;
+
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById("liveActivity").innerHTML =
+                "<p>Unable to load activity.</p>";
+        });
+
+}
+
+loadActivity();
+
+setInterval(loadActivity, 5000);
+
+</script>

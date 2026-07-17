@@ -43,7 +43,7 @@ input.addEventListener("input", function () {
 
     if (q.length < 2) {
 
-        results.innerHTML = "<div class='search-empty'>Type at least 2 letters...</div>";
+        results.innerHTML = document.getElementById("quickActions").outerHTML;
 
         return;
 
@@ -57,30 +57,50 @@ input.addEventListener("input", function () {
         })
         .then(data => {
 
-            if (data.length === 0) {
-
-                results.innerHTML = "<div class='search-empty'>No results found</div>";
-
-                return;
-
-            }
-
             results.innerHTML = "";
+
+            if (data.length === 0) {
+                results.innerHTML = "<div class='search-empty'>No results found</div>";
+                return;
+            }
 
             data.forEach(item => {
 
-                results.innerHTML += `
-                    <a href="${item.url}" class="search-item">
-                        <span style="font-size:22px">${item.icon}</span>
-                        <div>
-                            <strong>${item.title}</strong><br>
-                            <small>${item.subtitle}</small>
-                        </div>
-                    </a>
-                `;
+                const div = document.createElement("div");
+                div.className = "search-item";
+                div.style.cursor = "pointer";
+
+                div.innerHTML = `
+            <span style="font-size:22px">${item.icon}</span>
+            <div>
+                <strong>${item.title}</strong><br>
+                <small>${item.subtitle}</small>
+            </div>
+        `;
+
+                div.onclick = function () {
+
+                    console.log("Clicked:", item);
+
+                    if (item.type === "shop") {
+
+                        window.location.href = "spot_tax.php?shop=" + item.shop_id;
+
+                    } else {
+
+                        window.location.href = item.url;
+
+                    }
+
+                };
+
+                results.appendChild(div);
 
             });
 
+        })
+        .catch(err => {
+            console.error(err);
         });
 
 });

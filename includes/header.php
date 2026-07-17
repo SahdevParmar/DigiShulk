@@ -16,7 +16,7 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DigiShulk Portal</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css">
     <style>
         .lang-form-wrapper {
             display: inline-block;
@@ -87,17 +87,49 @@ if (isset($_SESSION['user_id'])) {
 
         <div id="searchResults">
 
-            <div class="search-empty">
+    <div id="quickActions">
 
-                Start typing to search...
-
-            </div>
-
+        <div class="search-section-title">
+            ⚡ Quick Actions
         </div>
+
+        <a href="spot_tax.php" class="search-item">
+            <span>🧾</span>
+            <div>
+                <strong>New Spot Tax</strong>
+                <small>Create new tax collection</small>
+            </div>
+        </a>
+
+        <a href="seizure_form.php" class="search-item">
+            <span>🚨</span>
+            <div>
+                <strong>New Seizure Report</strong>
+                <small>Create seizure entry</small>
+            </div>
+        </a>
+
+        <a href="history.php" class="search-item">
+            <span>📜</span>
+            <div>
+                <strong>History</strong>
+                <small>View previous collections</small>
+            </div>
+        </a>
+
+        <a href="settings.php" class="search-item">
+            <span>⚙️</span>
+            <div>
+                <strong>Settings</strong>
+                <small>Application settings</small>
+            </div>
+        </a>
+
+    </div>
+
+</div>
 
     </div>
 
 </div>
 <script src="assets/js/search.js"></script>
-</body>
-</html>
