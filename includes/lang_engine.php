@@ -16,7 +16,7 @@ if (isset($_SESSION['lang'])) {
 $dictionary = [
     'en' => [
         // Header Nav Links
-        'home' => '🏠 Home', 'manage' => '👥 Manage', 'history' => '📋 History', 'settings' => '⚙️ Settings', 'logout' => 'Log Out',
+        'home' => '🏠 Home', 'manage' => '👥 Inspectors', 'history' => '📋 History', 'settings' => '⚙️ Profile', 'logout' => 'Log Out',
         
         // Form & Interface Labels (dashboard.php & seizure_form.php)
         'new_entry' => 'New Spot Tax Entry',
@@ -64,6 +64,11 @@ $dictionary = [
 'location' => 'Seizure Location',
 'submit' => 'Submit Report',
 'success_msg' => 'Seizure report logged successfully!',
+// English
+'items_section_title' => 'Seized Items',
+'add_item' => 'Add Another Item',
+'items_saved' => 'items logged',
+'no_items_error' => 'Please add at least one seized item.',
     ],
     'hi' => [
         'home' => '🏠 होम', 'manage' => '👥 प्रबंधन', 'history' => '📋 इतिहास', 'settings' => '⚙️ सेटिंग्स', 'logout' => 'लॉग आउट',
@@ -111,6 +116,12 @@ $dictionary = [
 'location' => 'जब्ती का स्थान',
 'submit' => 'रिपोर्ट सबमिट करें',
 'success_msg' => 'जब्ती रिपोर्ट सफलतापूर्वक दर्ज हुई!',
+// Hindi
+'items_section_title' => 'जब्त किए गए सामान',
+'add_item' => 'एक और वस्तु जोड़ें',
+'items_saved' => 'वस्तुएं दर्ज की गईं',
+'no_items_error' => 'कृपया कम से कम एक जब्त वस्तु जोड़ें।',
+
     ],
     'gu' => [
         'home' => '🏠 મુખ્ય પૃષ્ઠ', 'manage' => '👥 મેનેજ કરો', 'history' => '📋 ઇતિહાસ', 'settings' => '⚙️ સેટિંગ્સ', 'logout' => 'લોગઆઉટ',
@@ -158,6 +169,11 @@ $dictionary = [
 'location' => 'જપ્ત કરેલ સ્થળ',
 'submit' => 'રિપોર્ટ સબમિટ કરો',
 'success_msg' => 'જપ્તીનો અહેવાલ સફળતાપૂર્વક નોંધાયો!',
+// Gujarati
+'items_section_title' => 'જપ્ત કરેલ વસ્તુઓ',
+'add_item' => 'બીજી વસ્તુ ઉમેરો',
+'items_saved' => 'વસ્તુઓ નોંધાઈ',
+'no_items_error' => 'કૃપા કરીને ઓછામાં ઓછી એક જપ્ત વસ્તુ ઉમેરો.',
     ]
 ];
 

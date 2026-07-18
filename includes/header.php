@@ -2,6 +2,30 @@
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
 include 'db_connect.php';
 include 'lang_engine.php'; // Injects the zero-lag system hooks
+$userPhoto = "uploads/profile/default.jpg";
+
+if(isset($_SESSION['user_id'])){
+
+    $stmt = $conn->prepare("
+    SELECT profile_photo
+    FROM users
+    WHERE id=?
+    LIMIT 1
+    ");
+
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+
+    $row = $stmt->get_result()->fetch_assoc();
+
+    if(!empty($row['profile_photo']) &&
+       file_exists("uploads/profile/".$row['profile_photo'])){
+
+        $userPhoto = "uploads/profile/".$row['profile_photo'];
+
+    }
+
+}
 
 // Keep inspector status updated in real-time
 if (isset($_SESSION['user_id'])) {
@@ -41,7 +65,17 @@ if (isset($_SESSION['user_id'])) {
 
 <div class="navarea">
     <header class="navbar">
-        <div class="logo"></div>
+        <?php
+            $homePage = "dashboard.php";
+
+            if (isset($_SESSION['role']) && $_SESSION['role'] == "admin") {
+                 $homePage = "admin_dashboard.php";
+                    }
+            ?>
+
+            <a href="<?php echo $homePage; ?>" class="logo-link">
+                <div class="logo"></div>
+            </a>
         <div class="emptySpace"></div>
         <nav>
             <button id="openSearch" class="search-btn">
@@ -50,13 +84,9 @@ if (isset($_SESSION['user_id'])) {
 
             </button>
             <?php if(isset($_SESSION['role']) && $_SESSION['role']=='admin'): ?>
-                <a href="admin_dashboard.php"><?php echo __('home'); ?></a>
                 <a href="add_inspector.php"><?php echo __('manage'); ?></a>
-            <?php else: ?>
-                <a href="dashboard.php"><?php echo __('home'); ?></a>
             <?php endif; ?>
             <a href="history.php"><?php echo __('history'); ?></a>
-            <a href="settings.php"><?php echo __('settings'); ?></a>
             
             <!-- Pure Server-Driven Language Selector Dropdown -->
             <div class="lang-form-wrapper">
@@ -68,7 +98,15 @@ if (isset($_SESSION['user_id'])) {
                     </select>
                 </form>
             </div>
+                
+            <a href="settings.php" class="profile-link">
 
+            <img
+                src="<?php echo $userPhoto; ?>"
+                class="nav-profile-photo"
+                alt="Profile">
+
+            </a>
             <a href="logout.php" class="logout-btn"><?php echo __('logout'); ?></a>
         </nav>
     </header>
