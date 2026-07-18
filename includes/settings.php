@@ -38,7 +38,7 @@ if(isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])){
             $stmt = $conn->prepare("
             UPDATE users
             SET profile_photo=?
-            WHERE id=?
+            WHERE user_id=?
             ");
 
             $stmt->bind_param("si",$filename,$user_id);
@@ -69,7 +69,7 @@ if(isset($_POST['update_name'])){
         $stmt = $conn->prepare("
         UPDATE users
         SET full_name=?
-        WHERE id=?
+        WHERE user_id=?
         ");
 
         $stmt->bind_param("si",$name,$user_id);
@@ -100,7 +100,7 @@ if(isset($_POST['update_password'])){
         $stmt = $conn->prepare("
         UPDATE users
         SET password=?
-        WHERE id=?
+        WHERE user_id=?
         ");
 
         $stmt->bind_param("si",$new_pass,$user_id);
@@ -126,7 +126,7 @@ full_name,
 profile_photo,
 role
 FROM users
-WHERE id=?
+WHERE user_id=?
 LIMIT 1
 ");
 

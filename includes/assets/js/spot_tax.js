@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            document.getElementById("shop_id").value = shop.id;
+            document.getElementById("shop_id").value = shop.shop_id;
             document.getElementById("shop_name").value = shop.shop_name;
             document.getElementById("shop_address").value = shop.address;
             document.getElementById("phone").value = shop.phone;

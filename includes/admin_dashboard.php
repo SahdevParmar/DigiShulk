@@ -75,7 +75,7 @@ if($conn->query("SHOW TABLES LIKE 'rmc_seizures'")->num_rows){
 $result = $conn->query(
     "SELECT t.*, u.username
      FROM transactions t
-     JOIN users u ON t.inspector_id = u.id
+     JOIN users u ON t.inspector_id = u.user_id
      ORDER BY t.created_at DESC"
 );
 
@@ -151,7 +151,7 @@ $result = $conn->query(
             <td><?php echo htmlspecialchars($row['created_at']); ?></td>
             <td>
 
-            <a class="view-btn" href="receipt.php?id=<?php echo $row['id']; ?>">👁 View</a>
+            <a class="view-btn" href="receipt.php?id=<?php echo $row['transaction_id']; ?>">👁 View</a>
 
             </td>
             <?php

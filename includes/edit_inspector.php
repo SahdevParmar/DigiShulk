@@ -8,7 +8,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
 $id=$_GET['id'];
 
 if($_SERVER["REQUEST_METHOD"]=="GET"){
-    $stmt=$conn->prepare("select * from users where id=?");
+    $stmt=$conn->prepare("select * from users where user_id=?");
     $stmt->bind_param("i",$id);
     $stmt->execute();
     $user=$stmt->get_result()->fetch_assoc();
@@ -19,7 +19,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
         if(!empty($_POST['password'])){
 
             $new_pass=password_hash($_POST['password'],PASSWORD_DEFAULT);
-            $stmt=$conn->prepare("Update users set password =? where id=?");
+            $stmt=$conn->prepare("Update users set password =? where user_id=?");
             $stmt->bind_param("si",$new_pass,$id);
             if($stmt->execute()){
             echo "Password updated successfully!";
@@ -32,7 +32,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
         exit();
     }
     else if(isset($_POST['delete_inspector'])){
-        $stmt=$conn->prepare("delete from users where id=?");
+        $stmt=$conn->prepare("delete from users where user_id=?");
         $stmt->bind_param("i",$id);
         if($stmt->execute()){
             header("Location: admin_dashboard.php");
@@ -45,7 +45,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     }
 }
 if(!isset($user)){
-    $stmt=$conn->prepare("select * from users where id=?");
+    $stmt=$conn->prepare("select * from users where user_id=?");
     $stmt->bind_param("i",$id);
     $stmt->execute();
     $user=$stmt->get_result()->fetch_assoc();

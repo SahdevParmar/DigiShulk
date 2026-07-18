@@ -27,7 +27,7 @@ include 'header.php';
         justify-content: center;"">
 <div>
 <?php
-    $inspectors=$conn->query("select id,username,last_active from users where role='inspector'");
+    $inspectors=$conn->query("select user_id,username,last_active from users where role='inspector'");
     echo "<table border='1'>
     <tr>
             <th>Inspector ID</th>
@@ -38,10 +38,10 @@ include 'header.php';
         while($row= $inspectors->fetch_assoc()){
             $is_online=(strtotime($row['last_active'])>strtotime('-1 minutes'))? "🟢 Online" : "🔴 Offline";
             echo "<tr>
-            <td>".$row['id']."</td>
+            <td>".$row['user_id']."</td>
                 <td>".$row['username']."</td>
                 <td>".$is_online."</td>
-                <td><a href='edit_inspector.php?id={$row['id']}'>Edit</a></td>
+                <td><a href='edit_inspector.php?id={$row['user_id']}'>Edit</a></td>
                 </tr>";
         }
         echo "</table>";

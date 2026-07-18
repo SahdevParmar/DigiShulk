@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 require_once "../db_connect.php";
@@ -16,7 +15,7 @@ t.shop_name,
 t.total_amount,
 t.created_at
 FROM transactions t
-JOIN users u ON t.inspector_id=u.id
+JOIN users u ON t.inspector_id=u.user_id
 WHERE t.status='paid'
 ORDER BY t.created_at DESC
 LIMIT 5

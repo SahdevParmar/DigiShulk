@@ -9,7 +9,7 @@ if(isset($_SESSION['user_id'])){
     $stmt = $conn->prepare("
     SELECT profile_photo
     FROM users
-    WHERE id=?
+    WHERE user_id=?
     LIMIT 1
     ");
 
@@ -29,7 +29,7 @@ if(isset($_SESSION['user_id'])){
 
 // Keep inspector status updated in real-time
 if (isset($_SESSION['user_id'])) {
-    $update_status = $conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
+    $update_status = $conn->prepare("UPDATE users SET last_active = NOW() WHERE user_id = ?");
     $update_status->bind_param("i", $_SESSION['user_id']);
     $update_status->execute();
 }

@@ -24,7 +24,7 @@ $results = [];
 
 $stmt = $conn->prepare("
 SELECT
-id,
+shop_id,
 shop_name,
 phone,
 address,
@@ -51,7 +51,7 @@ $results[] = [
     "icon" => "🏪",
     "title" => $row["shop_name"],
     "subtitle" => $row["address"],
-    "shop_id" => $row["id"]
+    "shop_id" => $row["shop_id"]
 ];
 
 }

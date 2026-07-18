@@ -3,7 +3,7 @@ $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
 $zone_filter = $_GET['zone_filter'] ?? '';
 
-$sql = "SELECT s.*, u.username FROM seizure_sessions s JOIN users u ON s.inspector_id = u.id WHERE 1=1";
+$sql = "SELECT s.*, u.username FROM seizure_sessions s JOIN users u ON s.inspector_id = u.user_id WHERE 1=1";
 $params = [];
 $types = "";
 
@@ -16,7 +16,7 @@ if(!empty($date_from)){ $sql .= " AND s.seizure_date >= ?"; $params[] = $date_fr
 if(!empty($date_to)){ $sql .= " AND s.seizure_date <= ?"; $params[] = $date_to; $types .= "s"; }
 if(!empty($zone_filter)){ $sql .= " AND s.zone = ?"; $params[] = $zone_filter; $types .= "s"; }
 
-$sql .= " ORDER BY s.seizure_date DESC, s.id DESC";
+$sql .= " ORDER BY s.seizure_date DESC, s.session_id DESC";
 
 $stmt = $conn->prepare($sql);
 if(!empty($params)){ $stmt->bind_param($types, ...$params); }
@@ -57,7 +57,7 @@ $sessions = $stmt->get_result();
         </p>
         <?php
         $items = $conn->prepare("SELECT * FROM seizure_items WHERE session_id = ?");
-        $items->bind_param("i", $session['id']);
+        $items->bind_param("i", $session['session_id']);
         $items->execute();
         $items_result = $items->get_result();
         ?>

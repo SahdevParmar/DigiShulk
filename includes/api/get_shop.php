@@ -12,13 +12,13 @@ $id = intval($_GET['id'] ?? 0);
 
 $stmt = $conn->prepare("
 SELECT
-    id,
+    shop_id,
     shop_name,
     address,
     phone,
     stall_type
 FROM shops
-WHERE id = ?
+WHERE shop_id = ?
 LIMIT 1
 ");
 

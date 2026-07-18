@@ -7,7 +7,7 @@ if(!isset($_SESSION['user_id'])) die("Unauthorized");
 
 $id = $_POST['id'] ?? 0;
 
-$stmt = $conn->prepare("SELECT shopkeeper_phone, total_amount, inspector_id, status FROM transactions WHERE id=? AND payment_mode='cash'");
+$stmt = $conn->prepare("SELECT shopkeeper_phone, total_amount, inspector_id, status FROM transactions WHERE transaction_id=? AND payment_mode='cash'");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $txn = $stmt->get_result()->fetch_assoc();
@@ -21,14 +21,14 @@ if($txn['status'] === 'paid'){
     exit();
 }
 
-$update = $conn->prepare("UPDATE transactions SET status='paid' WHERE id=?");
+$update = $conn->prepare("UPDATE transactions SET status='paid' WHERE transaction_id=?");
 $update->bind_param("i", $id);
 $update->execute();
 
 $sms_response = send_payment_sms($txn['shopkeeper_phone'], $txn['total_amount']);
 
 // Log the SMS result so we can debug delivery issues later
-$log = $conn->prepare("UPDATE transactions SET sms_log=? WHERE id=?");
+$log = $conn->prepare("UPDATE transactions SET sms_log=? WHERE transaction_id=?");
 $log->bind_param("si", $sms_response, $id);
 $log->execute();
 

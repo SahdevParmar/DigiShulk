@@ -15,7 +15,7 @@ include 'header.php';
 
         <h1><?php echo __('new_entry'); ?></h1>
 
-        <form action="calculate_tax.php" method="POST">
+        <form action="payment.php" method="POST">
 
             <div class="autocomplete-wrapper">
 

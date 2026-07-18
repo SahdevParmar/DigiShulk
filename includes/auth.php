@@ -8,13 +8,13 @@ $user = $_POST['username'];
 $pass = $_POST['password'];
 
 // Perform authentication logic here
-$stmt=$conn->prepare("SELECT id,password,role from users where username=?");
+$stmt=$conn->prepare("SELECT user_id,password,role from users where username=?");
 $stmt->bind_param("s", $user);
 $stmt->execute();
 $result=$stmt->get_result();
 if($row=$result->fetch_assoc()){
     if(password_verify($pass,$row['password'])){
-        $_SESSION['user_id']=$row['id'];
+        $_SESSION['user_id']=$row['user_id'];
         $_SESSION['role']=$row['role'];
 
         if($row['role']=='admin'){
