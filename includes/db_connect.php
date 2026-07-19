@@ -9,7 +9,7 @@ if ($conn->connect_error) {
 }
 
 if (isset($_SESSION['user_id'])) {
-    $stmt = $conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE users SET last_active = NOW() WHERE user_id = ?");
     $stmt->bind_param("i", $_SESSION['user_id']);
     $stmt->execute();
 }
