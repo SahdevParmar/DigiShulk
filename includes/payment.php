@@ -1,23 +1,16 @@
 <?php
 session_start();
-include 'db_connect.php';
-include 'config.php';
-include 'header.php'; // Include header for consistent UI, assuming it's available
 
-if(!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'inspector') {
-    http_response_code(403);
-    exit('Unauthorized');
-}
-
-$transaction_id = 0;
-
-// POST from spot_tax.php (Create new transaction)
+// --- POST LOGIC ---
+// This block handles the form submission and redirects. It must be before any HTML output.
 if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['amount'])){
+    include 'db_connect.php'; // DB connection is needed for the POST logic.
+
     $stall_type = trim($_POST['stall_type'] ?? '');
     if($stall_type === 'Other' && !empty($_POST['stall_type_other'])){
         $stall_type = trim($_POST['stall_type_other']);
     }
-    
+
     $area = filter_input(INPUT_POST, 'size', FILTER_VALIDATE_FLOAT) ?: 0;
     $shop_name = trim($_POST['shop_name'] ?? '');
     $shop_address = trim($_POST['shop_address'] ?? '');
@@ -49,7 +42,18 @@ if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['amount'])){
     exit();
 }
 
-// GET (View payment UI or Receipt)
+// --- GET LOGIC & HTML RENDERING ---
+include 'db_connect.php';
+include 'config.php';
+include 'header.php';
+
+if(!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'inspector') {
+    http_response_code(403);
+    echo "<div class='card'><h1>Unauthorized Access</h1></div>";
+    include 'footer.php';
+    exit();
+}
+
 $transaction_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $show_receipt = filter_input(INPUT_GET, 'paid', FILTER_VALIDATE_INT) == 1;
 
@@ -66,6 +70,7 @@ $txn = $stmt->get_result()->fetch_assoc();
 
 if(!$txn) {
     echo "<div class='card' style='text-align:center;'><h2>Transaction not found.</h2></div>";
+    include 'footer.php';
     exit();
 }
 
@@ -83,7 +88,7 @@ if($txn['status'] === 'paid' || $show_receipt){
             ₹<?php echo number_format($txn['total_amount'],2); ?>
             <span style="font-size: 14px; background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 6px; vertical-align: middle; margin-left: 10px;"><?php echo strtoupper($txn['payment_mode']); ?></span>
         </div>
-        
+
         <table style="width: 100%; font-size: 14px; box-shadow: none; border: none;">
             <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Shop Name</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['shop_name']); ?></td></tr>
             <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Phone</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></td></tr>
@@ -91,13 +96,16 @@ if($txn['status'] === 'paid' || $show_receipt){
             <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Date & Time</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo date('d M Y, h:i A', strtotime($txn['created_at'])); ?></td></tr>
             <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Inspector</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['inspector_name'] ?? ''); ?></td></tr>
         </table>
-        
-        <div style="margin-top: 25px; display: flex; gap: 10px;" class="no-print">
-            <button style="flex:1; background: #f1f5f9; color: var(--text);" onclick="window.print()">🖨 Print</button>
-            <a href="dashboard.php" style="flex:1; text-align:center; padding: 13px; background: var(--primary); color: white; border-radius: 10px; font-weight: 600;">Done</a>
+
+        <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;" class="no-print">
+            <div style="display: flex; gap: 10px;">
+                <button style="flex:1; background: #f1f5f9; color: var(--text);" onclick="window.print()">🖨 Print</button>
+                <a href="generate_receipt_pdf.php?id=<?php echo $transaction_id; ?>" style="flex:1; text-align:center; padding: 13px; background: #84cc16; color: white; border-radius: 10px; font-weight: 600;">📄 Download PDF</a>
+            </div>
+            <a href="../dashboard.php" style="text-align:center; padding: 13px; background: var(--primary); color: white; border-radius: 10px; font-weight: 600;">Done</a>
         </div>
     </div>
-    
+
     <style>
         @media print {
             body * { visibility: hidden; }
@@ -127,7 +135,7 @@ if($txn['payment_mode'] === 'cash'){
             <input type="hidden" name="id" value="<?php echo $transaction_id; ?>">
             <button type="submit" style="width: 100%; padding: 16px; font-size: 18px; border-radius: 12px;">Confirm Cash Received</button>
         </form>
-        <a href="dashboard.php" style="display:block; margin-top: 15px; color: var(--muted);">Cancel</a>
+        <a href="../dashboard.php" style="display:block; margin-top: 15px; color: var(--muted);">Cancel</a>
     </div>
 <?php
     exit();
@@ -174,7 +182,7 @@ if(empty($order_id)) {
     <p style="font-size: 16px; margin-bottom: 20px;">Shop: <strong><?php echo htmlspecialchars($txn['shop_name']); ?></strong><br>
        Phone: <strong><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></strong>
     </p>
-    
+
     <?php if(!empty($order_id)): ?>
         <button id="payBtn" style="width: 100%; padding: 16px; font-size: 18px; border-radius: 12px; background: #3b82f6;">Pay with UPI</button>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -210,6 +218,6 @@ if(empty($order_id)) {
     <?php else: ?>
         <p style="color: var(--danger);">UPI Gateway not configured. Please use cash.</p>
     <?php endif; ?>
-    
-    <a href="dashboard.php" style="display:block; margin-top: 15px; color: var(--muted);">Cancel</a>
+
+    <a href="../dashboard.php" style="display:block; margin-top: 15px; color: var(--muted);">Cancel</a>
 </div>

@@ -253,7 +253,12 @@ $name = !empty($user['full_name'])
 
     </form>
 
+    <hr><br>
+
+    <a href="logout.php" class="card-action-logout">
+        Logout
+    </a>
+
 </div>
 
-</body>
-</html>
+<?php include 'footer.php'; ?>

@@ -2,6 +2,7 @@ const overlay = document.getElementById("searchOverlay");
 const input = document.getElementById("spotlight");
 const results = document.getElementById("searchResults");
 const openBtn = document.getElementById("openSearch");
+const closeBtn = document.getElementById("closeSearch");
 const quickActionsTemplate = results.innerHTML;
 
 function openSearch() {
@@ -15,7 +16,12 @@ function closeSearch() {
     results.innerHTML = quickActionsTemplate;
 }
 
-openBtn.addEventListener("click", openSearch);
+if (openBtn) {
+    openBtn.addEventListener("click", openSearch);
+}
+if (closeBtn) {
+    closeBtn.addEventListener("click", closeSearch);
+}
 
 document.addEventListener("keydown", (e) => {
 
