@@ -867,12 +867,25 @@ tr:hover {
         box-shadow: none;
         background: transparent;
         border-radius: 0;
+        overflow: visible; /* Cancel the horizontal scroll from .table-card */
+    }
+    .modern-table.responsive-table {
+        min-width: 0; /* Cancel the 700px min-width from .modern-table */
+    }
+    .responsive-table,
+    .responsive-table tbody {
+        display: block;
+        width: 100%;
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
     .responsive-table thead {
         display: none; /* Hide table header on mobile */
     }
     .responsive-table tr {
         display: block;
+        width: 100%;
         margin-bottom: 20px;
         background: var(--card);
         border: 1px solid var(--border);
@@ -884,9 +897,17 @@ tr:hover {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 15px;
+        width: 100%;
         padding: 12px 0;
         border: none;
         border-bottom: 1px solid var(--border);
+        text-align: right;
+        word-break: break-word;
+        font-size: 14px;
+    }
+    .responsive-table td:empty {
+        display: none; /* Hide empty cells (e.g. spacer columns) */
     }
     .responsive-table td:last-child {
         border-bottom: none;
@@ -895,7 +916,8 @@ tr:hover {
         content: attr(data-label);
         font-weight: 600;
         color: var(--muted);
-        margin-right: 15px;
+        text-align: left;
+        flex-shrink: 0; /* Keep the label on one line, let the value wrap */
     }
 }
 
@@ -905,6 +927,36 @@ tr:hover {
         display: none;
     }
 }
+
+/* --- Pagination Styles --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+.pagination-link {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+    transition: .2s;
+}
+.pagination-link:hover {
+    background: #eef4ff;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+.pagination-link.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
 
 /* --- FIX for Settings Page --- */
 

@@ -1,25 +1,42 @@
 <?php
+// --- Pagination Logic ---
+$limit = 5; // Sessions per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// --- Filter Logic ---
 $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
 $zone_filter = $_GET['zone_filter'] ?? '';
 
-$sql = "SELECT s.*, u.full_name as inspector_name FROM seizure_sessions s JOIN users u ON s.inspector_id = u.user_id WHERE 1=1";
+$base_sql = "FROM seizure_sessions s JOIN users u ON s.inspector_id = u.user_id WHERE 1=1";
 $params = [];
 $types = "";
 
 if(!$is_admin){
-    $sql .= " AND s.inspector_id = ?";
+    $base_sql .= " AND s.inspector_id = ?";
     $params[] = $_SESSION['user_id'];
     $types .= "i";
 }
-if(!empty($date_from)){ $sql .= " AND s.seizure_date >= ?"; $params[] = $date_from; $types .= "s"; }
-if(!empty($date_to)){ $sql .= " AND s.seizure_date <= ?"; $params[] = $date_to; $types .= "s"; }
-if(!empty($zone_filter)){ $sql .= " AND s.zone = ?"; $params[] = $zone_filter; $types .= "s"; }
+if(!empty($date_from)){ $base_sql .= " AND s.seizure_date >= ?"; $params[] = $date_from; $types .= "s"; }
+if(!empty($date_to)){ $base_sql .= " AND s.seizure_date <= ?"; $params[] = $date_to; $types .= "s"; }
+if(!empty($zone_filter)){ $base_sql .= " AND s.zone = ?"; $params[] = $zone_filter; $types .= "s"; }
 
-$sql .= " ORDER BY s.seizure_date DESC, s.session_id DESC";
+// --- Get Total Records for Pagination ---
+$count_stmt = $conn->prepare("SELECT COUNT(*) as total " . $base_sql);
+if(!empty($params)){ $count_stmt->bind_param($types, ...$params); }
+$count_stmt->execute();
+$total_records = $count_stmt->get_result()->fetch_assoc()['total'];
+$total_pages = ceil($total_records / $limit);
 
-$stmt = $conn->prepare($sql);
-if(!empty($params)){ $stmt->bind_param($types, ...$params); }
+
+// --- Get Records for Current Page ---
+$data_sql = "SELECT s.*, u.full_name as inspector_name " . $base_sql . " ORDER BY s.seizure_date DESC, s.session_id DESC LIMIT ? OFFSET ?";
+$data_params = array_merge($params, [$limit, $offset]);
+$data_types = $types . "ii";
+
+$stmt = $conn->prepare($data_sql);
+$stmt->bind_param($data_types, ...$data_params);
 $stmt->execute();
 $sessions = $stmt->get_result();
 ?>
@@ -89,6 +106,31 @@ $sessions = $stmt->get_result();
 <?php if($sessions->num_rows === 0): ?>
     <p style="text-align:center; color:var(--muted); padding:20px;">No seizure records match these filters.</p>
 <?php endif; ?>
+
+<!-- Pagination Controls -->
+<div class="pagination">
+    <?php
+    $queryParams = $_GET;
+    // Previous button
+    if ($page > 1) {
+        $queryParams['page'] = $page - 1;
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">&laquo; Previous</a>';
+    }
+
+    // Page number links
+    for ($i = 1; $i <= $total_pages; $i++) {
+        $queryParams['page'] = $i;
+        $activeClass = ($i == $page) ? 'active' : '';
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link ' . $activeClass . '">' . $i . '</a>';
+    }
+
+    // Next button
+    if ($page < $total_pages) {
+        $queryParams['page'] = $page + 1;
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">Next &raquo;</a>';
+    }
+    ?>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
