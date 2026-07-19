@@ -13,6 +13,10 @@ if(isset($_SESSION['user_id'])){
     LIMIT 1
     ");
 
+    if (!$stmt) {
+        die("Database error in header.php. Did you run the database migration (migrate_v1.sql)? Error: " . $conn->error);
+    }
+
     $stmt->bind_param("i", $_SESSION['user_id']);
     $stmt->execute();
 
