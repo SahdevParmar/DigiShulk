@@ -1,0 +1,113 @@
+table {
+    width: 100%;
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    border-collapse: collapse;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+th {
+    background: #f8fafc;
+    padding: 18px;
+    text-align: left;
+    font-size: 14px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+}
+
+td {
+    padding: 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+}
+
+tr:hover {
+    background: #f9fbff;
+}
+
+.stamp {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stamp-paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.stamp-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stamp-failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.table-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-top: 25px;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table thead {
+    background: #f8fafc;
+}
+
+.modern-table th {
+    padding: 18px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: left;
+    position: sticky;
+    top: 0;
+}
+
+.modern-table td {
+    padding: 18px;
+    border-top: 1px solid #eef2f7;
+}
+
+.modern-table tbody tr:nth-child(even) {
+    background: #fcfdff;
+}
+
+.modern-table tbody tr:hover {
+    background: #eef6ff;
+}
+
+.amount {
+    font-weight: 700;
+    color: #16a34a;
+}
+
+.view-btn {
+    padding: 8px 14px;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    transition: .2s;
+}
+
+.view-btn:hover {
+    background: #2563eb;
+    color: white;
+}

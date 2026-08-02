@@ -1,0 +1,132 @@
+.navarea {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.navbar {
+    width: 100%;
+    max-width: 1400px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+.navbar nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-left: auto;
+}
+
+.logo {
+    background: url("logo.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 180px;
+    height: 45px;
+}
+
+.emptySpace {
+    flex: 1 1 auto;
+}
+
+.navbar a {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.navbar a:hover {
+    background: #eef4ff;
+    color: var(--primary);
+}
+
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-profile-photo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #2563eb;
+    transition: .25s;
+}
+
+.nav-profile-photo:hover {
+    transform: scale(1.08);
+}
+
+.logout-btn {
+    background: #fee2e2;
+    color: var(--danger) !important;
+}
+
+.logout-btn:hover {
+    background: #fecaca !important;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo-link:hover {
+    opacity: .9;
+}
+
+/* Navbar Profile */
+.profile-link {
+    padding: 0 !important;
+    background: none !important;
+    display: flex;
+    align-items: center;
+}
+
+.profile-link:hover {
+    background: none !important;
+}
+
+.nav-profile-photo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #2563eb;
+    transition: .25s;
+    cursor: pointer;
+}
+
+.nav-profile-photo:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, .25);
+}
+
+.server-lang-select {
+    height: 44px;
+    width: auto;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.lang-form-wrapper {
+    display: flex;
+    align-items: center;
+}

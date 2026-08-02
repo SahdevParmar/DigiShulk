@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --primary: #2563eb;
+    --primaryHover: #1d4ed8;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --text: #111827;
+    --muted: #6b7280;
+    --radius: 16px;
+    --shadow: 0 8px 30px rgba(15, 23, 42, .06);
+}

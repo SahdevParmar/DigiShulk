@@ -1,0 +1,31 @@
+/* --- Pagination Styles --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.pagination-link {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+    transition: .2s;
+}
+
+.pagination-link:hover {
+    background: #eef4ff;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.pagination-link.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}

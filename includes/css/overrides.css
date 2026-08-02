@@ -1,0 +1,47 @@
+/* --- FIX for Settings Page --- */
+
+/* More specific rule for the avatar to override other styles */
+.profile-header .profile-avatar {
+    width: 130px !important;
+    /* Use !important to ensure this rule wins */
+    height: 130px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 4px solid #fff;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, .18);
+    background: #f3f4f6;
+    flex-shrink: 0;
+}
+
+/* A better, dedicated class for the logout button on this page */
+.card-action-logout {
+    display: block;
+    width: 100%;
+    padding: 13px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    background: #fee2e2;
+    color: var(--danger) !important;
+    transition: .2s;
+}
+
+.card-action-logout:hover {
+    background: #fecaca !important;
+}
+
+/* Specificity fix for profile page avatar */
+.profile-header .profile-avatar {
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+    /* Prevents the image from shrinking in a flex container */
+}
+
+/* Style for the subtitle element */
+.subtitle {
+    color: var(--muted);
+    margin-top: -5px;
+    margin-bottom: 20px;
+}
