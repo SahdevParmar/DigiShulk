@@ -64,6 +64,7 @@ select:focus {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background-color: aqua;
 }
 .login-container form{
     width: 50px;
