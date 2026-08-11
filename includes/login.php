@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style2.css">
 </head>
 <body>
+    <div class="login-container">
     <form action="auth.php" method="POST" class="loginform">
         <div class="logo"></div>
         <br>
@@ -14,5 +15,6 @@
         <input type="password" name="password" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>
+    </div>
 </body>
 </html>
