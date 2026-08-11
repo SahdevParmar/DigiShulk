@@ -58,5 +58,13 @@ select:focus {
     box-shadow: 0 0 0 4px rgba(37, 99, 235, .1);
 }
 .login-container{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.login-container form{
     width: 50px;
 }
