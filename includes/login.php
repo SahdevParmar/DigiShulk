@@ -6,7 +6,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="style2.css">
 </head>
-<body>
+<body style="display:flex; align-items:center;">
     <div class="login-container">
     <form action="auth.php" method="POST" class="loginform">
         <div class="logo"></div>
