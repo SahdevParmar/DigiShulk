@@ -77,9 +77,9 @@ input.addEventListener("input", function () {
                 div.className = "search-item";
                 div.style.cursor = "pointer";
 
-                const icon = document.createElement("span");
-                icon.style.fontSize = "22px";
-                icon.textContent = item.icon || "";
+                const icon = document.createElement("i");
+                icon.className = item.icon || "fa-solid fa-circle";
+                icon.setAttribute("aria-hidden", "true");
 
                 const text = document.createElement("div");
                 const title = document.createElement("strong");

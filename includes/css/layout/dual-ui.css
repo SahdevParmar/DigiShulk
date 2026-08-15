@@ -48,6 +48,13 @@
     gap: 10px;
 }
 
+.sidebar-nav i,
+.logout-btn i,
+.search-btn i {
+    width: 18px;
+    text-align: center;
+}
+
 .sidebar-nav a:hover,
 .sidebar-nav button:hover {
     background: #eef4ff;
@@ -133,4 +140,5 @@
 
 .bottom-nav .nav-icon {
     font-size: 24px;
+    line-height: 1;
 }

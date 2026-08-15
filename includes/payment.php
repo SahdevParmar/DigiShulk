@@ -79,7 +79,7 @@ if($txn['status'] === 'paid' || $show_receipt){
 ?>
     <div class="card" id="receiptCard" style="max-width: 400px; margin: 20px auto; padding: 20px;">
         <div style="text-align:center;">
-            <div style="font-size: 40px; color: var(--success); margin-bottom:10px;">✅</div>
+            <div style="font-size: 40px; color: var(--success); margin-bottom:10px;"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
             <h2 style="color: var(--success); margin: 0 0 10px 0;">Payment Confirmed</h2>
             <p style="color: var(--muted); margin: 0;">Receipt #<?php echo htmlspecialchars($txn['receipt_number'] ?? ''); ?></p>
         </div>
@@ -99,8 +99,8 @@ if($txn['status'] === 'paid' || $show_receipt){
 
         <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;" class="no-print">
             <div style="display: flex; gap: 10px;">
-                <button style="flex:1; background: #f1f5f9; color: var(--text);" onclick="window.print()">🖨 Print</button>
-                <a href="generate_receipt_pdf.php?id=<?php echo $transaction_id; ?>" style="flex:1; text-align:center; padding: 13px; background: #84cc16; color: white; border-radius: 10px; font-weight: 600;">📄 Download PDF</a>
+                <button style="flex:1; background: #f1f5f9; color: var(--text);" onclick="window.print()"><i class="fa-solid fa-print" aria-hidden="true"></i> Print</button>
+                <a href="generate_receipt_pdf.php?id=<?php echo $transaction_id; ?>" style="flex:1; text-align:center; padding: 13px; background: #84cc16; color: white; border-radius: 10px; font-weight: 600;"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Download PDF</a>
             </div>
             <a href="../dashboard.php" style="text-align:center; padding: 13px; background: var(--primary); color: white; border-radius: 10px; font-weight: 600;">Done</a>
         </div>

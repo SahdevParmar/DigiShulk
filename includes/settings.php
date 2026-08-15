@@ -153,7 +153,7 @@ $name = !empty($user['full_name'])
 
 <div class="card">
 
-    <h2>👤 My Profile</h2>
+    <h2><i class="fa-solid fa-user" aria-hidden="true"></i> My Profile</h2>
 
     <p class="subtitle">
         Manage your DigiShulk account
@@ -190,7 +190,7 @@ $name = !empty($user['full_name'])
 
     <hr><br>
 
-    <h3>📷 Profile Photo</h3>
+    <h3><i class="fa-solid fa-camera" aria-hidden="true"></i> Profile Photo</h3>
 
     <form method="POST" enctype="multipart/form-data">
 
@@ -212,7 +212,7 @@ $name = !empty($user['full_name'])
 
     <br>
 
-    <h3>✏ Change Name</h3>
+    <h3><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Change Name</h3>
 
     <form method="POST">
 
@@ -234,7 +234,7 @@ $name = !empty($user['full_name'])
 
     <br>
 
-    <h3>🔒 Change Password</h3>
+    <h3><i class="fa-solid fa-lock" aria-hidden="true"></i> Change Password</h3>
 
     <form method="POST">
 

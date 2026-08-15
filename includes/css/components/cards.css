@@ -99,6 +99,16 @@
     box-shadow: var(--shadow);
 }
 
+.action-btn > i {
+    font-size: 28px;
+}
+
+.dashboard-card h3 i {
+    width: 18px;
+    margin-right: 6px;
+    color: var(--primary);
+}
+
 .action-btn:hover {
     background: var(--primary);
     color: white;
@@ -160,6 +170,14 @@
     font-size: 22px;
     background: #eef4ff;
     flex-shrink: 0;
+}
+
+.status-online {
+    color: var(--success);
+}
+
+.status-offline {
+    color: var(--danger);
 }
 
 .activity-content {

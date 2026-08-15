@@ -24,6 +24,7 @@ $user_role = $_SESSION['role'] ?? 'guest';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DigiShulk Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="style2.css">
     <style>
         .lang-form-wrapper { display: inline-block; margin: 0 8px; }
@@ -63,15 +64,15 @@ if ($user_role == 'admin') {
     <div class="search-modal">
         <div style="display: flex; align-items: center; border-bottom: 1px solid var(--border);">
             <input type="text" id="spotlight" placeholder="Search anything..." autocomplete="off" style="border-bottom: none; margin-bottom: 0;">
-            <button id="closeSearch" class="close-search-btn">✕</button>
+                <button id="closeSearch" class="close-search-btn"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
         <div id="searchResults">
             <div id="quickActions">
-                <div class="search-section-title">⚡ Quick Actions</div>
-                <a href="spot_tax.php" class="search-item"><span>🧾</span><div><strong>New Spot Tax</strong><small>Create new tax collection</small></div></a>
-                <a href="seizure_form.php" class="search-item"><span>🚨</span><div><strong>New Seizure Report</strong><small>Create seizure entry</small></div></a>
-                <a href="history.php" class="search-item"><span>📜</span><div><strong>History</strong><small>View previous collections</small></div></a>
-                <a href="settings.php" class="search-item"><span>⚙️</span><div><strong>Settings</strong><small>Application settings</small></div></a>
+                <div class="search-section-title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Quick Actions</div>
+                <a href="spot_tax.php" class="search-item"><i class="fa-solid fa-receipt" aria-hidden="true"></i><div><strong>New Spot Tax</strong><small>Create new tax collection</small></div></a>
+                <a href="seizure_form.php" class="search-item"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><div><strong>New Seizure Report</strong><small>Create seizure entry</small></div></a>
+                <a href="history.php" class="search-item"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><div><strong>History</strong><small>View previous collections</small></div></a>
+                <a href="settings.php" class="search-item"><i class="fa-solid fa-gear" aria-hidden="true"></i><div><strong>Settings</strong><small>Application settings</small></div></a>
             </div>
         </div>
     </div>

@@ -12,11 +12,11 @@ $view = $_GET['view'] ?? 'tax'; // 'tax' or 'seizures'
     <div style="display:flex; gap:10px; margin-bottom:20px;">
         <a href="history.php?view=tax" class="navbar a" 
            style="padding:10px 20px; border-radius:10px; background:<?php echo $view=='tax' ? 'var(--primary)' : '#e5e7eb'; ?>; color:<?php echo $view=='tax' ? 'white' : 'var(--text)'; ?>;">
-            🧾 <?php echo __('spot_tax_tab'); ?>
+            <i class="fa-solid fa-receipt" aria-hidden="true"></i> <?php echo __('spot_tax_tab'); ?>
         </a>
         <a href="history.php?view=seizures" 
            style="padding:10px 20px; border-radius:10px; background:<?php echo $view=='seizures' ? 'var(--primary)' : '#e5e7eb'; ?>; color:<?php echo $view=='seizures' ? 'white' : 'var(--text)'; ?>;">
-            🚨 <?php echo __('seizures_tab'); ?>
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <?php echo __('seizures_tab'); ?>
         </a>
     </div>
 
