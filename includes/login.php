@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="style2.css">
 </head>
-<body>
+<body style="display:flex; align-items:center;">
+    <div class="login-container">
     <form action="auth.php" method="POST" class="loginform">
         <div class="logo"></div>
         <br>
@@ -15,5 +16,6 @@
         <input type="password" name="password" placeholder="Password" required>
         <button type="submit">Login</button>
     </form>
+    </div>
 </body>
 </html>
