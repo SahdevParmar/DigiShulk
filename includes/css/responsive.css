@@ -1,48 +1,17 @@
 /* ==========================================
-   Additional Mobile Optimizations (Phase 3)
-========================================== */
+   Additional Mobile Optimizations
+   ========================================== */
 
 @media (max-width: 768px) {
-    body {
-        padding: 14px;
-    }
-
-    .navbar {
-        flex-direction: column;
-        align-items: stretch;
+    /* Larger, touch-friendly form inputs */
+    input,
+    select,
+    textarea {
         padding: 18px;
+        font-size: 16px; /* Prevents zoom on iOS */
     }
 
-    .logo-link {
-        justify-content: center;
-        margin-bottom: 15px;
-    }
-
-    .navbar nav {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-
-    .search-btn,
-    .navbar a,
-    .lang-form-wrapper,
-    .profile-link {
-        width: 100%;
-    }
-
-    .search-btn {
-        justify-content: center;
-    }
-
-    .profile-link {
-        justify-content: center;
-    }
-
-    .logout-btn {
-        grid-column: 1 / -1;
-    }
-
+    /* Card padding adjustments */
     .dashboard-card,
     .card {
         padding: 20px;
@@ -64,38 +33,6 @@
         padding: 28px;
     }
 
-    /* Responsive tweaks for layouts */
-    .admin-layout {
-        padding-left: 20px;
-        padding-top: 80px;
-    }
-
-    .admin-sidebar {
-        display: none;
-    }
-
-    .admin-mobile-topbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 70px;
-        background: white;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        z-index: 1000;
-    }
-
-    /* Larger, touch-friendly form inputs */
-    input,
-    select {
-        padding: 18px;
-        font-size: 16px;
-    }
-
     /* Full-screen search modal on mobile */
     .search-overlay {
         padding-top: 0;
@@ -110,7 +47,7 @@
     }
 
     #searchResults {
-        max-height: calc(100vh - 80px);
+        max-height: calc(100dvh - 80px);
     }
 
     /* History Page: Table to Cards */
@@ -120,12 +57,10 @@
         background: transparent;
         border-radius: 0;
         overflow: visible;
-        /* Cancel the horizontal scroll from .table-card */
     }
 
     .modern-table.responsive-table {
         min-width: 0;
-        /* Cancel the 700px min-width from .modern-table */
     }
 
     .responsive-table,
@@ -139,17 +74,16 @@
 
     .responsive-table thead {
         display: none;
-        /* Hide table header on mobile */
     }
 
     .responsive-table tr {
         display: block;
         width: 100%;
         margin-bottom: 20px;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        box-shadow: var(--shadow);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
         padding: 20px;
     }
 
@@ -161,7 +95,7 @@
         width: 100%;
         padding: 12px 0;
         border: none;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--color-border);
         text-align: right;
         word-break: break-word;
         font-size: 14px;
@@ -169,7 +103,6 @@
 
     .responsive-table td:empty {
         display: none;
-        /* Hide empty cells (e.g. spacer columns) */
     }
 
     .responsive-table td:last-child {
@@ -179,16 +112,39 @@
     .responsive-table td::before {
         content: attr(data-label);
         font-weight: 600;
-        color: var(--muted);
+        color: var(--color-text-muted);
         text-align: left;
         flex-shrink: 0;
-        /* Keep the label on one line, let the value wrap */
     }
 }
 
-/* Hide responsive table styles on desktop */
+/* Hide responsive table label styles on desktop */
 @media (min-width: 769px) {
     .responsive-table td::before {
         display: none;
+    }
+}
+
+/* ==========================================
+   Print Styles
+   ========================================== */
+@media print {
+    .app-sidebar,
+    .app-topbar,
+    .app-bottom-nav,
+    .sidebar-toggle,
+    .sidebar-overlay,
+    .search-overlay,
+    .no-print {
+        display: none !important;
+    }
+    .app-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    .page {
+        padding: 0 !important;
     }
 }

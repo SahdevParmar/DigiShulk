@@ -9,10 +9,11 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = $_SESSION['user_id'];
 $message = "";
+$message_type = "";
 
 /* ===============================
    Upload Profile Photo
-================================*/
+===============================*/
 
 if(isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])){
 
@@ -45,10 +46,12 @@ if(isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])){
             $stmt->execute();
 
             $message = "Profile photo updated.";
+            $message_type = "success";
 
         }else{
 
             $message = "Only JPG, PNG and WEBP images are allowed.";
+            $message_type = "danger";
 
         }
 
@@ -58,7 +61,7 @@ if(isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])){
 
 /* ===============================
    Change Name
-================================*/
+===============================*/
 
 if(isset($_POST['update_name'])){
 
@@ -75,9 +78,8 @@ if(isset($_POST['update_name'])){
         $stmt->bind_param("si",$name,$user_id);
 
         if($stmt->execute()){
-
             $message="Name updated successfully.";
-
+            $message_type = "success";
         }
 
     }
@@ -86,7 +88,7 @@ if(isset($_POST['update_name'])){
 
 /* ===============================
    Change Password
-================================*/
+===============================*/
 
 if(isset($_POST['update_password'])){
 
@@ -106,9 +108,8 @@ if(isset($_POST['update_password'])){
         $stmt->bind_param("si",$new_pass,$user_id);
 
         if($stmt->execute()){
-
             $message="Password updated successfully.";
-
+            $message_type = "success";
         }
 
     }
@@ -117,7 +118,7 @@ if(isset($_POST['update_password'])){
 
 /* ===============================
    Load User
-================================*/
+===============================*/
 
 $stmt = $conn->prepare("
 SELECT
@@ -140,125 +141,128 @@ include 'header.php';
 $photo = "uploads/profile/default.jpg";
 
 if(!empty($user['profile_photo']) && file_exists("uploads/profile/".$user['profile_photo'])){
-
     $photo = "uploads/profile/".$user['profile_photo'];
-
 }
 
 $name = !empty($user['full_name'])
             ? $user['full_name']
             : $user['username'];
-
 ?>
 
-<div class="card">
+<div class="page">
+    <div class="card" style="max-width: 600px;">
 
-    <h2><i class="fa-solid fa-user" aria-hidden="true"></i> My Profile</h2>
+        <div class="card-header">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <div class="avatar avatar-lg" style="background-image: url('<?php echo $photo; ?>'); background-size: cover; background-position: center; background: var(--color-primary-light); color: var(--color-primary);">
+                    <?php if (empty($user['profile_photo']) || !file_exists("uploads/profile/".$user['profile_photo'])): ?>
+                        <?= strtoupper(substr($name, 0, 1)) ?>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <h1 class="card-title" style="font-size: var(--text-2xl); margin: 0;"><?php echo htmlspecialchars($name); ?></h1>
+                    <p class="card-subtitle" style="margin: 0; text-transform: capitalize;"><?php echo $user['role']; ?></p>
+                </div>
+            </div>
+        </div>
 
-    <p class="subtitle">
-        Manage your DigiShulk account
-    </p>
+        <?php if($message != ""): ?>
+        <div class="alert alert-<?= $message_type ?>" style="margin: var(--space-4) var(--space-6);">
+            <i class="fa-solid fa-<?= $message_type === 'success' ? 'circle-check' : 'triangle-exclamation' ?> alert-icon" aria-hidden="true"></i>
+            <div class="alert-content">
+                <p class="alert-message" style="margin: 0;"><?php echo $message; ?></p>
+            </div>
+        </div>
+        <?php endif; ?>
 
-    <?php if($message!=""): ?>
+        <!-- Profile Photo -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6); margin-top: var(--space-4);">
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                Profile Photo
+            </h3>
 
-        <p style="color:green;font-weight:bold;">
-            <?php echo $message; ?>
-        </p>
+            <form method="POST" enctype="multipart/form-data" class="form-field" style="margin-bottom: 0;">
+                <label class="form-label">Upload new photo</label>
+                <input
+                    type="file"
+                    name="profile_photo"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    class="form-input"
+                    required
+                    style="padding: var(--space-2) var(--space-3);">
+                <p class="form-help">JPG, PNG, or WEBP. Max 5MB.</p>
+                <button type="submit" name="upload_photo" class="btn btn-primary" style="margin-top: var(--space-2);">
+                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                    Upload Photo
+                </button>
+            </form>
+        </div>
 
-    <?php endif; ?>
+        <!-- Change Name -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6); margin-top: var(--space-4);">
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                Change Name
+            </h3>
 
+            <form method="POST" class="form-field" style="margin-bottom: 0;">
+                <label class="form-label" for="new_name">Display Name</label>
+                <input
+                    type="text"
+                    name="new_name"
+                    id="new_name"
+                    class="form-input"
+                    value="<?php echo htmlspecialchars($name); ?>"
+                    required>
+                <button type="submit" name="update_name" class="btn btn-secondary" style="margin-top: var(--space-2);">
+                    <i class="fa-solid fa-save" aria-hidden="true"></i>
+                    Update Name
+                </button>
+            </form>
+        </div>
 
-    <div class="profile-header">
+        <!-- Change Password -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6); margin-top: var(--space-4);">
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                Change Password
+            </h3>
 
-        <img
-            src="<?php echo $photo; ?>"
-            class="profile-avatar">
+            <form method="POST" class="form-field" style="margin-bottom: 0;">
+                <label class="form-label" for="password">New Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="form-input"
+                    placeholder="Enter new password"
+                    minlength="8"
+                    required>
+                <p class="form-help">Minimum 8 characters</p>
+                <button type="submit" name="update_password" class="btn btn-secondary" style="margin-top: var(--space-2);">
+                    <i class="fa-solid fa-key" aria-hidden="true"></i>
+                    Update Password
+                </button>
+            </form>
+        </div>
 
-        <h2>
+        <!-- Danger Zone -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6); margin-top: var(--space-4);">
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); color: var(--color-danger);">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                Danger Zone
+            </h3>
 
-            <?php echo htmlspecialchars($name); ?>
-
-        </h2>
-
-        <p>
-
-            <?php echo ucfirst($user['role']); ?>
-
-        </p>
+            <form method="POST" action="logout.php" style="display: inline;">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                    Logout
+                </button>
+            </form>
+        </div>
 
     </div>
-
-    <hr><br>
-
-    <h3><i class="fa-solid fa-camera" aria-hidden="true"></i> Profile Photo</h3>
-
-    <form method="POST" enctype="multipart/form-data">
-
-        <input
-            type="file"
-            name="profile_photo"
-            accept=".jpg,.jpeg,.png,.webp"
-            required>
-
-        <button
-            type="submit"
-            name="upload_photo">
-
-            Upload Photo
-
-        </button>
-
-    </form>
-
-    <br>
-
-    <h3><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Change Name</h3>
-
-    <form method="POST">
-
-        <input
-            type="text"
-            name="new_name"
-            value="<?php echo htmlspecialchars($name); ?>"
-            required>
-
-        <button
-            type="submit"
-            name="update_name">
-
-            Update Name
-
-        </button>
-
-    </form>
-
-    <br>
-
-    <h3><i class="fa-solid fa-lock" aria-hidden="true"></i> Change Password</h3>
-
-    <form method="POST">
-
-        <input
-            type="password"
-            name="password"
-            placeholder="New Password">
-
-        <button
-            type="submit"
-            name="update_password">
-
-            Update Password
-
-        </button>
-
-    </form>
-
-    <hr><br>
-
-    <a href="logout.php" class="card-action-logout">
-        Logout
-    </a>
-
 </div>
 
 <?php include 'footer.php'; ?>

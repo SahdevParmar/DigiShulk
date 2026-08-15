@@ -7,7 +7,10 @@
 @import "layout/landing.css";
 @import "layout/dual-ui.css";
 
-/* Components */
+/* Components - New unified system */
+@import "components/components.css";
+
+/* Legacy Components (to be phased out) */
 @import "components/cards.css";
 @import "components/tables.css";
 @import "components/modal.css";

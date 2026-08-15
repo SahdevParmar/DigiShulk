@@ -4,16 +4,51 @@ const results = document.getElementById("searchResults");
 const openBtn = document.getElementById("openSearch");
 const closeBtn = document.getElementById("closeSearch");
 const quickActionsTemplate = results.innerHTML;
+let lastFocusedElement = null;
 
 function openSearch() {
-    overlay.style.display = "flex";
-    input.focus();
+    lastFocusedElement = document.activeElement;
+    overlay.hidden = false;
+    // Force reflow for animation
+    requestAnimationFrame(() => {
+        input.focus();
+    });
+    document.body.style.overflow = 'hidden';
+    trapFocus(overlay);
 }
 
 function closeSearch() {
-    overlay.style.display = "none";
+    overlay.hidden = true;
     input.value = "";
     results.innerHTML = quickActionsTemplate;
+    document.body.style.overflow = '';
+    if (lastFocusedElement) {
+        lastFocusedElement.focus();
+    }
+}
+
+function trapFocus(element) {
+    const focusableElements = element.querySelectorAll(
+        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    element.addEventListener('keydown', function handleTab(e) {
+        if (e.key !== 'Tab') return;
+
+        if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            }
+        } else {
+            if (document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        }
+    });
 }
 
 if (openBtn) {
@@ -24,36 +59,27 @@ if (closeBtn) {
 }
 
 document.addEventListener("keydown", (e) => {
-
     if (e.ctrlKey && e.key.toLowerCase() === "k") {
         e.preventDefault();
         openSearch();
     }
-
-    if (e.key === "Escape") {
+    if (e.key === "Escape" && !overlay.hidden) {
         closeSearch();
     }
-
 });
 
 overlay.addEventListener("click", (e) => {
-
     if (e.target === overlay) {
         closeSearch();
     }
-
 });
 
 input.addEventListener("input", function () {
-
     const q = this.value.trim();
 
     if (q.length < 2) {
-
         results.innerHTML = quickActionsTemplate;
-
         return;
-
     }
 
     fetch("api/search.php?q=" + encodeURIComponent(q))
@@ -63,19 +89,19 @@ input.addEventListener("input", function () {
             return JSON.parse(text);
         })
         .then(data => {
-
             results.innerHTML = "";
+            results.setAttribute('role', 'listbox');
 
             if (data.length === 0) {
-                results.innerHTML = "<div class='search-empty'>No results found</div>";
+                results.innerHTML = "<div class='search-empty' role='option'>No results found</div>";
                 return;
             }
 
-            data.forEach(item => {
-
+            data.forEach((item, index) => {
                 const div = document.createElement("div");
                 div.className = "search-item";
-                div.style.cursor = "pointer";
+                div.setAttribute('role', 'option');
+                div.setAttribute('tabindex', '0');
 
                 const icon = document.createElement("i");
                 icon.className = item.icon || "fa-solid fa-circle";
@@ -90,29 +116,26 @@ input.addEventListener("input", function () {
                 text.append(title, document.createElement("br"), subtitle);
                 div.append(icon, text);
 
-                div.onclick = function () {
-
-                    console.log("Clicked:", item);
-
+                const navigate = () => {
                     if (item.type === "shop") {
-
                         window.location.href = "spot_tax.php?shop=" + item.shop_id;
-
                     } else {
-
                         window.location.href = item.url;
-
                     }
-
                 };
 
+                div.addEventListener('click', navigate);
+                div.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate();
+                    }
+                });
+
                 results.appendChild(div);
-
             });
-
         })
         .catch(err => {
             console.error(err);
         });
-
 });

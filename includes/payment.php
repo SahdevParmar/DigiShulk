@@ -49,7 +49,7 @@ include 'header.php';
 
 if(!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'inspector') {
     http_response_code(403);
-    echo "<div class='card'><h1>Unauthorized Access</h1></div>";
+    echo "<div class='card' style='max-width: 400px; margin: var(--space-6) auto; text-align: center;'><div class='card-body'><div class='alert alert-danger'><i class='fa-solid fa-triangle-exclamation alert-icon' aria-hidden='true'></i><div class='alert-content'><p class='alert-title'>Unauthorized Access</p></div></div></div></div>";
     include 'footer.php';
     exit();
 }
@@ -58,7 +58,7 @@ $transaction_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $show_receipt = filter_input(INPUT_GET, 'paid', FILTER_VALIDATE_INT) == 1;
 
 if (!$transaction_id) {
-    echo "<div class='card' style='text-align:center;'><h2>Invalid transaction.</h2></div>";
+    echo "<div class='card' style='max-width: 400px; margin: var(--space-6) auto; text-align: center;'><div class='card-body'><div class='alert alert-danger'><i class='fa-solid fa-triangle-exclamation alert-icon' aria-hidden='true'></i><div class='alert-content'><p class='alert-title'>Invalid transaction</p></div></div></div></div>";
     include 'footer.php';
     exit();
 }
@@ -69,7 +69,7 @@ $stmt->execute();
 $txn = $stmt->get_result()->fetch_assoc();
 
 if(!$txn) {
-    echo "<div class='card' style='text-align:center;'><h2>Transaction not found.</h2></div>";
+    echo "<div class='card' style='max-width: 400px; margin: var(--space-6) auto; text-align: center;'><div class='card-body'><div class='alert alert-danger'><i class='fa-solid fa-triangle-exclamation alert-icon' aria-hidden='true'></i><div class='alert-content'><p class='alert-title'>Transaction not found</p></div></div></div></div>";
     include 'footer.php';
     exit();
 }
@@ -77,67 +77,122 @@ if(!$txn) {
 // If already paid, just show the receipt
 if($txn['status'] === 'paid' || $show_receipt){
 ?>
-    <div class="card" id="receiptCard" style="max-width: 400px; margin: 20px auto; padding: 20px;">
-        <div style="text-align:center;">
-            <div style="font-size: 40px; color: var(--success); margin-bottom:10px;"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
-            <h2 style="color: var(--success); margin: 0 0 10px 0;">Payment Confirmed</h2>
-            <p style="color: var(--muted); margin: 0;">Receipt #<?php echo htmlspecialchars($txn['receipt_number'] ?? ''); ?></p>
-        </div>
-        <hr style="margin: 20px 0; border: none; border-top: 1px dashed var(--border);">
-        <div style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 20px;">
-            ₹<?php echo number_format($txn['total_amount'],2); ?>
-            <span style="font-size: 14px; background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 6px; vertical-align: middle; margin-left: 10px;"><?php echo strtoupper($txn['payment_mode']); ?></span>
-        </div>
-
-        <table style="width: 100%; font-size: 14px; box-shadow: none; border: none;">
-            <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Shop Name</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['shop_name']); ?></td></tr>
-            <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Phone</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></td></tr>
-            <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Stall Type</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['stall_type']); ?></td></tr>
-            <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Date & Time</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo date('d M Y, h:i A', strtotime($txn['created_at'])); ?></td></tr>
-            <tr><td style="padding: 8px 0; border: none; color: var(--muted);">Inspector</td><td style="padding: 8px 0; border: none; text-align: right; font-weight: bold;"><?php echo htmlspecialchars($txn['inspector_name'] ?? ''); ?></td></tr>
-        </table>
-
-        <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;" class="no-print">
-            <div style="display: flex; gap: 10px;">
-                <button style="flex:1; background: #f1f5f9; color: var(--text);" onclick="window.print()"><i class="fa-solid fa-print" aria-hidden="true"></i> Print</button>
-                <a href="generate_receipt_pdf.php?id=<?php echo $transaction_id; ?>" style="flex:1; text-align:center; padding: 13px; background: #84cc16; color: white; border-radius: 10px; font-weight: 600;"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Download PDF</a>
+<div class="page">
+    <div class="card" id="receiptCard" style="max-width: 480px;">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 48px; color: var(--color-success); margin-bottom: var(--space-3);">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
             </div>
-            <a href="../dashboard.php" style="text-align:center; padding: 13px; background: var(--primary); color: white; border-radius: 10px; font-weight: 600;">Done</a>
+            <h2 style="color: var(--color-success); margin: 0 0 var(--space-2);">Payment Confirmed</h2>
+            <p style="color: var(--color-text-muted); margin: 0 0 var(--space-4);">Receipt #<?php echo htmlspecialchars($txn['receipt_number'] ?? ''); ?></p>
+
+            <hr style="margin: var(--space-4) 0; border: none; border-top: 1px dashed var(--color-border);">
+
+            <div style="font-size: var(--text-4xl); font-weight: 700; text-align: center; margin-bottom: var(--space-6); color: var(--color-text);">
+                ₹<?php echo number_format($txn['total_amount'],2); ?>
+                <span class="badge badge-<?= $txn['payment_mode'] === 'upi' ? 'primary' : 'success' ?>" style="font-size: var(--text-sm); vertical-align: middle; margin-left: var(--space-2);"><?php echo strtoupper($txn['payment_mode']); ?></span>
+            </div>
+
+            <table class="table" style="font-size: var(--text-base); margin-bottom: var(--space-6);">
+                <tbody>
+                    <tr><td style="color: var(--color-text-muted); width: 40%;">Shop Name</td><td style="text-align: right; font-weight: 600;"><?php echo htmlspecialchars($txn['shop_name']); ?></td></tr>
+                    <tr><td style="color: var(--color-text-muted);">Phone</td><td style="text-align: right; font-weight: 600;"><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></td></tr>
+                    <tr><td style="color: var(--color-text-muted);">Stall Type</td><td style="text-align: right; font-weight: 600;"><?php echo htmlspecialchars($txn['stall_type']); ?></td></tr>
+                    <tr><td style="color: var(--color-text-muted);">Date & Time</td><td style="text-align: right; font-weight: 600;"><?php echo date('d M Y, h:i A', strtotime($txn['created_at'])); ?></td></tr>
+                    <tr><td style="color: var(--color-text-muted);">Inspector</td><td style="text-align: right; font-weight: 600;"><?php echo htmlspecialchars($txn['inspector_name'] ?? ''); ?></td></tr>
+                </tbody>
+            </table>
+
+            <div class="form-actions" style="flex-direction: column; gap: var(--space-2); border-top: none; padding-top: 0; margin-top: 0;" class="no-print">
+                <div style="display: flex; gap: var(--space-2); width: 100%;">
+                    <button onclick="window.print()" class="btn btn-secondary btn-block" style="flex: 1;">
+                        <i class="fa-solid fa-print" aria-hidden="true"></i>
+                        Print
+                    </button>
+                    <a href="generate_receipt_pdf.php?id=<?php echo $transaction_id; ?>" class="btn btn-success btn-block" style="flex: 1; text-align: center;">
+                        <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+                        Download PDF
+                    </a>
+                </div>
+                <a href="dashboard.php" class="btn btn-primary btn-block">
+                    Done
+                </a>
+            </div>
         </div>
     </div>
+</div>
 
-    <style>
-        @media print {
-            body * { visibility: hidden; }
-            #receiptCard, #receiptCard * { visibility: visible; }
-            #receiptCard { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
-            .no-print { display: none !important; }
-            .navarea, .navbar { display: none !important; }
+<style>
+    @media print {
+        .app-sidebar,
+        .app-topbar,
+        .app-bottom-nav,
+        .sidebar-toggle,
+        .sidebar-overlay,
+        .search-overlay,
+        .no-print,
+        .form-actions {
+            display: none !important;
         }
-    </style>
+        .app-main {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        .page {
+            padding: 0 !important;
+        }
+        #receiptCard {
+            box-shadow: none !important;
+            border: none !important;
+        }
+    }
+</style>
 <?php
+    include 'footer.php';
     exit();
 }
 
 // ---------- CASH Flow ----------
 if($txn['payment_mode'] === 'cash'){
 ?>
-    <div class="card" style="max-width: 400px; margin: 20px auto; text-align:center;">
-        <h2 style="margin-bottom: 20px;">Cash Collection</h2>
-        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-            <p style="margin: 0 0 5px 0; color: var(--muted);">Amount to Collect</p>
-            <div style="font-size: 36px; font-weight: bold; color: var(--text);">₹<?php echo number_format($txn['total_amount'],2); ?></div>
+<div class="page">
+    <div class="card" style="max-width: 480px;">
+        <div class="card-header">
+            <h2 class="card-title" style="margin: 0;">Cash Collection</h2>
         </div>
-        <p style="font-size: 16px; margin-bottom: 20px;">Shop: <strong><?php echo htmlspecialchars($txn['shop_name']); ?></strong><br>
-           Phone: <strong><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></strong>
-        </p>
-        <form method="POST" action="confirm_cash.php">
-            <input type="hidden" name="id" value="<?php echo $transaction_id; ?>">
-            <button type="submit" style="width: 100%; padding: 16px; font-size: 18px; border-radius: 12px;">Confirm Cash Received</button>
-        </form>
-        <a href="../dashboard.php" style="display:block; margin-top: 15px; color: var(--muted);">Cancel</a>
+        <div class="card-body" style="text-align: center;">
+            <div class="alert alert-success" style="text-align: left;">
+                <i class="fa-solid fa-circle-check alert-icon" aria-hidden="true"></i>
+                <div class="alert-content">
+                    <p class="alert-title" style="margin: 0;">Amount to Collect</p>
+                    <p class="alert-message" style="margin: var(--space-2) 0 0; font-size: var(--text-3xl); font-weight: 700; color: var(--color-success);">₹<?php echo number_format($txn['total_amount'],2); ?></p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-4); padding: var(--space-4); background: var(--color-surface-muted); border-radius: var(--radius-md); text-align: left;">
+                <p style="margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted);">Shop Details</p>
+                <p style="margin: 0; font-size: var(--text-base);"><strong><?php echo htmlspecialchars($txn['shop_name']); ?></strong></p>
+                <p style="margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-text-muted);"><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></p>
+            </div>
+
+            <form method="POST" action="confirm_cash.php" style="margin-top: var(--space-6);">
+                <input type="hidden" name="id" value="<?php echo $transaction_id; ?>">
+                <button type="submit" class="btn btn-success btn-block btn-lg">
+                    <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>
+                    Confirm Cash Received
+                </button>
+            </form>
+
+            <a href="dashboard.php" class="btn btn-ghost btn-block" style="margin-top: var(--space-3);">
+                Cancel
+            </a>
+        </div>
     </div>
+</div>
 <?php
+    include 'footer.php';
     exit();
 }
 
@@ -173,51 +228,77 @@ if(empty($order_id)) {
 }
 ?>
 
-<div class="card" style="max-width: 400px; margin: 20px auto; text-align:center;">
-    <h2 style="margin-bottom: 20px;">UPI Payment</h2>
-    <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-        <p style="margin: 0 0 5px 0; color: var(--muted);">Amount to Collect</p>
-        <div style="font-size: 36px; font-weight: bold; color: var(--text);">₹<?php echo number_format($txn['total_amount'],2); ?></div>
+<div class="page">
+    <div class="card" style="max-width: 480px;">
+        <div class="card-header">
+            <h2 class="card-title" style="margin: 0;">UPI Payment</h2>
+        </div>
+        <div class="card-body" style="text-align: center;">
+            <div class="alert alert-primary" style="text-align: left;">
+                <i class="fa-solid fa-qrcode alert-icon" aria-hidden="true"></i>
+                <div class="alert-content">
+                    <p class="alert-title" style="margin: 0;">Amount to Pay</p>
+                    <p class="alert-message" style="margin: var(--space-2) 0 0; font-size: var(--text-3xl); font-weight: 700; color: var(--color-primary);">₹<?php echo number_format($txn['total_amount'],2); ?></p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-4); padding: var(--space-4); background: var(--color-surface-muted); border-radius: var(--radius-md); text-align: left;">
+                <p style="margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted);">Shop Details</p>
+                <p style="margin: 0; font-size: var(--text-base);"><strong><?php echo htmlspecialchars($txn['shop_name']); ?></strong></p>
+                <p style="margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--color-text-muted);"><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></p>
+            </div>
+
+            <?php if(!empty($order_id)): ?>
+                <button id="payBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-6);">
+                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                    Pay with UPI
+                </button>
+                <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+                <script>
+                document.getElementById('payBtn').onclick = function(e){
+                    var options = {
+                        "key": "<?php echo RAZORPAY_KEY_ID; ?>",
+                        "amount": "<?php echo $amount_paise; ?>",
+                        "currency": "INR",
+                        "order_id": "<?php echo $order_id; ?>",
+                        "name": "RMC DigiShulk",
+                        "description": "Spot Tax Payment",
+                        "prefill": {
+                            "contact": <?php echo json_encode($txn['shopkeeper_phone']); ?>,
+                            "name": <?php echo json_encode($txn['shop_name']); ?>
+                        },
+                        "config": {
+                            "display": {
+                                "hide": [{ "method": "card" }, { "method": "netbanking" }, { "method": "wallet" }, { "method": "paylater" }, { "method": "emi" }]
+                            }
+                        },
+                        "handler": function(response){
+                            // Razorpay succeeded. Webhook will mark it paid. Polling or manual redirect:
+                            window.location.href = "payment.php?id=<?php echo $transaction_id; ?>&paid=1";
+                        },
+                        "theme": { "color": "#2563eb" }
+                    };
+                    var rzp = new Razorpay(options);
+                    rzp.open();
+                    e.preventDefault();
+                };
+                </script>
+            <?php else: ?>
+                <div class="alert alert-danger" style="margin-top: var(--space-6);">
+                    <i class="fa-solid fa-triangle-exclamation alert-icon" aria-hidden="true"></i>
+                    <div class="alert-content">
+                        <p class="alert-title">UPI Gateway Not Configured</p>
+                        <p class="alert-message">Please use cash payment method instead.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <a href="dashboard.php" class="btn btn-ghost btn-block" style="margin-top: var(--space-4);">
+                Cancel
+            </a>
+        </div>
     </div>
-    <p style="font-size: 16px; margin-bottom: 20px;">Shop: <strong><?php echo htmlspecialchars($txn['shop_name']); ?></strong><br>
-       Phone: <strong><?php echo htmlspecialchars($txn['shopkeeper_phone']); ?></strong>
-    </p>
-
-    <?php if(!empty($order_id)): ?>
-        <button id="payBtn" style="width: 100%; padding: 16px; font-size: 18px; border-radius: 12px; background: #3b82f6;">Pay with UPI</button>
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-        <script>
-        document.getElementById('payBtn').onclick = function(e){
-            var options = {
-                "key": "<?php echo RAZORPAY_KEY_ID; ?>",
-                "amount": "<?php echo $amount_paise; ?>",
-                "currency": "INR",
-                "order_id": "<?php echo $order_id; ?>",
-                "name": "RMC DigiShulk",
-                "description": "Spot Tax Payment",
-                "prefill": {
-                    "contact": <?php echo json_encode($txn['shopkeeper_phone']); ?>,
-                    "name": <?php echo json_encode($txn['shop_name']); ?>
-                },
-                "config": {
-                    "display": {
-                        "hide": [{ "method": "card" }, { "method": "netbanking" }, { "method": "wallet" }, { "method": "paylater" }, { "method": "emi" }]
-                    }
-                },
-                "handler": function(response){
-                    // Razorpay succeeded. Webhook will mark it paid. Polling or manual redirect:
-                    window.location.href = "payment.php?id=<?php echo $transaction_id; ?>&paid=1";
-                },
-                "theme": { "color": "#2563eb" }
-            };
-            var rzp = new Razorpay(options);
-            rzp.open();
-            e.preventDefault();
-        };
-        </script>
-    <?php else: ?>
-        <p style="color: var(--danger);">UPI Gateway not configured. Please use cash.</p>
-    <?php endif; ?>
-
-    <a href="../dashboard.php" style="display:block; margin-top: 15px; color: var(--muted);">Cancel</a>
 </div>
+<?php
+include 'footer.php';
+?>

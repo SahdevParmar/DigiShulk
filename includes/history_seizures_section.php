@@ -41,42 +41,44 @@ $stmt->execute();
 $sessions = $stmt->get_result();
 ?>
 
-<div class="card" style="max-width: 100%; margin-bottom: 25px;">
-    <h2><?php echo __('filters_title'); ?></h2>
-    <form id="seizureFilterForm" method="GET" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+<!-- Filters & Toolbar -->
+<div class="table-toolbar">
+    <form id="seizureFilterForm" method="GET" class="table-toolbar-filters" style="flex: 1; min-width: 0;">
         <input type="hidden" name="view" value="seizures">
-        <div>
-            <label><?php echo __('from'); ?></label>
-            <input type="date" name="date_from" value="<?php echo htmlspecialchars($date_from); ?>">
+
+        <div class="form-field" style="margin-bottom: 0;">
+            <label class="form-label" for="date_from"><?php echo __('from'); ?></label>
+            <input type="date" name="date_from" id="date_from" class="form-input" value="<?php echo htmlspecialchars($date_from); ?>">
         </div>
-        <div>
-            <label><?php echo __('to'); ?></label>
-            <input type="date" name="date_to" value="<?php echo htmlspecialchars($date_to); ?>">
+
+        <div class="form-field" style="margin-bottom: 0;">
+            <label class="form-label" for="date_to"><?php echo __('to'); ?></label>
+            <input type="date" name="date_to" id="date_to" class="form-input" value="<?php echo htmlspecialchars($date_to); ?>">
         </div>
-        <div>
-            <label><?php echo __('zone'); ?></label>
-            <input type="text" name="zone_filter" placeholder="e.g. Central" value="<?php echo htmlspecialchars($zone_filter); ?>">
+
+        <div class="form-field" style="margin-bottom: 0;">
+            <label class="form-label" for="zone_filter"><?php echo __('zone'); ?></label>
+            <input type="text" name="zone_filter" id="zone_filter" class="form-input" placeholder="e.g. Central" value="<?php echo htmlspecialchars($zone_filter); ?>">
         </div>
-        <button type="submit"><?php echo __('btn_apply'); ?></button>
+
+        <button type="submit" class="btn btn-primary" style="height: fit-content; margin-top: auto;"><?php echo __('btn_apply'); ?></button>
     </form>
-    <hr style="margin: 20px 0;">
-    <div class="export-buttons">
-        <a href="#" id="exportSeizureExcelBtn" class="view-btn" style="background: #107c41; color: white;"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> Export to Excel</a>
-        <a href="#" id="exportSeizurePdfBtn" class="view-btn" style="background: #ef4444; color: white;"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Export to PDF</a>
+
+    <div class="table-toolbar-actions">
+        <a href="#" id="exportSeizureExcelBtn" class="btn btn-success">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+            Export to Excel
+        </a>
+        <a href="#" id="exportSeizurePdfBtn" class="btn btn-danger">
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+            Export to PDF
+        </a>
     </div>
 </div>
 
-<?php while($session = $sessions->fetch_assoc()): ?>
-    <div class="card responsive-table-container" style="max-width:100%; margin-bottom:20px;">
-        <h3>
-            <?php echo htmlspecialchars($session['team_leader_name']); ?>
-            — Zone <?php echo htmlspecialchars($session['zone']); ?>
-            — Team <?php echo htmlspecialchars($session['team_number']); ?>
-        </h3>
-        <p style="color:var(--muted);">
-            Inspector: <?php echo htmlspecialchars($session['inspector_name'] ?? $session['username']); ?> |
-            Date: <?php echo $session['seizure_date']; ?>
-        </p>
+<!-- Results -->
+<?php if ($sessions->num_rows > 0): ?>
+    <?php while($session = $sessions->fetch_assoc()): ?>
         <?php
         $items_sql = "SELECT * FROM seizure_items WHERE session_id = ?";
         $items_stmt = $conn->prepare($items_sql);
@@ -84,53 +86,111 @@ $sessions = $stmt->get_result();
         $items_stmt->execute();
         $items_result = $items_stmt->get_result();
         ?>
-        <table class="modern-table responsive-table" style="margin-top:10px;">
-            <thead>
-                <tr><th>Item</th><th>Qty</th><th>Owner</th><th>Location</th><th>Godown No.</th></tr>
-            </thead>
-            <tbody>
-                <?php while($item = $items_result->fetch_assoc()): ?>
-                <tr>
-                    <td data-label="Item"><?php echo htmlspecialchars($item['item_details']); ?></td>
-                    <td data-label="Qty"><?php echo $item['quantity']; ?></td>
-                    <td data-label="Owner"><?php echo htmlspecialchars($item['owner_merchant_name']); ?></td>
-                    <td data-label="Location"><?php echo htmlspecialchars($item['seizure_location']); ?></td>
-                    <td data-label="Godown No."><?php echo htmlspecialchars($item['godown_register_no']); ?></td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-<?php endwhile; ?>
+        <div class="card" style="margin-bottom: var(--space-4);">
+            <div class="card-header">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);">
+                    <div>
+                        <h3 class="card-title" style="font-size: var(--text-lg); margin: 0;">
+                            <?php echo htmlspecialchars($session['team_leader_name']); ?>
+                        </h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-1); font-size: var(--text-sm); color: var(--color-text-muted);">
+                            <span><i class="fa-solid fa-map-marker-alt" aria-hidden="true"></i> Zone <?php echo htmlspecialchars($session['zone']); ?></span>
+                            <span><i class="fa-solid fa-hashtag" aria-hidden="true"></i> Team <?php echo htmlspecialchars($session['team_number']); ?></span>
+                            <span><i class="fa-solid fa-user" aria-hidden="true"></i> <?php echo htmlspecialchars($session['inspector_name'] ?? $session['username']); ?></span>
+                            <span><i class="fa-solid fa-calendar" aria-hidden="true"></i> <?php echo $session['seizure_date']; ?></span>
+                        </div>
+                    </div>
+                    <span class="badge badge-primary"><?php echo $items_result->num_rows; ?> items</span>
+                </div>
+            </div>
 
-<?php if($sessions->num_rows === 0): ?>
-    <p style="text-align:center; color:var(--muted); padding:20px;">No seizure records match these filters.</p>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-wrapper">
+                    <table class="table responsive-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Owner</th>
+                                <th>Location</th>
+                                <th>Godown No.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($item = $items_result->fetch_assoc()): ?>
+                            <tr>
+                                <td data-label="Item"><?php echo htmlspecialchars($item['item_details']); ?></td>
+                                <td data-label="Qty"><?php echo $item['quantity']; ?></td>
+                                <td data-label="Owner"><?php echo htmlspecialchars($item['owner_merchant_name']); ?></td>
+                                <td data-label="Location"><?php echo htmlspecialchars($item['seizure_location']); ?></td>
+                                <td data-label="Godown No."><?php echo htmlspecialchars($item['godown_register_no']); ?></td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <?php endwhile; ?>
+<?php else: ?>
+    <div class="card">
+        <div class="card-body">
+            <div class="empty-state" style="margin: 0; border: none; border-radius: 0; background: transparent;">
+                <div class="empty-state-icon">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                </div>
+                <p class="empty-state-title">No seizure records found</p>
+                <p class="empty-state-message">Try adjusting your filters or date range</p>
+            </div>
+        </div>
+    </div>
 <?php endif; ?>
 
 <!-- Pagination Controls -->
+<?php if ($total_pages > 1): ?>
 <div class="pagination">
     <?php
     $queryParams = $_GET;
     // Previous button
     if ($page > 1) {
         $queryParams['page'] = $page - 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">&laquo; Previous</a>';
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link" aria-label="Previous page">&laquo; Previous</a>';
     }
 
     // Page number links
-    for ($i = 1; $i <= $total_pages; $i++) {
+    $start = max(1, $page - 2);
+    $end = min($total_pages, $page + 2);
+
+    if ($start > 1) {
+        $queryParams['page'] = 1;
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">1</a>';
+        if ($start > 2) {
+            echo '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
+        }
+    }
+
+    for ($i = $start; $i <= $end; $i++) {
         $queryParams['page'] = $i;
         $activeClass = ($i == $page) ? 'active' : '';
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link ' . $activeClass . '">' . $i . '</a>';
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link ' . $activeClass . '"' . ($i == $page ? ' aria-current="page"' : '') . '>' . $i . '</a>';
+    }
+
+    if ($end < $total_pages) {
+        if ($end < $total_pages - 1) {
+            echo '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
+        }
+        $queryParams['page'] = $total_pages;
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">' . $total_pages . '</a>';
     }
 
     // Next button
     if ($page < $total_pages) {
         $queryParams['page'] = $page + 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">Next &raquo;</a>';
+        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link" aria-label="Next page">Next &raquo;</a>';
     }
     ?>
 </div>
+<?php endif; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
