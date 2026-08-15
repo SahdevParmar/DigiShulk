@@ -75,8 +75,8 @@ $result = $stmt->get_result();
     </form>
     <hr style="margin: 20px 0;">
     <div class="export-buttons">
-        <a href="#" id="exportExcelBtn" class="view-btn" style="background: #107c41; color: white;">📄 Export to Excel</a>
-        <a href="#" id="exportPdfBtn" class="view-btn" style="background: #ef4444; color: white;">📋 Export to PDF</a>
+        <a href="#" id="exportExcelBtn" class="view-btn" style="background: #107c41; color: white;"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> Export to Excel</a>
+        <a href="#" id="exportPdfBtn" class="view-btn" style="background: #ef4444; color: white;"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Export to PDF</a>
     </div>
 </div>
 

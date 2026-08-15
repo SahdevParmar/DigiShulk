@@ -36,7 +36,9 @@ include 'header.php';
             <th>Manage</th>
         </tr>";
         while($row= $inspectors->fetch_assoc()){
-            $is_online=(strtotime($row['last_active'])>strtotime('-1 minutes'))? "🟢 Online" : "🔴 Offline";
+            $is_online=(strtotime($row['last_active'])>strtotime('-1 minutes'))
+                ? "<i class='fa-solid fa-circle-check status-online' aria-hidden='true'></i> Online"
+                : "<i class='fa-solid fa-circle-xmark status-offline' aria-hidden='true'></i> Offline";
             echo "<tr>
             <td>".$row['user_id']."</td>
                 <td>".$row['username']."</td>

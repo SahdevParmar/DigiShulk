@@ -16,7 +16,7 @@ if (isset($_SESSION['lang'])) {
 $dictionary = [
     'en' => [
         // Header Nav Links
-        'home' => '🏠 Home', 'manage' => '👥 Inspectors', 'history' => '📋 History', 'settings' => '⚙️ Profile', 'logout' => 'Log Out',
+        'home' => '<i class="fa-solid fa-house" aria-hidden="true"></i> Home', 'manage' => '<i class="fa-solid fa-users-gear" aria-hidden="true"></i> Inspectors', 'history' => '<i class="fa-solid fa-clipboard-list" aria-hidden="true"></i> History', 'settings' => '<i class="fa-solid fa-gear" aria-hidden="true"></i> Profile', 'logout' => 'Log Out',
         
         // Form & Interface Labels (dashboard.php & seizure_form.php)
         'new_entry' => 'New Spot Tax Entry',
@@ -71,7 +71,7 @@ $dictionary = [
 'no_items_error' => 'Please add at least one seized item.',
     ],
     'hi' => [
-        'home' => '🏠 होम', 'manage' => '👥 प्रबंधन', 'history' => '📋 इतिहास', 'settings' => '⚙️ सेटिंग्स', 'logout' => 'लॉग आउट',
+        'home' => '<i class="fa-solid fa-house" aria-hidden="true"></i> होम', 'manage' => '<i class="fa-solid fa-users-gear" aria-hidden="true"></i> प्रबंधन', 'history' => '<i class="fa-solid fa-clipboard-list" aria-hidden="true"></i> इतिहास', 'settings' => '<i class="fa-solid fa-gear" aria-hidden="true"></i> सेटिंग्स', 'logout' => 'लॉग आउट',
         
         'new_entry' => 'नई हाजिर कर प्रविष्टि',
         'shop_name' => 'दुकान / स्टॉल का नाम',
@@ -124,7 +124,7 @@ $dictionary = [
 
     ],
     'gu' => [
-        'home' => '🏠 મુખ્ય પૃષ્ઠ', 'manage' => '👥 મેનેજ કરો', 'history' => '📋 ઇતિહાસ', 'settings' => '⚙️ સેટિંગ્સ', 'logout' => 'લોગઆઉટ',
+        'home' => '<i class="fa-solid fa-house" aria-hidden="true"></i> મુખ્ય પૃષ્ઠ', 'manage' => '<i class="fa-solid fa-users-gear" aria-hidden="true"></i> મેનેજ કરો', 'history' => '<i class="fa-solid fa-clipboard-list" aria-hidden="true"></i> ઇતિહાસ', 'settings' => '<i class="fa-solid fa-gear" aria-hidden="true"></i> સેટિંગ્સ', 'logout' => 'લોગઆઉટ',
         
         'new_entry' => 'નવી સ્પોટ ટેક્સ એન્ટ્રી',
         'shop_name' => 'દુકાન / ગલ્લાનું નામ',

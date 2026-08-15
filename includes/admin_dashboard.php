@@ -84,22 +84,22 @@ $result = $conn->query(
 <div class="dashboard-grid">
 
     <div class="dashboard-card">
-        <h3>💰 Today's Collection</h3>
+        <h3><i class="fa-solid fa-indian-rupee-sign" aria-hidden="true"></i> Today's Collection</h3>
         <h1>₹<?php echo number_format($todayCollection,2); ?></h1>
     </div>
 
     <div class="dashboard-card">
-        <h3>🟢 Online Inspectors</h3>
+        <h3><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Online Inspectors</h3>
         <h1><?php echo $onlineInspectors; ?></h1>
     </div>
 
     <div class="dashboard-card">
-        <h3>🧾 Today's Collections</h3>
+        <h3><i class="fa-solid fa-receipt" aria-hidden="true"></i> Today's Collections</h3>
         <h1><?php echo $todayTransactions; ?></h1>
     </div>
 
     <div class="dashboard-card">
-        <h3>🚨 Today's Seizures</h3>
+        <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Today's Seizures</h3>
         <h1><?php echo $todaySeizures; ?></h1>
     </div>
 
@@ -108,7 +108,7 @@ $result = $conn->query(
 <br>
 <div class="dashboard-card">
 
-    <h2>📡 Live Activity</h2>
+    <h2><i class="fa-solid fa-satellite-dish" aria-hidden="true"></i> Live Activity</h2>
 
     <div id="liveActivity">
 
@@ -151,7 +151,7 @@ $result = $conn->query(
             <td><?php echo htmlspecialchars($row['created_at']); ?></td>
             <td>
 
-            <a class="view-btn" href="receipt.php?id=<?php echo $row['transaction_id']; ?>">👁 View</a>
+            <a class="view-btn" href="receipt.php?id=<?php echo $row['transaction_id']; ?>"><i class="fa-solid fa-eye" aria-hidden="true"></i> View</a>
 
             </td>
             <?php
@@ -194,7 +194,7 @@ function loadActivity() {
                 html += `
                 <div class="activity-item activity-success">
 
-                    <div class="activity-icon">💰</div>
+                    <div class="activity-icon"><i class="fa-solid fa-indian-rupee-sign" aria-hidden="true"></i></div>
 
                     <div class="activity-content">
 

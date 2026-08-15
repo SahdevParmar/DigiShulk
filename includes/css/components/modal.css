@@ -57,3 +57,12 @@
 .close-search-btn:hover {
     color: var(--danger);
 }
+
+.search-item > i,
+.search-section-title > i {
+    width: 24px;
+    color: var(--primary);
+    text-align: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}

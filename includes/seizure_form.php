@@ -96,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
 
 <template id="itemRowTemplate">
     <div class="item-row" style="border:1px dashed rgba(0,0,0,0.15); padding:12px; border-radius:10px; margin-bottom:12px; position:relative;">
-        <button type="button" class="removeItemBtn" style="position:absolute; top:8px; right:8px; width:auto; padding:4px 10px; background:#dc2626;">✕</button>
+        <button type="button" class="removeItemBtn" style="position:absolute; top:8px; right:8px; width:auto; padding:4px 10px; background:#dc2626;"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
         <label><?php echo __('godown_no'); ?></label>
         <input type="text" name="godown_register_no[]">

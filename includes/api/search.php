@@ -48,7 +48,7 @@ while($row=$res->fetch_assoc()){
 
 $results[] = [
     "type" => "shop",
-    "icon" => "🏪",
+    "icon" => "fa-solid fa-store",
     "title" => $row["shop_name"],
     "subtitle" => $row["address"],
     "shop_id" => $row["shop_id"]
@@ -77,7 +77,7 @@ if ($_SESSION['role'] == 'admin') {
     while ($row = $res->fetch_assoc()) {
 
         $results[] = [
-            "icon" => "👤",
+            "icon" => "fa-solid fa-user",
             "title" => $row['username'],
             "subtitle" => "Inspector",
             "url" => "manage_inspectors.php"
@@ -91,13 +91,13 @@ if ($_SESSION['role'] == 'admin') {
 
 $pages = [
 
-["Dashboard","dashboard.php","🏠"],
+["Dashboard","dashboard.php","fa-solid fa-house"],
 
-["Spot Tax","spot_tax.php","🧾"],
+["Spot Tax","spot_tax.php","fa-solid fa-receipt"],
 
-["History","history.php","📜"],
+["History","history.php","fa-solid fa-clock-rotate-left"],
 
-["Settings","settings.php","⚙️"]
+["Settings","settings.php","fa-solid fa-gear"]
 
 ];
 

@@ -111,3 +111,7 @@ tr:hover {
     background: #2563eb;
     color: white;
 }
+
+.view-btn i {
+    margin-right: 6px;
+}

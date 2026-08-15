@@ -50,7 +50,7 @@ $recent=$stmt->get_result();
 
 <div class="dashboard">
 
-    <h1>👋 Welcome</h1>
+    <h1><i class="fa-solid fa-hand" aria-hidden="true"></i> Welcome</h1>
 
     <p class="subtitle">
         Ready to start today's work.
@@ -78,17 +78,17 @@ $recent=$stmt->get_result();
     <div class="quick-actions">
 
         <a href="spot_tax.php" class="action-btn">
-            🧾
+            <i class="fa-solid fa-receipt" aria-hidden="true"></i>
             <strong>Spot Tax</strong>
         </a>
 
         <a href="seizure_form.php" class="action-btn">
-            🚨
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             <strong>Seizure Report</strong>
         </a>
 
         <a href="history.php" class="action-btn">
-            📜
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
             <strong>History</strong>
         </a>
 
