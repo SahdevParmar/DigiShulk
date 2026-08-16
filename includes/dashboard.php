@@ -250,7 +250,12 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
             </div>
         </div>
         <div class="card-body" style="padding-top: var(--space-2);">
-            <canvas id="trendChart" height="200" style="width: 100%; max-height: 280px;"></canvas>
+            <div class="skeleton skeleton-card" id="chartSkeleton" style="height: 200px;">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+            </div>
+            <canvas id="trendChart" height="200" style="width: 100%; max-height: 280px; display: none;"></canvas>
         </div>
     </div>
 
@@ -297,7 +302,7 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
                                             <?=ucfirst($row['status'])?>
                                         </span>
                                     </td>
-                                    <td><?=date("d M Y, h:i A", strtotime($row['created_at']))?></td>
+                                    <td><?=date("d/m/y H:i", strtotime($row['created_at']))?></td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
@@ -323,9 +328,26 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
 <script>
 (function() {
     const ctx = document.getElementById('trendChart');
+    const skeleton = document.getElementById('chartSkeleton');
     if (!ctx) return;
     
     const trendData = <?php echo json_encode($trendData); ?>;
+    const labels = trendData.map(d => d.day);
+    const amounts = trendData.map(d => d.total);
+    const counts = trendData.map(d => d.count);
+    
+    const hasData = amounts.some(a => a > 0);
+    
+    if (!hasData) {
+        // No data - show empty state
+        if (skeleton) skeleton.style.display = 'none';
+        ctx.parentElement.innerHTML = '<div class="empty-state" style="padding: var(--space-8); margin: 0; border: none; border-radius: 0; background: transparent;"><div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: var(--space-3);"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i></div><p class="empty-state-title" style="font-size: var(--text-base);">No collection trends recorded yet</p><p class="empty-state-message" style="font-size: var(--text-sm);">Start collecting to see trends</p></div>';
+        return;
+    }
+    
+    if (skeleton) skeleton.style.display = 'none';
+    ctx.style.display = 'block';
+    
     const labels = trendData.map(d => d.day);
     const amounts = trendData.map(d => d.total);
     const counts = trendData.map(d => d.count);
@@ -397,8 +419,9 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
                     }
                 }
             }
-        });
-    })();
+        }
+    });
+})();
 </script>
 
 <?php include 'footer.php'; ?>

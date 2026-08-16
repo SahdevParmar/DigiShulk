@@ -206,22 +206,22 @@
     }
 
     .sidebar-footer {
-        padding: var(--space-4);
+        padding: var(--space-3);
         border-top: 1px solid var(--color-sidebar-border);
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--space-1);
     }
 
     .user-profile {
-        padding: var(--space-2) 0;
+        padding: 0;
     }
 
     .profile-link {
         display: flex;
         align-items: center;
-        gap: var(--space-3);
-        padding: var(--space-3);
+        gap: var(--space-2);
+        padding: var(--space-2);
         border-radius: var(--radius-md);
         text-decoration: none;
         color: var(--color-sidebar-text);
@@ -233,8 +233,8 @@
     }
 
     .nav-profile-photo {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid var(--color-primary);
@@ -250,7 +250,7 @@
 
     .profile-name {
         font-weight: 600;
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -258,13 +258,18 @@
     }
 
     .profile-role {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         color: var(--color-sidebar-text-muted);
         text-transform: capitalize;
     }
 
     .logout-link {
         color: var(--color-danger);
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
     }
 
     .logout-link:hover {
@@ -728,7 +733,7 @@
     }
 
     /* Mobile Top Bar */
-    .app-topbar {
+    .app-topbar.mobile {
         position: fixed;
         top: 0;
         left: 0;
@@ -744,19 +749,25 @@
         box-shadow: var(--shadow-sm);
     }
 
+    /* Hide desktop profile dropdown on mobile */
+    .profile-dropdown {
+        display: none !important;
+    }
+
     .topbar-center {
         flex: 1;
         display: flex;
         justify-content: center;
-        max-width: 300px;
-        margin: 0 var(--space-4);
+        max-width: 280px;
+        margin: 0 var(--space-3);
     }
 
     .search-btn {
         display: flex;
         align-items: center;
-        gap: var(--space-2);
+        justify-content: center;
         width: 100%;
+        max-width: 240px;
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-muted);
         border: 1px solid var(--color-border);
