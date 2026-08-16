@@ -43,9 +43,140 @@ $stmt->execute();
 $pending = $stmt->get_result()->fetch_assoc();
 
 /* -----------------------------
+   Yesterday for comparison
+------------------------------*/
+$yesterdayTotal = 0;
+$stmt = $conn->prepare("
+SELECT COALESCE(SUM(total_amount),0) AS total
+FROM transactions
+WHERE inspector_id=?
+AND DATE(created_at)=DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+AND status='paid'
+");
+$stmt->bind_param("i", $inspector);
+$stmt->execute();
+$yesterdayTotal = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+
+/* -----------------------------
+   This Week vs Last Week
+------------------------------*/
+$thisWeekTotal = 0;
+$lastWeekTotal = 0;
+$stmt = $conn->prepare("
+SELECT COALESCE(SUM(total_amount),0) AS total
+FROM transactions
+WHERE inspector_id=?
+AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+AND status='paid'
+");
+$stmt->bind_param("i", $inspector);
+$stmt->execute();
+$thisWeekTotal = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmt = $conn->prepare("
+SELECT COALESCE(SUM(total_amount),0) AS total
+FROM transactions
+WHERE inspector_id=?
+AND YEARWEEK(created_at, 1) = YEARWEEK(DATE_SUB(CURDATE(), INTERVAL 7 DAY), 1)
+AND status='paid'
+");
+$stmt->bind_param("i", $inspector);
+$stmt->execute();
+$lastWeekTotal = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+
+$weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $lastWeekTotal) * 100, 1) : 0;
+
+/* -----------------------------
+   Last 7 Days Trend
+------------------------------*/
+$trendData = [];
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $dayName = date('D', strtotime($date));
+    $stmt = $conn->prepare("
+    SELECT SUM(total_amount) total, COUNT(*) count
+    FROM transactions
+    WHERE inspector_id=?
+    AND DATE(created_at) = ?
+    AND status='paid'
+    ");
+    $stmt->bind_param("is", $inspector, $date);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $trendData[] = [
+        'date' => $date,
+        'day' => $dayName,
+        'total' => $row['total'] ?? 0,
+        'count' => $row['count'] ?? 0
+    ];
+}
+
+/* -----------------------------
+   Payment Mode Breakdown Today
+------------------------------*/
+$cashToday = 0;
+$upiToday = 0;
+$stmt = $conn->prepare("
+SELECT payment_mode, SUM(total_amount) as total, COUNT(*) as count
+FROM transactions
+WHERE inspector_id=?
+AND DATE(created_at)=CURDATE()
+AND status='paid'
+GROUP BY payment_mode
+");
+$stmt->bind_param("i", $inspector);
+$stmt->execute();
+$res = $stmt->get_result();
+while($row = $res->fetch_assoc()){
+    if($row['payment_mode'] === 'cash') $cashToday = $row['total'];
+    if($row['payment_mode'] === 'upi') $upiToday = $row['total'];
+}
+
+/* -----------------------------
+   Collection Rate Today
+------------------------------*/
+$totalTodayTxns = 0;
+$paidTodayTxns = 0;
+$stmt = $conn->prepare("
+SELECT status, COUNT(*) as count
+FROM transactions
+WHERE inspector_id=?
+AND DATE(created_at)=CURDATE()
+GROUP BY status
+");
+$stmt->bind_param("i", $inspector);
+$stmt->execute();
+$res = $stmt->get_result();
+while($row = $res->fetch_assoc()){
+    $totalTodayTxns += $row['count'];
+    if($row['status'] === 'paid') $paidTodayTxns = $row['count'];
+}
+$collectionRate = $totalTodayTxns > 0 ? round(($paidTodayTxns / $totalTodayTxns) * 100) : 100;
+
+/* -----------------------------
+   Top Shops This Week
+------------------------------*/
+$topShops = [];
+$stmt = $conn->prepare("
+SELECT shop_name, COALESCE(SUM(total_amount),0) as total, COUNT(*) as count
+FROM transactions
+WHERE inspector_id=?
+AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)
+AND status='paid'
+GROUP BY shop_name
+ORDER BY total DESC
+LIMIT 5
+");
+$stmt->bind_param("i", $inspector);
+$stmt->execute();
+$res = $stmt->get_result();
+while($row = $res->fetch_assoc()){
+    $topShops[] = $row;
+}
+
+/* -----------------------------
    Recent Collections
 ------------------------------*/
-
 $stmt=$conn->prepare("
 SELECT shop_name,total_amount,payment_mode,created_at,status
 FROM transactions
@@ -53,11 +184,15 @@ WHERE inspector_id=?
 ORDER BY created_at DESC
 LIMIT 5
 ");
-
 $stmt->bind_param("i",$inspector);
 $stmt->execute();
-
 $recent=$stmt->get_result();
+
+// Max trend value for chart scaling
+$maxTrend = max(array_column($trendData, 'total'));
+$maxTrend = max($maxTrend, 1);
+
+$dayChange = $yesterdayTotal > 0 ? round((($stats['total'] - $yesterdayTotal) / $yesterdayTotal) * 100, 1) : 0;
 ?>
 
 <div class="page">
@@ -66,17 +201,23 @@ $recent=$stmt->get_result();
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6);">
         <div>
             <h1 style="font-size: var(--text-3xl); font-weight: 700; color: var(--color-text); margin: 0;">Dashboard</h1>
-            <p class="subtitle" style="margin-top: var(--space-1);">Welcome back, <?php echo htmlspecialchars($_SESSION['full_name'] ?? 'Inspector'); ?></p>
+            <p class="subtitle" style="margin-top: var(--space-1);">Welcome back, <?php echo htmlspecialchars($_SESSION['full_name'] ?? 'Inspector'); ?> · <?php echo date('l, F j, Y'); ?></p>
         </div>
     </div>
 
-    <!-- Quick Stats -->
+    <!-- Key Metrics with Insights -->
     <div class="stat-grid">
         <div class="stat-card">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <div class="stat-label">Today's Collection</div>
                     <div class="stat-value">₹<?=number_format($stats['total'],2)?></div>
+                    <?php if ($yesterdayTotal > 0): ?>
+                        <div class="stat-change stat-change-<?= $dayChange >= 0 ? 'positive' : 'negative' ?>" style="margin-top: var(--space-1);">
+                            <i class="fa-solid fa-<?= $dayChange >= 0 ? 'arrow-up' : 'arrow-down' ?>" aria-hidden="true"></i>
+                            <?= $dayChange >= 0 ? '+' : '' ?><?= $dayChange ?>% vs yesterday
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="stat-icon stat-icon-primary">
                     <i class="fa-solid fa-indian-rupee-sign" aria-hidden="true"></i>
@@ -87,11 +228,15 @@ $recent=$stmt->get_result();
         <div class="stat-card">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                    <div class="stat-label">Cash</div>
-                    <div class="stat-value">₹<?=number_format($stats['cash_total'],2)?></div>
+                    <div class="stat-label">This Week</div>
+                    <div class="stat-value">₹<?=number_format($thisWeekTotal,2)?></div>
+                    <div class="stat-change stat-change-<?= $weekChange >= 0 ? 'positive' : 'negative' ?>" style="margin-top: var(--space-1);">
+                        <i class="fa-solid fa-<?= $weekChange >= 0 ? 'arrow-up' : 'arrow-down' ?>" aria-hidden="true"></i>
+                        <?= $weekChange >= 0 ? '+' : '' ?><?= $weekChange ?>% vs last week
+                    </div>
                 </div>
                 <div class="stat-icon stat-icon-success">
-                    <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>
+                    <i class="fa-solid fa-calendar-week" aria-hidden="true"></i>
                 </div>
             </div>
         </div>
@@ -99,11 +244,14 @@ $recent=$stmt->get_result();
         <div class="stat-card">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
-                    <div class="stat-label">UPI</div>
-                    <div class="stat-value">₹<?=number_format($stats['upi_total'],2)?></div>
+                    <div class="stat-label">Collection Rate</div>
+                    <div class="stat-value"><?= $collectionRate ?>%</div>
+                    <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                        <?php echo $paidTodayTxns; ?> of <?php echo $totalTodayTxns; ?> transactions paid
+                    </div>
                 </div>
-                <div class="stat-icon stat-icon-primary">
-                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                <div class="stat-icon stat-icon-<?= $collectionRate >= 80 ? 'success' : ($collectionRate >= 50 ? 'warning' : 'danger') ?>">
+                    <i class="fa-solid fa-<?= $collectionRate >= 80 ? 'check-circle' : ($collectionRate >= 50 ? 'clock' : 'xmark-circle') ?>" aria-hidden="true"></i>
                 </div>
             </div>
         </div>
@@ -126,6 +274,112 @@ $recent=$stmt->get_result();
         </div>
         <?php endif; ?>
     </div>
+
+    <!-- 7-Day Trend Chart -->
+    <div class="card" style="margin-top: var(--space-6);">
+        <div class="card-header">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);">
+                <div>
+                    <h2 class="card-title" style="font-size: var(--text-xl);">7-Day Collection Trend</h2>
+                    <p class="card-subtitle">Your daily paid collections</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding-top: var(--space-2);">
+            <div style="display: flex; align-items: flex-end; gap: var(--space-3); height: 200px; padding: var(--space-2) 0;">
+                <?php foreach ($trendData as $day): 
+                    $height = $maxTrend > 0 ? max(4, ($day['total'] / $maxTrend) * 180) : 4;
+                    $hasData = $day['total'] > 0;
+                ?>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="stat-change stat-change-<?= $hasData ? 'positive' : 'neutral' ?>" 
+                             style="height: <?php echo $height; ?>px; width: 100%; max-width: 40px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: <?= $hasData ? 'linear-gradient(180deg, var(--color-primary-light), var(--color-primary))' : 'var(--color-surface-muted)' ?>; transition: height var(--motion-normal); position: relative;"
+                             title="<?php echo $day['day'] ?>: ₹" . number_format($day['total'], 2) . " (" . $day['count'] . " txns)">
+                            <?php if ($hasData): ?>
+                                <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: var(--text-xs); font-weight: 600; color: var(--color-primary); white-space: nowrap;">₹<?php echo number_format($day['total'], 0); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <span style="font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500;"><?php echo $day['day']; ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Mode Breakdown -->
+    <div class="card" style="margin-top: var(--space-6);">
+        <div class="card-header">
+            <h2 class="card-title" style="font-size: var(--text-xl);">Today's Payment Modes</h2>
+        </div>
+        <div class="card-body" style="padding: var(--space-4) var(--space-6);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4);">
+                <div class="stat-card" style="text-align: center; padding: var(--space-5);">
+                    <div class="stat-icon stat-icon-success" style="margin: 0 auto var(--space-3); width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i>
+                    </div>
+                    <div class="stat-label">Cash</div>
+                    <div class="stat-value">₹<?php echo number_format($cashToday,2); ?></div>
+                    <?php $cashPct = $stats['total'] > 0 ? round(($cashToday / $stats['total']) * 100) : 0; ?>
+                    <div style="font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1);"><?php echo $cashPct; ?>% of total</div>
+                </div>
+                <div class="stat-card" style="text-align: center; padding: var(--space-5);">
+                    <div class="stat-icon stat-icon-primary" style="margin: 0 auto var(--space-3); width: 56px; height: 56px; font-size: 1.5rem;">
+                        <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                    </div>
+                    <div class="stat-label">UPI</div>
+                    <div class="stat-value">₹<?php echo number_format($upiToday,2); ?></div>
+                    <?php $upiPct = $stats['total'] > 0 ? round(($upiToday / $stats['total']) * 100) : 0; ?>
+                    <div style="font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-1);"><?php echo $upiPct; ?>% of total</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Shops This Week -->
+    <?php if (!empty($topShops)): ?>
+    <div class="card" style="margin-top: var(--space-6);">
+        <div class="card-header">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);">
+                <div>
+                    <h2 class="card-title" style="font-size: var(--text-xl);">Top Shops This Week</h2>
+                    <p class="card-subtitle">By collection amount</p>
+                </div>
+                <a href="history.php" class="btn btn-sm btn-ghost">View All</a>
+            </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Shop</th>
+                            <th>Collections</th>
+                            <th>Total Amount</th>
+                            <th>Avg/Collection</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($topShops as $index => $shop): ?>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                                    <div class="avatar avatar-sm" style="background: var(--color-success-light); color: var(--color-success);">
+                                        <?= $index + 1 ?>
+                                    </div>
+                                    <strong><?php echo htmlspecialchars($shop['shop_name']); ?></strong>
+                                </div>
+                            </td>
+                            <td><?php echo $shop['count']; ?></td>
+                            <td style="font-weight: 600; color: var(--color-success);">₹<?php echo number_format($shop['total'],2); ?></td>
+                            <td>₹<?php echo number_format($shop['count'] > 0 ? $shop['total'] / $shop['count'] : 0, 2); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Primary Actions -->
     <div style="margin-top: var(--space-6); margin-bottom: var(--space-6);">
@@ -191,7 +445,7 @@ $recent=$stmt->get_result();
                                     </td>
                                     <td><?=date("d M Y, h:i A", strtotime($row['created_at']))?></td>
                                     <td>
-                                        <a href="payment.php?id=<?= $row['transaction_id'] ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
+                                        <a href="payment.php?id=<?= $row['transaction_id'] ?><?= $row['status'] === 'paid' ? '&paid=1' : '' ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
                                             View
                                         </a>
                                     </td>

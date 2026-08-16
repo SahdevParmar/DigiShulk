@@ -1,55 +1,75 @@
+/* ==========================================
+   Landing Page Styles
+   Uses design tokens from variables.css
+   ========================================== */
+
 .landing-page {
-    min-height: calc(100vh - 50px);
+    min-height: 100dvh;
     display: grid;
     place-items: center;
+    padding: var(--space-6) var(--space-4);
 }
 
+/* Legacy .landing-card - deprecated, use .card from components.css */
 .landing-card {
     width: min(560px, 100%);
-    padding: 48px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    box-shadow: var(--shadow);
+    padding: var(--space-10) var(--space-8);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
 }
 
 .landing-card .logo {
-    margin-bottom: 32px;
+    margin: 0 auto var(--space-6);
+    width: 160px;
+    height: 48px;
 }
 
 .landing-kicker {
-    margin-bottom: 12px;
-    color: var(--primary);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: .08em;
+    margin-bottom: var(--space-3);
+    color: var(--color-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .landing-description,
 .landing-credit {
-    color: var(--muted);
-    line-height: 1.6;
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
 }
 
 .landing-description {
-    margin: 16px 0 28px;
+    margin: var(--space-4) 0 var(--space-8);
+    font-size: var(--text-lg);
+    max-width: 40ch;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .landing-action {
-    display: inline-block;
-    padding: 13px 22px;
-    border-radius: 10px;
-    background: var(--primary);
-    color: #ffffff;
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    font-weight: var(--font-semibold);
+    font-size: var(--text-lg);
+    text-decoration: none;
+    transition: background-color var(--motion-fast) var(--ease-standard);
 }
 
 .landing-action:hover {
-    background: var(--primaryHover);
+    background: var(--color-primary-hover);
 }
 
 .landing-credit {
-    margin-top: 32px;
-    font-size: 13px;
+    margin-top: var(--space-8);
+    font-size: var(--text-xs);
+    color: var(--color-text-subtle);
 }

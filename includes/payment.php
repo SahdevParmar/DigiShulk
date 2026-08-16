@@ -18,9 +18,24 @@ if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['amount'])){
     $payment_mode = $_POST['payment_mode'] ?? '';
     $total_amount = floatval($_POST['amount']);
 
-    if ($shop_name === '' || $shop_address === '' || $phone === '' ||
-        $total_amount <= 0 || !in_array($payment_mode, ['cash', 'upi'], true)) {
-        die("Invalid details entered.");
+    // Validation
+    $errors = [];
+    if ($shop_name === '') $errors['shop_name'] = 'Shop name is required';
+    if ($shop_address === '') $errors['shop_address'] = 'Address is required';
+    if ($phone === '') {
+        $errors['phone'] = 'Phone number is required';
+    } elseif (!preg_match('/^[0-9]{10}$/', $phone)) {
+        $errors['phone'] = 'Enter a valid 10-digit mobile number';
+    }
+    if ($total_amount <= 0) $errors['amount'] = 'Amount must be at least ₹1';
+    if (!in_array($payment_mode, ['cash', 'upi'], true)) $errors['payment_mode'] = 'Select a payment mode';
+
+    if (!empty($errors)) {
+        // Store errors and form data in session, redirect back to form
+        $_SESSION['form_errors'] = $errors;
+        $_SESSION['form_data'] = $_POST;
+        header("Location: spot_tax.php");
+        exit();
     }
 
     $stmt = $conn->prepare("INSERT INTO transactions (inspector_id, stall_type, area_sqft, total_amount, shop_name, shop_address, shopkeeper_phone, payment_mode, status) VALUES (?,?, ?, ?, ?, ?, ?, ?, 'pending')");

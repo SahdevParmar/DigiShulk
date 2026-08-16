@@ -115,7 +115,7 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
 </header>
 
 <!-- Mobile Bottom Navigation (both roles) -->
-<nav class="app-bottom-nav" role="navigation" aria-label="Primary mobile navigation" aria-hidden="true">
+<nav class="app-bottom-nav" role="navigation" aria-label="Primary mobile navigation">
     <?php if ($user_role === 'admin'): ?>
         <a href="admin_dashboard.php" class="bottom-nav-item" data-page="dashboard">
             <span class="nav-icon"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></span>
@@ -232,13 +232,18 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
         'admin_dashboard.php': 'dashboard',
         'dashboard.php': 'dashboard',
         'add_inspector.php': 'inspectors',
+        'edit_inspector.php': 'inspectors',
         'spot_tax.php': 'spot-tax',
         'seizure_form.php': 'seizure',
         'history.php': 'history',
         'settings.php': 'settings',
-        'edit_inspector.php': 'inspectors',
         'payment.php': 'spot-tax',
-        'confirm_cash.php': 'spot-tax'
+        'confirm_cash.php': 'spot-tax',
+        'generate_receipt_pdf.php': 'history',
+        'export_tax_excel.php': 'history',
+        'export_tax_pdf.php': 'history',
+        'export_seizures_excel.php': 'history',
+        'export_seizures_pdf.php': 'history'
     };
     const currentPage = pageMap[currentPath] || 'dashboard';
     

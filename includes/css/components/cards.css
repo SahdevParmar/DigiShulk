@@ -1,19 +1,18 @@
-.card {
-    background: white;
-    padding: 30px;
-    border-radius: 18px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    max-width: 650px;
-    margin: auto;
-}
+/* ==========================================
+   Legacy Card Styles (Deprecated - use components.css instead)
+   Kept only for backward compatibility during transition
+   ========================================== */
 
+/* .card is now defined in components.css with design tokens */
+
+/* Legacy subtitle - use .card-subtitle in components.css */
 .subtitle {
-    color: var(--muted);
+    color: var(--color-text-muted);
     margin-top: -5px;
     margin-bottom: 20px;
 }
 
+/* Legacy dashboard-grid - use .stat-grid in components.css */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -22,13 +21,15 @@
     align-items: stretch;
 }
 
+/* Legacy dashboard-card - DEPRECATED: excessive hover lift, large radius
+   Use .stat-card from components.css instead */
 .dashboard-card {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    padding: 28px;
-    box-shadow: var(--shadow);
-    transition: .25s;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--motion-normal) var(--ease-standard);
     position: relative;
     overflow: hidden;
 }
@@ -40,144 +41,154 @@
     top: 0;
     height: 5px;
     width: 4px;
-    background: var(--primary);
+    background: var(--color-primary);
 }
 
+/* Reduced hover effect - no lift transform */
 .dashboard-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 45px rgba(15, 23, 42, .12);
+    box-shadow: var(--shadow-md);
 }
 
 .dashboard-card h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 12px;
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3);
     text-transform: uppercase;
-    letter-spacing: .8px;
+    letter-spacing: 0.08em;
 }
 
 .dashboard-card h1 {
-    font-size: 42px;
-    font-weight: 700;
+    font-size: var(--text-4xl);
+    font-weight: var(--font-bold);
     margin: 0;
-    color: var(--text);
-    line-height: 1;
+    color: var(--color-text);
+    line-height: var(--leading-tight);
 }
 
 .dashboard-card small {
     display: block;
-    margin-top: 14px;
-    font-size: 13px;
-    color: var(--muted);
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
 }
 
+/* Legacy dashboard-icon - use .stat-icon in components.css */
 .dashboard-icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 14px;
-    background: #eef4ff;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--color-primary-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
-    margin-bottom: 18px;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: var(--space-4);
 }
 
+/* Legacy action-btn - DEPRECATED: excessive hover lift, large radius
+   Use .btn .btn-lg from components.css instead */
 .action-btn {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    font-size: 28px;
-    color: var(--primary);
-    transition: .25s;
-    box-shadow: var(--shadow);
+    gap: var(--space-2);
+    font-size: var(--text-3xl);
+    color: var(--color-primary);
+    transition: background-color var(--motion-fast) var(--ease-standard),
+                color var(--motion-fast) var(--ease-standard),
+                border-color var(--motion-fast) var(--ease-standard);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
 }
 
 .action-btn > i {
-    font-size: 28px;
+    font-size: var(--text-3xl);
 }
 
 .dashboard-card h3 i {
     width: 18px;
-    margin-right: 6px;
-    color: var(--primary);
+    margin-right: var(--space-2);
+    color: var(--color-primary);
 }
 
+/* Reduced hover - no lift transform */
 .action-btn:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-4px);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
 }
 
+/* Legacy activity-card - use .card from components.css */
 .activity-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-    margin-top: 30px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    margin-top: var(--space-6);
 }
 
 .activity-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-4);
 }
 
 .activity-header h2 {
     margin: 0;
-    font-size: 22px;
+    font-size: var(--text-xl);
 }
 
 .activity-header span {
-    font-size: 14px;
-    color: var(--muted);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
 }
 
 .activity-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-3);
 }
 
 .activity-item {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
-    padding: 16px;
-    border-radius: 16px;
-    transition: .25s;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    transition: background-color var(--motion-fast) var(--ease-standard);
 }
 
 .activity-item:hover {
-    background: #f8fbff;
+    background: var(--color-surface-muted);
 }
 
 .activity-icon {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    background: #eef4ff;
+    font-size: 1.25rem;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
     flex-shrink: 0;
 }
 
 .status-online {
-    color: var(--success);
+    color: var(--color-success);
 }
 
 .status-offline {
-    color: var(--danger);
+    color: var(--color-danger);
 }
 
 .activity-content {
@@ -185,38 +196,38 @@
 }
 
 .activity-title {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
+    font-weight: var(--font-semibold);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-1);
 }
 
 .activity-subtitle {
-    font-size: 14px;
-    color: var(--muted);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
 }
 
 .activity-time {
-    font-size: 13px;
-    color: #9ca3af;
-    margin-top: 6px;
+    font-size: var(--text-xs);
+    color: var(--color-text-subtle);
+    margin-top: var(--space-1);
 }
 
 .activity-success .activity-icon {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--color-success-light);
+    color: var(--color-success);
 }
 
 .activity-warning .activity-icon {
-    background: #fef3c7;
-    color: #b45309;
+    background: var(--color-warning-light);
+    color: var(--color-warning);
 }
 
 .activity-danger .activity-icon {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--color-danger-light);
+    color: var(--color-danger);
 }
 
 .activity-info .activity-icon {
-    background: #dbeafe;
-    color: #2563eb;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
 }

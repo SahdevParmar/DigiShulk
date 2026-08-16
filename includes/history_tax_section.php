@@ -139,7 +139,7 @@ $result = $stmt->get_result();
                                 </td>
                                 <td data-label="<?php echo __('th_time'); ?>"><?php echo date('d M Y, h:i A', strtotime($row['created_at'])); ?></td>
                                 <td>
-                                    <a href="payment.php?id=<?php echo $row['transaction_id']; ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
+                                    <a href="payment.php?id=<?php echo $row['transaction_id']; ?><?php echo $row['status'] === 'paid' ? '&paid=1' : ''; ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
                                         View
                                     </a>
                                 </td>
