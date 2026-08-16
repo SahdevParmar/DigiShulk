@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
 
         <!-- Step Indicator -->
         <nav aria-label="Seizure report steps" style="display: flex; justify-content: center; margin-bottom: var(--space-8); position: relative;">
-            <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--color-border); transform: translateY(-50%); z-index: 1;" aria-hidden="true"></div>
+            <div style="position: absolute; top: calc(50% + 20px); left: 0; right: 0; height: 2px; background: var(--color-border); transform: translateY(-50%); z-index: 1;" aria-hidden="true"></div>
             <ol style="display: flex; gap: var(--space-4); z-index: 2; list-style: none; padding: 0; margin: 0;">
                 <li class="step-indicator active" data-step="1" style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2);" aria-current="step">
                     <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;" aria-label="Step 1">1</div>
@@ -90,31 +90,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
                     <p style="color: var(--color-text-muted);">Step 1: Session Details</p>
                 </div>
 
-                <fieldset>
-                    <legend style="font-size: var(--text-sm); font-weight: 600; color: var(--color-text); margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border);">Session Details</legend>
+                <div class="form-section">
+                    <h3 style="font-size: var(--text-sm); font-weight: 600; color: var(--color-text); margin-bottom: var(--space-4); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border);">Session Details</h3>
 
                     <div class="form-grid form-grid-2">
                         <div class="form-field">
-                            <label class="form-label" for="team_leader_name"><?php echo __('team_leader'); ?> <span class="required" aria-hidden="true">*</span></label>
+                            <label class="form-label" for="team_leader_name"><?php echo __('team_leader'); ?> <span class="required" aria-hidden="true"></span></label>
                             <input type="text" name="team_leader_name" id="team_leader_name" class="form-input" required>
                         </div>
                         <div class="form-field">
-                            <label class="form-label" for="zone"><?php echo __('zone'); ?> <span class="required" aria-hidden="true">*</span></label>
+                            <label class="form-label" for="zone"><?php echo __('zone'); ?> <span class="required" aria-hidden="true"></span></label>
                             <input type="text" name="zone" id="zone" class="form-input" placeholder="e.g. Central" required>
                         </div>
                     </div>
 
                     <div class="form-grid form-grid-2">
                         <div class="form-field">
-                            <label class="form-label" for="team_number"><?php echo __('team_no'); ?> <span class="required" aria-hidden="true">*</span></label>
+                            <label class="form-label" for="team_number"><?php echo __('team_no'); ?> <span class="required" aria-hidden="true"></span></label>
                             <input type="text" name="team_number" id="team_number" class="form-input" required>
                         </div>
                         <div class="form-field">
-                            <label class="form-label" for="seizure_date"><?php echo __('date'); ?> <span class="required" aria-hidden="true">*</span></label>
+                            <label class="form-label" for="seizure_date"><?php echo __('date'); ?> <span class="required" aria-hidden="true"></span></label>
                             <input type="date" name="seizure_date" id="seizure_date" class="form-input" value="<?php echo date('Y-m-d'); ?>" required>
                         </div>
                     </div>
-                </fieldset>
+                </div>
 
                 <div class="form-actions" style="margin-top: var(--space-6);">
                     <button type="button" class="btn btn-primary btn-block" onclick="nextStep(2)">
@@ -215,12 +215,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
             </div>
 
             <div class="form-field" style="margin-bottom: 0; grid-column: 1 / -1;">
-                <label class="form-label"><?php echo __('item_details'); ?> <span class="required" aria-hidden="true">*</span></label>
+                <label class="form-label"><?php echo __('item_details'); ?> <span class="required" aria-hidden="true"></span></label>
                 <input type="text" name="item_details[]" class="form-input" placeholder="e.g. Rekdi / Cabin" required>
             </div>
 
             <div class="form-field" style="margin-bottom: 0;">
-                <label class="form-label"><?php echo __('quantity'); ?> <span class="required" aria-hidden="true">*</span></label>
+                <label class="form-label"><?php echo __('quantity'); ?> <span class="required" aria-hidden="true"></span></label>
                 <input type="number" name="quantity_seized[]" class="form-input" min="1" required>
             </div>
 

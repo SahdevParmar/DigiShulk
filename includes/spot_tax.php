@@ -20,7 +20,7 @@ include 'header.php';
 
         <!-- Step Indicator -->
         <nav aria-label="Collection steps" style="display: flex; justify-content: center; margin-bottom: var(--space-8); position: relative;">
-            <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--color-border); transform: translateY(-50%); z-index: 1;" aria-hidden="true"></div>
+            <div style="position: absolute; top: calc(50% + 20px); left: 0; right: 0; height: 2px; background: var(--color-border); transform: translateY(-50%); z-index: 1;" aria-hidden="true"></div>
             <ol style="display: flex; gap: var(--space-4); z-index: 2; list-style: none; padding: 0; margin: 0;">
                 <li class="step-indicator active" data-step="1" style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2);" aria-current="step">
                     <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;" aria-label="Step 1">1</div>
@@ -47,7 +47,7 @@ include 'header.php';
                 </div>
 
                 <div class="form-field">
-                    <label class="form-label" for="shop_name"><?php echo __('shop_name'); ?> <span class="required" aria-hidden="true">*</span></label>
+                    <label class="form-label" for="shop_name"><?php echo __('shop_name'); ?> <span class="required" aria-hidden="true"></span></label>
                     <div class="autocomplete-wrapper" style="position: relative;">
                         <input
                             type="text"
@@ -72,7 +72,7 @@ include 'header.php';
 
                 <div class="form-grid form-grid-2">
                     <div class="form-field">
-                        <label class="form-label" for="phone"><?php echo __('phone'); ?> <span class="required" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="phone"><?php echo __('phone'); ?> <span class="required" aria-hidden="true"></span></label>
                         <input
                             type="tel"
                             id="phone"
@@ -92,7 +92,7 @@ include 'header.php';
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label" for="shop_address"><?php echo __('address'); ?> <span class="required" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="shop_address"><?php echo __('address'); ?> <span class="required" aria-hidden="true"></span></label>
                         <input
                             type="text"
                             id="shop_address"
@@ -124,7 +124,7 @@ include 'header.php';
                 </div>
 
                 <div class="form-field">
-                    <label class="form-label" for="stall_type">Select Stall Type <span class="required" aria-hidden="true">*</span></label>
+                    <label class="form-label" for="stall_type">Select Stall Type <span class="required" aria-hidden="true"></span></label>
                     <select name="stall_type" id="stall_type" class="form-select" required onchange="toggleOtherType()">
                         <option value="">-- Select --</option>
                         <option value="Rekdi" <?= ($form_data['stall_type'] ?? '') === 'Rekdi' ? 'selected' : '' ?>>Rekdi</option>
@@ -135,7 +135,7 @@ include 'header.php';
                 </div>
 
                 <div class="form-field" id="stall_type_other_wrapper" style="display: <?= (($form_data['stall_type'] ?? '') === 'Other') ? 'block' : 'none' ?>;">
-                    <label class="form-label" for="stall_type_other">Specify Stall Type <span class="required" aria-hidden="true">*</span></label>
+                    <label class="form-label" for="stall_type_other">Specify Stall Type <span class="required" aria-hidden="true"></span></label>
                     <input
                         type="text"
                         name="stall_type_other"
@@ -148,7 +148,7 @@ include 'header.php';
 
                 <div class="form-grid form-grid-2">
                     <div class="form-field">
-                        <label class="form-label" for="amount">Amount to Charge (₹) <span class="required" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="amount">Amount to Charge (₹) <span class="required" aria-hidden="true"></span></label>
                         <input
                             type="number"
                             name="amount"
@@ -169,7 +169,7 @@ include 'header.php';
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label" for="size"><?php echo __('enter_size'); ?> <span class="required" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="size"><?php echo __('enter_size'); ?> <span class="required" aria-hidden="true"></span></label>
                         <input
                             type="number"
                             name="size"
@@ -186,7 +186,7 @@ include 'header.php';
                 </div>
 
                 <div class="form-field">
-                    <label class="form-label" for="payment_mode"><?php echo __('payment_mode'); ?> <span class="required" aria-hidden="true">*</span></label>
+                    <label class="form-label" for="payment_mode"><?php echo __('payment_mode'); ?> <span class="required" aria-hidden="true"></span></label>
                     <select name="payment_mode" id="payment_mode" class="form-select <?= isset($form_errors['payment_mode']) ? 'form-input-error' : '' ?>" required aria-invalid="<?= isset($form_errors['payment_mode']) ? 'true' : 'false' ?>">
                         <option value="">-- Select Payment Mode --</option>
                         <option value="cash" <?= ($form_data['payment_mode'] ?? '') === 'cash' ? 'selected' : '' ?>><?php echo __('cash'); ?></option>

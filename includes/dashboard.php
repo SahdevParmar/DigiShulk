@@ -203,7 +203,7 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
     <div style="margin-bottom: var(--space-6);">
         <a href="spot_tax.php" class="btn btn-primary btn-block btn-lg" style="padding: var(--space-5); font-size: var(--text-lg);">
             <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            + New Spot Collection
+            New Spot Collection
         </a>
     </div>
 

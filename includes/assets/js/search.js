@@ -39,6 +39,13 @@ function openSearch() {
     });
     document.body.style.overflow = 'hidden';
     selectedIndex = -1;
+    
+    // Hide desktop search input if visible
+    const spotlightDesktop = document.getElementById('spotlightDesktop');
+    if (spotlightDesktop) {
+        spotlightDesktop.style.display = 'none';
+    }
+    
     loadRecentSearches();
     renderQuickActions();
     trapFocus(overlay);

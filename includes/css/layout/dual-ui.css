@@ -1,6 +1,6 @@
 /* ==========================================
    Unified Responsive App Shell (Replaces dual-ui.css)
-   Desktop: Left sidebar + main content
+   Desktop: Left sidebar + main content (CSS Grid)
    Mobile: Top bar + Bottom nav + Main content (sidebar as drawer)
    ========================================== */
 
@@ -21,34 +21,73 @@
     flex-direction: column;
 }
 
-/* Main content area */
-.app-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Allows flex children to scroll */
-}
+/* ==========================================
+   Desktop Layout (>= 769px) - CSS Grid
+   ========================================== */
+@media (min-width: 769px) {
+    .app-shell {
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        grid-template-rows: var(--topbar-height) 1fr;
+        grid-template-areas:
+            "sidebar topbar"
+            "sidebar main";
+    }
 
-/* Page content wrapper - handles both .page and direct children */
-.app-main > .page,
-.app-main > div:not(.page),
-.app-main > section,
-.app-main > main > div {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    box-sizing: border-box;
-    flex: 1;
-}
+    .app-sidebar {
+        grid-area: sidebar;
+        height: 100dvh;
+        background: var(--color-sidebar-bg);
+        border-right: 1px solid var(--color-sidebar-border);
+        display: flex;
+        flex-direction: column;
+        z-index: 1000;
+        flex-shrink: 0;
+        overflow-y: auto;
+    }
 
-.page {
-    flex: 1;
-    padding: var(--space-6) var(--space-4);
-}
+    .app-topbar.desktop {
+        grid-area: topbar;
+        height: var(--topbar-height);
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        z-index: 900;
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 0;
+    }
 
-/* Ensure direct child divs of app-main get proper padding if they don't use .page */
-.app-main > div:not(.page) {
-    padding: var(--space-6) var(--space-4);
+    .app-main {
+        grid-area: main;
+        min-height: calc(100dvh - var(--topbar-height));
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .app-main > .page,
+    .app-main > div:not(.page),
+    .app-main > section,
+    .app-main > main > div {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        flex: 1;
+    }
+
+    .page {
+        flex: 1;
+        padding: var(--space-6) var(--space-4);
+    }
+
+    .app-main > div:not(.page) {
+        padding: var(--space-6) var(--space-4);
+    }
 }
 
 @media (max-width: 768px) {
@@ -61,19 +100,11 @@
 }
 
 /* ==========================================
-    Desktop Sidebar (>= 769px)
+    Desktop Sidebar (>= 769px) - Grid Column
     ========================================== */
 @media (min-width: 769px) {
-    .app-shell {
-        flex-direction: row;
-    }
-
     .app-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: var(--sidebar-width);
-        height: 100vh;
+        grid-area: sidebar;
         height: 100dvh;
         background: var(--color-sidebar-bg);
         border-right: 1px solid var(--color-sidebar-border);
@@ -81,8 +112,7 @@
         flex-direction: column;
         z-index: 1000;
         flex-shrink: 0;
-        transition: transform var(--motion-normal) var(--ease-standard),
-                    width var(--motion-normal) var(--ease-standard);
+        overflow-y: auto;
     }
 
     .app-sidebar .sidebar-brand {
@@ -246,12 +276,6 @@
         color: white;
     }
 
-    /* Main content offset for sidebar */
-    .app-main {
-        margin-left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
-    }
-
     /* Hide mobile-only elements on desktop */
     .app-topbar.mobile,
     .app-bottom-nav,
@@ -261,13 +285,9 @@
     }
 
     /* ==========================================
-       Desktop Topbar (>= 769px)
+       Desktop Topbar (>= 769px) - Sticky in Grid
        ========================================== */
     .app-topbar.desktop {
-        position: fixed;
-        top: 0;
-        left: var(--sidebar-width);
-        right: 0;
         height: var(--topbar-height);
         background: var(--color-surface);
         border-bottom: 1px solid var(--color-border);
@@ -277,6 +297,8 @@
         padding: 0 var(--space-6);
         z-index: 900;
         box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 0;
     }
 
     .topbar-start {
@@ -720,7 +742,6 @@
         padding: 0 var(--space-4);
         z-index: 1000;
         box-shadow: var(--shadow-sm);
-    }
     }
 
     .topbar-center {
