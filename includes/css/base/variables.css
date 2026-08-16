@@ -4,7 +4,8 @@
   /* ==========================================
      Color System (Semantic)
      ========================================== */
-  --color-bg: #f4f7fb;
+  /* Light theme (default) */
+  --color-bg: #f5f7fa;
   --color-surface: #ffffff;
   --color-surface-muted: #f1f3f5;
   --color-surface-hover: #e9ecef;
@@ -32,6 +33,27 @@
   --color-text-muted: #6b7280;
   --color-text-subtle: #9ca3af;
   --color-text-inverse: #ffffff;
+
+  /* ==========================================
+     Hybrid Theme Tokens (Sidebar, Bottom Nav, Charts)
+     ========================================== */
+  --color-sidebar-bg: #0f172a;
+  --color-sidebar-border: #1e293b;
+  --color-sidebar-text: #f1f5f9;
+  --color-sidebar-text-muted: #94a3b8;
+  --color-sidebar-hover: #1e293b;
+  --color-sidebar-active: #2563eb;
+  --color-sidebar-active-text: #ffffff;
+
+  --color-bottomnav-bg: #0f172a;
+  --color-bottomnav-border: #1e293b;
+  --color-bottomnav-text: #94a3b8;
+  --color-bottomnav-active: #3b82f6;
+
+  --color-chart-bg: #0f172a;
+  --color-chart-grid: #1e293b;
+  --color-chart-text: #94a3b8;
+  --color-chart-tooltip-bg: #0f172a;
 
   /* ==========================================
      Spacing Scale (4px base)

@@ -50,8 +50,12 @@
         max-height: calc(100dvh - 80px);
     }
 
-    /* History Page: Table to Cards */
-    .responsive-table-container {
+    /* ==========================================
+       Table to Cards Conversion (Mobile)
+       ========================================== */
+    .responsive-table-container,
+    .table-card,
+    .card .table-wrapper {
         border: none;
         box-shadow: none;
         background: transparent;
@@ -59,12 +63,17 @@
         overflow: visible;
     }
 
-    .modern-table.responsive-table {
+    .modern-table.responsive-table,
+    .table.responsive-table,
+    .table-card .modern-table,
+    .card .table-wrapper .modern-table {
         min-width: 0;
     }
 
     .responsive-table,
-    .responsive-table tbody {
+    .responsive-table tbody,
+    .table.responsive-table,
+    .table.responsive-table tbody {
         display: block;
         width: 100%;
         background: transparent;
@@ -72,55 +81,109 @@
         box-shadow: none;
     }
 
-    .responsive-table thead {
+    .responsive-table thead,
+    .table.responsive-table thead {
         display: none;
     }
 
-    .responsive-table tr {
+    .responsive-table tr,
+    .table.responsive-table tr {
         display: block;
         width: 100%;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         background: var(--color-surface);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
-        padding: 20px;
+        padding: var(--space-4);
     }
 
-    .responsive-table td {
+    .responsive-table td,
+    .table.responsive-table td {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 15px;
+        gap: var(--space-3);
         width: 100%;
-        padding: 12px 0;
+        padding: var(--space-2) 0;
         border: none;
         border-bottom: 1px solid var(--color-border);
         text-align: right;
         word-break: break-word;
-        font-size: 14px;
+        font-size: var(--text-sm);
     }
 
-    .responsive-table td:empty {
+    .responsive-table td:empty,
+    .table.responsive-table td:empty {
         display: none;
     }
 
-    .responsive-table td:last-child {
+    .responsive-table td:last-child,
+    .table.responsive-table td:last-child {
         border-bottom: none;
+        padding-bottom: 0;
     }
 
-    .responsive-table td::before {
+    .responsive-table td::before,
+    .table.responsive-table td::before {
         content: attr(data-label);
         font-weight: 600;
         color: var(--color-text-muted);
         text-align: left;
+        flex-shrink: 0;
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Action column styling in card mode */
+    .responsive-table td:last-child:has(.table-action-btn),
+    .table.responsive-table td:last-child:has(.table-action-btn),
+    .responsive-table td:last-child:has(.btn),
+    .table.responsive-table td:last-child:has(.btn) {
+        justify-content: flex-end;
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--color-border);
+        border-bottom: none;
+        margin-top: var(--space-2);
+    }
+
+    .responsive-table td:last-child:has(.table-action-btn)::before,
+    .table.responsive-table td:last-child:has(.table-action-btn)::before,
+    .responsive-table td:last-child:has(.btn)::before,
+    .table.responsive-table td:last-child:has(.btn)::before {
+        content: "Actions";
+    }
+
+    /* Empty state in table */
+    .responsive-table td[colspan],
+    .table.responsive-table td[colspan] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: var(--space-8) !important;
+        text-align: center !important;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .responsive-table td[colspan]::before,
+    .table.responsive-table td[colspan]::before {
+        content: none !important;
+    }
+
+    /* Badge styling in cards */
+    .responsive-table .badge,
+    .table.responsive-table .badge {
         flex-shrink: 0;
     }
 }
 
 /* Hide responsive table label styles on desktop */
 @media (min-width: 769px) {
-    .responsive-table td::before {
+    .responsive-table td::before,
+    .table.responsive-table td::before {
         display: none;
     }
 }

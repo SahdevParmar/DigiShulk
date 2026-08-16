@@ -332,7 +332,7 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                     label: 'Collections (₹)',
                     data: amounts,
                     backgroundColor: gradient,
-                    borderColor: 'rgb(37, 99, 235)',
+                    borderColor: 'rgb(59, 130, 246)',
                     borderWidth: 1,
                     borderRadius: 6,
                     borderSkipped: false,
@@ -349,9 +349,9 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#111827',
-                        titleColor: '#ffffff',
-                        bodyColor: '#f3f4f6',
+                        backgroundColor: '#0f172a',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0',
                         padding: 12,
                         cornerRadius: 8,
                         titleFont: { size: 13, weight: '600' },
@@ -369,14 +369,26 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                 },
                 scales: {
                     x: {
-                        grid: { display: false },
+                        grid: { color: '#1e293b', display: false },
                         ticks: {
-                            color: '#9ca3af',
+                            color: '#94a3b8',
                             font: { size: 11 }
                         }
                     },
                     y: {
                         beginAtZero: true,
+                        grid: { color: '#1e293b' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
                         grid: {
                             color: '#e5e7eb',
                             drawBorder: false
@@ -609,7 +621,7 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                             </td>
                             <td><?=htmlspecialchars($row['created_at'])?></td>
                             <td>
-                                <a href="payment.php?id=<?php echo $row['transaction_id']; ?>&paid=1" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
+                                <a href="transaction_detail.php?id=<?php echo $row['transaction_id']; ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
                                     <i class="fa-solid fa-eye" aria-hidden="true"></i>
                                     View
                                 </a>
