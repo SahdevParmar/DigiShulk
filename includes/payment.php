@@ -118,6 +118,30 @@ if($txn['status'] === 'paid' || $show_receipt){
                 </tbody>
             </table>
 
+            <!-- Verification QR Code -->
+            <div style="margin-bottom: var(--space-6); padding: var(--space-4); background: var(--color-surface-muted); border-radius: var(--radius-md); text-align: center;">
+                <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-3);">Scan to verify receipt</p>
+                <div id="receiptQR" style="display: inline-block; padding: var(--space-2); background: white; border-radius: var(--radius-sm);"></div>
+                <p style="font-size: var(--text-xs); color: var(--color-text-subtle); margin-top: var(--space-2);">
+                    Receipt: <?php echo htmlspecialchars($txn['receipt_number'] ?? ''); ?>
+                </p>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+            <script>
+            (function() {
+                var qrData = "DigiShulk Receipt Verification\nReceipt: <?php echo htmlspecialchars($txn['receipt_number'] ?? ''); ?>\nAmount: ₹<?php echo number_format($txn['total_amount'],2); ?>\nShop: <?php echo htmlspecialchars($txn['shop_name']); ?>\nDate: <?php echo date('d M Y, h:i A', strtotime($txn['created_at'])); ?>\nTransaction ID: <?php echo $transaction_id; ?>";
+                new QRCode(document.getElementById("receiptQR"), {
+                    text: qrData,
+                    width: 120,
+                    height: 120,
+                    colorDark: "#111827",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            })();
+            </script>
+
             <div class="form-actions" style="flex-direction: column; gap: var(--space-2); border-top: none; padding-top: 0; margin-top: 0;" class="no-print">
                 <div style="display: flex; gap: var(--space-2); width: 100%;">
                     <button onclick="window.print()" class="btn btn-secondary btn-block" style="flex: 1;">

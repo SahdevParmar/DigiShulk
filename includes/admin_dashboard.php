@@ -305,25 +305,95 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
             </div>
         </div>
         <div class="card-body" style="padding-top: var(--space-2);">
-            <div style="display: flex; align-items: flex-end; gap: var(--space-3); height: 200px; padding: var(--space-2) 0;">
-                <?php foreach ($trendData as $day): 
-                    $height = $maxTrend > 0 ? max(4, ($day['total'] / $maxTrend) * 180) : 4;
-                    $hasData = $day['total'] > 0;
-                ?>
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); min-width: 0;">
-                        <div class="stat-change stat-change-<?= $hasData ? 'positive' : 'neutral' ?>" 
-                             style="height: <?php echo $height; ?>px; width: 100%; max-width: 40px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: <?= $hasData ? 'linear-gradient(180deg, var(--color-primary-light), var(--color-primary))' : 'var(--color-surface-muted)' ?>; transition: height var(--motion-normal); position: relative;"
-                             title="<?php echo $day['day'] ?>: ₹" . number_format($day['total'], 2) . " (" . $day['count'] . " txns)">
-                            <?php if ($hasData): ?>
-                                <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: var(--text-xs); font-weight: 600; color: var(--color-primary); white-space: nowrap;">₹<?php echo number_format($day['total'], 0); ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <span style="font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500;"><?php echo $day['day']; ?></span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+            <canvas id="trendChart" height="200" style="width: 100%; max-height: 300px;"></canvas>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+    (function() {
+        const ctx = document.getElementById('trendChart');
+        if (!ctx) return;
+        
+        const trendData = <?php echo json_encode($trendData); ?>;
+        const labels = trendData.map(d => d.day);
+        const amounts = trendData.map(d => d.total);
+        const counts = trendData.map(d => d.count);
+        
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)');
+        gradient.addColorStop(1, 'rgba(37, 99, 235, 0.05)');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Collections (₹)',
+                    data: amounts,
+                    backgroundColor: gradient,
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 40,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#111827',
+                        titleColor: '#ffffff',
+                        bodyColor: '#f3f4f6',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 13, weight: '600' },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                const idx = context.dataIndex;
+                                return [
+                                    'Amount: ₹' + amounts[idx].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+                                    'Transactions: ' + counts[idx]
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: { size: 11 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5e7eb',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })();
+    </script>
 
     <!-- Payment Mode Breakdown -->
     <div class="card" style="margin-top: var(--space-6);">
