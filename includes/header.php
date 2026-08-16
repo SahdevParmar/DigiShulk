@@ -44,7 +44,7 @@ $user_role = $_SESSION['role'] ?? 'guest';
     </style>
 </head>
 <body>
-
+<div class="app-shell">
 <?php
 // Load shared responsive navigation (replaces admin_sidebar.php + inspector_nav.php)
 if ($user_role !== 'guest') {
