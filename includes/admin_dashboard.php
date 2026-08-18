@@ -307,20 +307,14 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
             </div>
         </div>
         <div class="card-body" style="padding-top: var(--space-2);">
-            <div class="skeleton skeleton-card" id="chartSkeleton" style="height: 200px;">
-                <div class="skeleton-title"></div>
-                <div class="skeleton-text"></div>
-                <div class="skeleton-text short"></div>
-            </div>
-            <canvas id="trendChart" height="200" style="width: 100%; max-height: 300px; display: none;"></canvas>
+            <canvas id="trendChart" height="200" style="width: 100%; max-height: 300px;"></canvas>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
     (function() {
         const ctx = document.getElementById('trendChart');
-        const skeleton = document.getElementById('chartSkeleton');
         if (!ctx) return;
         
         const trendData = <?php echo json_encode($trendData); ?>;
@@ -332,13 +326,9 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
         
         if (!hasData) {
             // No data - show empty state
-            if (skeleton) skeleton.style.display = 'none';
             ctx.parentElement.innerHTML = '<div class="empty-state" style="padding: var(--space-8); margin: 0; border: none; border-radius: 0; background: transparent;"><div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: var(--space-3);"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i></div><p class="empty-state-title" style="font-size: var(--text-base);">No collection trends recorded yet</p><p class="empty-state-message" style="font-size: var(--text-sm);">Start collecting to see trends</p></div>';
             return;
         }
-        
-        if (skeleton) skeleton.style.display = 'none';
-        ctx.style.display = 'block';
         
         const labels = trendData.map(d => d.day);
         const amounts = trendData.map(d => d.total);
@@ -390,24 +380,24 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                             }
                         }
                     }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: '#1e293b', display: false },
-                    ticks: {
-                        color: '#94a3b8',
-                        font: { size: 11 }
-                    }
                 },
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#1e293b' },
-                    ticks: {
-                        color: '#94a3b8',
-                        font: { size: 11 },
-                        callback: function(value) {
-                            return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
+                scales: {
+                    x: {
+                        grid: { color: '#1e293b', display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#1e293b' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
+                            }
                         }
                     }
                 }

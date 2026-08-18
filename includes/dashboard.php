@@ -250,12 +250,7 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
             </div>
         </div>
         <div class="card-body" style="padding-top: var(--space-2);">
-            <div class="skeleton skeleton-card" id="chartSkeleton" style="height: 200px;">
-                <div class="skeleton-title"></div>
-                <div class="skeleton-text"></div>
-                <div class="skeleton-text short"></div>
-            </div>
-            <canvas id="trendChart" height="200" style="width: 100%; max-height: 280px; display: none;"></canvas>
+            <canvas id="trendChart" height="200" style="width: 100%; max-height: 280px;"></canvas>
         </div>
     </div>
 
