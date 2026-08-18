@@ -107,13 +107,6 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
     </div>
 
     <div class="topbar-end">
-        <div class="topbar-notifications">
-            <button class="notification-btn" aria-label="Notifications">
-                <i class="fa-solid fa-bell" aria-hidden="true"></i>
-                <span class="notification-badge" id="notificationBadge" style="display: none;">3</span>
-            </button>
-        </div>
-
         <div class="topbar-profile">
             <button class="profile-trigger" id="profileTrigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" type="button">
                 <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="" aria-hidden="true">
@@ -152,9 +145,6 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
 <!-- Mobile Top Bar (both roles) -->
 <header class="app-topbar mobile" role="banner">
     <div class="topbar-start">
-        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu" aria-expanded="false" aria-controls="appSidebar" type="button">
-            <i class="fa-solid fa-bars" aria-hidden="true"></i>
-        </button>
         <a href="<?php echo $user_role === 'admin' ? 'admin_dashboard.php' : 'dashboard.php'; ?>" class="topbar-brand" aria-label="DigiShulk Home">
             <div class="logo" aria-hidden="true"></div>
         </a>
@@ -163,7 +153,6 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
     <div class="topbar-center">
         <button class="search-btn" id="openSearch" aria-label="Search (Ctrl+K)" type="button">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            <span class="search-label">Search</span>
         </button>
     </div>
 
