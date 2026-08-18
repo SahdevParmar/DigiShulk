@@ -125,13 +125,15 @@ $trendData = [];
 for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-$i days"));
     $dayName = date('D', strtotime($date));
-    $res = $conn->query("
+    $stmt = $conn->prepare("
     SELECT SUM(total_amount) total, COUNT(*) count
     FROM transactions
-    WHERE DATE(created_at) = '$date'
+    WHERE DATE(created_at) = ?
     AND status='paid'
     ");
-    $row = $res->fetch_assoc();
+    $stmt->bind_param("s", $date);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
     $trendData[] = [
         'date' => $date,
         'day' => $dayName,
