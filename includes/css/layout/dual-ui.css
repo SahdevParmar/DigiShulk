@@ -568,13 +568,6 @@
     .dropdown-item.danger i {
         color: var(--color-danger);
     }
-
-    /* Adjust app-main for desktop topbar */
-    .app-main {
-        margin-left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
-        padding-top: var(--topbar-height);
-    }
 }
 
 /* ==========================================
