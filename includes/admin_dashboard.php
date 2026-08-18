@@ -294,7 +294,7 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
         </div>
     </div>
 
-    <!-- 7-Day Trend Chart -->
+<!-- 7-Day Trend Chart -->
     <div class="card" style="margin-top: var(--space-6);">
         <div class="card-header">
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);">
@@ -305,7 +305,12 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
             </div>
         </div>
         <div class="card-body" style="padding-top: var(--space-2);">
-            <canvas id="trendChart" height="200" style="width: 100%; max-height: 300px;"></canvas>
+            <div class="skeleton skeleton-card" id="chartSkeleton" style="height: 200px;">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-text"></div>
+                <div class="skeleton-text short"></div>
+            </div>
+            <canvas id="trendChart" height="200" style="width: 100%; max-height: 300px; display: none;"></canvas>
         </div>
     </div>
 
@@ -313,6 +318,7 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
     <script>
     (function() {
         const ctx = document.getElementById('trendChart');
+        const skeleton = document.getElementById('chartSkeleton');
         if (!ctx) return;
         
         const trendData = <?php echo json_encode($trendData); ?>;
@@ -320,9 +326,25 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
         const amounts = trendData.map(d => d.total);
         const counts = trendData.map(d => d.count);
         
+        const hasData = amounts.some(a => a > 0);
+        
+        if (!hasData) {
+            // No data - show empty state
+            if (skeleton) skeleton.style.display = 'none';
+            ctx.parentElement.innerHTML = '<div class="empty-state" style="padding: var(--space-8); margin: 0; border: none; border-radius: 0; background: transparent;"><div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: var(--space-3);"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i></div><p class="empty-state-title" style="font-size: var(--text-base);">No collection trends recorded yet</p><p class="empty-state-message" style="font-size: var(--text-sm);">Start collecting to see trends</p></div>';
+            return;
+        }
+        
+        if (skeleton) skeleton.style.display = 'none';
+        ctx.style.display = 'block';
+        
+        const labels = trendData.map(d => d.day);
+        const amounts = trendData.map(d => d.total);
+        const counts = trendData.map(d => d.count);
+        
         const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
-        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)');
-        gradient.addColorStop(1, 'rgba(37, 99, 235, 0.05)');
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
         
         new Chart(ctx, {
             type: 'bar',
@@ -366,39 +388,24 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                             }
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: { color: '#1e293b', display: false },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: { size: 11 }
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#1e293b' },
-                        ticks: {
-                            color: '#94a3b8',
-                            font: { size: 11 },
-                            callback: function(value) {
-                                return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
-                            }
-                        }
-                    }
                 }
-            }
-        });
-                        grid: {
-                            color: '#e5e7eb',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#9ca3af',
-                            font: { size: 11 },
-                            callback: function(value) {
-                                return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
-                            }
+            },
+            scales: {
+                x: {
+                    grid: { color: '#1e293b', display: false },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { size: 11 }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#1e293b' },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { size: 11 },
+                        callback: function(value) {
+                            return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
                         }
                     }
                 }
@@ -581,7 +588,7 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
 
         <div class="card-body" style="padding: 0;">
             <div class="table-wrapper">
-                <table class="table">
+                <table class="table responsive-table">
                     <thead>
                         <tr>
                             <th>Inspector</th>
@@ -601,7 +608,7 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                                 $stampIcon = $row['status']=='paid' ? 'check' : ($row['status']=='pending' ? 'clock' : 'xmark');
                         ?>
                         <tr>
-                            <td>
+                            <td data-label="Inspector">
                                 <div style="display: flex; align-items: center; gap: var(--space-2);">
                                     <div class="avatar avatar-sm" style="background: var(--color-primary-light); color: var(--color-primary);">
                                         <?= strtoupper(substr(htmlspecialchars($row['username']), 0, 1)) ?>
@@ -609,17 +616,17 @@ $maxTrend = max($maxTrend, 1); // Avoid division by zero
                                     <strong><?=htmlspecialchars($row['username'])?></strong>
                                 </div>
                             </td>
-                            <td><?=htmlspecialchars($row['shop_name'])?></td>
-                            <td>
+                            <td data-label="Shop Name"><?=htmlspecialchars($row['shop_name'])?></td>
+                            <td data-label="Amount">
                                 <span style="font-weight: 600; color: var(--color-success);">₹<?php echo number_format($row['total_amount'],2); ?></span>
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 <span class="badge badge-<?= $stampClass ?> badge-dot">
                                     <i class="fa-solid fa-<?= $stampIcon ?>" aria-hidden="true"></i>
                                     <?=ucfirst($row['status'])?>
                                 </span>
                             </td>
-                            <td><?=htmlspecialchars($row['created_at'])?></td>
+                            <td data-label="Time"><?=htmlspecialchars($row['created_at'])?></td>
                             <td>
                                 <a href="transaction_detail.php?id=<?php echo $row['transaction_id']; ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
                                     <i class="fa-solid fa-eye" aria-hidden="true"></i>

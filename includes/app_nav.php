@@ -168,9 +168,9 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
     </div>
 
     <div class="topbar-end">
-        <a href="settings.php" class="profile-link" aria-label="Profile settings">
-            <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="" aria-hidden="true">
-        </a>
+        <div class="profile-avatar" aria-hidden="true">
+            <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="">
+        </div>
     </div>
 </header>
 

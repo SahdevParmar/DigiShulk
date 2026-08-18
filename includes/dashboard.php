@@ -273,7 +273,7 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
 
         <div class="card-body" style="padding: 0;">
             <div class="table-wrapper">
-                <table class="table">
+                <table class="table responsive-table">
                     <thead>
                         <tr>
                             <th>Shop</th>
@@ -287,22 +287,22 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
                         <?php if ($recent->num_rows > 0): ?>
                             <?php while($row=$recent->fetch_assoc()): ?>
                                 <tr>
-                                    <td>
+                                    <td data-label="Shop">
                                         <strong><?=htmlspecialchars($row['shop_name'])?></strong>
                                     </td>
-                                    <td>₹<?=number_format($row['total_amount'],2)?></td>
-                                    <td>
+                                    <td data-label="Amount">₹<?=number_format($row['total_amount'],2)?></td>
+                                    <td data-label="Mode">
                                         <span class="badge badge-<?= $row['payment_mode'] === 'upi' ? 'primary' : 'neutral' ?>">
                                             <?=strtoupper($row['payment_mode'])?>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-label="Status">
                                         <span class="badge badge-<?= $row['status'] === 'paid' ? 'success' : ($row['status'] === 'pending' ? 'warning' : 'danger') ?>">
                                             <i class="fa-solid fa-<?= $row['status'] === 'paid' ? 'check' : ($row['status'] === 'pending' ? 'clock' : 'xmark') ?>" aria-hidden="true"></i>
                                             <?=ucfirst($row['status'])?>
                                         </span>
                                     </td>
-                                    <td><?=date("d/m/y H:i", strtotime($row['created_at']))?></td>
+                                    <td data-label="Time"><?=date("d/m/y H:i", strtotime($row['created_at']))?></td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>

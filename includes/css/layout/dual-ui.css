@@ -97,6 +97,11 @@
     .app-main > div:not(.page) {
         padding: var(--space-4) var(--space-3);
     }
+
+    /* Hide desktop topbar on mobile */
+    .app-topbar.desktop {
+        display: none !important;
+    }
 }
 
 /* ==========================================
@@ -758,8 +763,8 @@
         flex: 1;
         display: flex;
         justify-content: center;
-        max-width: 280px;
-        margin: 0 var(--space-3);
+        max-width: 240px;
+        margin: 0 var(--space-2);
     }
 
     .search-btn {
@@ -767,7 +772,7 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        max-width: 240px;
+        max-width: 200px;
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-muted);
         border: 1px solid var(--color-border);
@@ -815,6 +820,21 @@
 
     .topbar-end .profile-info {
         display: none;
+    }
+
+    /* Profile avatar in mobile topbar (non-clickable) */
+    .profile-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     /* Mobile Bottom Navigation */
