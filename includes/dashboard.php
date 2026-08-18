@@ -320,103 +320,98 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
-(function() {
-    const ctx = document.getElementById('trendChart');
-    const skeleton = document.getElementById('chartSkeleton');
-    if (!ctx) return;
-    
-    const trendData = <?php echo json_encode($trendData); ?>;
-    const labels = trendData.map(d => d.day);
-    const amounts = trendData.map(d => d.total);
-    const counts = trendData.map(d => d.count);
-    
-    const hasData = amounts.some(a => a > 0);
-    
-    if (!hasData) {
-        // No data - show empty state
-        if (skeleton) skeleton.style.display = 'none';
-        ctx.parentElement.innerHTML = '<div class="empty-state" style="padding: var(--space-8); margin: 0; border: none; border-radius: 0; background: transparent;"><div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: var(--space-3);"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i></div><p class="empty-state-title" style="font-size: var(--text-base);">No collection trends recorded yet</p><p class="empty-state-message" style="font-size: var(--text-sm);">Start collecting to see trends</p></div>';
-        return;
-    }
-    
-    if (skeleton) skeleton.style.display = 'none';
-    ctx.style.display = 'block';
-    
-    const labels = trendData.map(d => d.day);
-    const amounts = trendData.map(d => d.total);
-    const counts = trendData.map(d => d.count);
-    
-    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
-    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
-    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
-    
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Collections (₹)',
-                data: amounts,
-                backgroundColor: gradient,
-                borderColor: 'rgb(59, 130, 246)',
-                borderWidth: 1,
-                borderRadius: 6,
-                borderSkipped: false,
-                maxBarThickness: 40,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                intersect: false,
-                mode: 'index'
+    <script>
+    (function() {
+        const ctx = document.getElementById('trendChart');
+        if (!ctx) return;
+        
+        const trendData = <?php echo json_encode($trendData); ?>;
+        const labels = trendData.map(d => d.day);
+        const amounts = trendData.map(d => d.total);
+        const counts = trendData.map(d => d.count);
+        
+        const hasData = amounts.some(a => a > 0);
+        
+        if (!hasData) {
+            // No data - show empty state
+            ctx.parentElement.innerHTML = '<div class="empty-state" style="padding: var(--space-8); margin: 0; border: none; border-radius: 0; background: transparent;"><div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: var(--space-3);"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i></div><p class="empty-state-title" style="font-size: var(--text-base);">No collection trends recorded yet</p><p class="empty-state-message" style="font-size: var(--text-sm);">Start collecting to see trends</p></div>';
+            return;
+        }
+        
+        const labels = trendData.map(d => d.day);
+        const amounts = trendData.map(d => d.total);
+        const counts = trendData.map(d => d.count);
+        
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)');
+        gradient.addColorStop(1, 'rgba(37, 99, 235, 0.05)');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Collections (₹)',
+                    data: amounts,
+                    backgroundColor: gradient,
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    maxBarThickness: 40,
+                }]
             },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#0f172a',
-                    titleColor: '#f1f5f9',
-                    bodyColor: '#e2e8f0',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 13, weight: '600' },
-                    bodyFont: { size: 12 },
-                    callbacks: {
-                        label: function(context) {
-                            const idx = context.dataIndex;
-                            return [
-                                'Amount: ₹' + amounts[idx].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
-                                'Transactions: ' + counts[idx]
-                            ];
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 13, weight: '600' },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                const idx = context.dataIndex;
+                                return [
+                                    'Amount: ₹' + amounts[idx].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+                                    'Transactions: ' + counts[idx]
+                                ];
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: '#1e293b', display: false },
-                    ticks: {
-                        color: '#94a3b8',
-                        font: { size: 11 }
-                    }
                 },
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#1e293b' },
-                    ticks: {
-                        color: '#94a3b8',
-                        font: { size: 11 },
-                        callback: function(value) {
-                            return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
+                scales: {
+                    x: {
+                        grid: { color: '#1e293b', display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#1e293b' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return '₹' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value);
+                            }
                         }
                     }
                 }
             }
-        }
-    });
-})();
-</script>
+        });
+    })();
+    </script>
 
 <?php include 'footer.php'; ?>
