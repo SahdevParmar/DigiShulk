@@ -1161,3 +1161,538 @@
         padding: 0 !important;
     }
 }
+
+/* =========================================================
+   DIGISHULK - PROFESSIONAL GOVERNMENT PORTAL THEME
+   Desktop UI Enhancement
+   Add this at the END of your CSS file
+   ========================================================= */
+
+:root {
+    --gov-navy: #0b1b33;
+    --gov-navy-light: #122744;
+    --gov-blue: #1d5fd1;
+    --gov-blue-dark: #164fae;
+    --gov-blue-soft: #edf4ff;
+
+    --gov-bg: #f5f7fa;
+    --gov-white: #ffffff;
+    --gov-border: #e1e6ed;
+
+    --gov-text: #172033;
+    --gov-text-secondary: #647084;
+    --gov-text-light: #8a94a5;
+
+    --gov-success: #16845b;
+    --gov-warning: #c47b00;
+    --gov-danger: #c73b3b;
+
+    --gov-radius: 10px;
+    --gov-radius-sm: 7px;
+
+    --gov-shadow:
+        0 1px 2px rgba(16, 24, 40, 0.04),
+        0 4px 14px rgba(16, 24, 40, 0.05);
+
+    --gov-shadow-hover:
+        0 4px 18px rgba(16, 24, 40, 0.09);
+}
+
+
+/* =========================================================
+   GLOBAL DESKTOP BACKGROUND
+   ========================================================= */
+
+@media (min-width: 769px) {
+
+    body {
+        background: var(--gov-bg);
+        color: var(--gov-text);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .app-shell {
+        grid-template-columns: 248px 1fr;
+    }
+
+    .app-sidebar {
+        width: 248px;
+        background: var(--gov-navy);
+        border-right: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 3px 0 16px rgba(0,0,0,0.06);
+    }
+
+
+    /* =====================================================
+       SIDEBAR BRAND
+       ===================================================== */
+
+    .app-sidebar .sidebar-brand {
+        height: 76px;
+        padding: 0 22px;
+        gap: 12px;
+
+        background: var(--gov-navy);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+
+        display: flex;
+        align-items: center;
+    }
+
+    .app-sidebar .logo {
+        width: 42px;
+        height: 42px;
+    }
+
+    .app-sidebar .brand-text {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+    }
+
+
+    /* =====================================================
+       SIDEBAR NAVIGATION
+       ===================================================== */
+
+    .sidebar-nav {
+        padding: 22px 14px;
+    }
+
+    .nav-list {
+        gap: 5px;
+    }
+
+    .nav-link {
+        position: relative;
+
+        min-height: 46px;
+        padding: 0 15px;
+
+        border-radius: 8px;
+
+        color: #aebbd0;
+
+        font-size: 14px;
+        font-weight: 500;
+
+        transition:
+            background 160ms ease,
+            color 160ms ease,
+            transform 160ms ease;
+    }
+
+    .nav-link i {
+        width: 20px;
+        font-size: 16px;
+        color: #9aa9bf;
+    }
+
+    .nav-link:hover {
+        background: rgba(255,255,255,0.07);
+        color: #ffffff;
+    }
+
+    .nav-link:hover i {
+        color: #ffffff;
+    }
+
+    /* Professional active state */
+    .nav-link.active,
+    .nav-link[aria-current="page"] {
+        background: var(--gov-blue);
+        color: #ffffff;
+
+        box-shadow:
+            0 4px 10px rgba(29,95,209,0.22);
+    }
+
+    .nav-link.active::before,
+    .nav-link[aria-current="page"]::before {
+        content: "";
+        position: absolute;
+
+        left: 0;
+        top: 9px;
+        bottom: 9px;
+
+        width: 3px;
+
+        background: #ffffff;
+        border-radius: 0 3px 3px 0;
+    }
+
+
+    /* =====================================================
+       SIDEBAR FOOTER
+       ===================================================== */
+
+    .sidebar-footer {
+        padding: 14px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .profile-link {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .profile-link:hover {
+        background: rgba(255,255,255,0.07);
+    }
+
+    .nav-profile-photo {
+        width: 36px;
+        height: 36px;
+        border: 2px solid rgba(255,255,255,0.35);
+    }
+
+    .profile-name {
+        color: #ffffff;
+        font-size: 13px;
+    }
+
+    .profile-role {
+        color: #91a0b5;
+        font-size: 11px;
+    }
+
+    .logout-link {
+        margin-top: 5px;
+        padding: 10px 12px;
+
+        color: #ff8585;
+        font-size: 13px;
+
+        border-radius: 8px;
+        text-decoration: none;
+
+        transition: 160ms ease;
+    }
+
+    .logout-link:hover {
+        background: rgba(199,59,59,0.14);
+        color: #ff9b9b;
+    }
+
+
+    /* =====================================================
+       TOPBAR
+       ===================================================== */
+
+    .app-topbar.desktop {
+        height: 72px;
+
+        background: rgba(255,255,255,0.97);
+
+        border-bottom: 1px solid var(--gov-border);
+
+        padding: 0 30px;
+
+        box-shadow: 0 1px 5px rgba(16,24,40,0.04);
+    }
+
+    .topbar-brand .logo {
+        width: 125px;
+        height: 36px;
+    }
+
+
+    /* =====================================================
+       SEARCH
+       ===================================================== */
+
+    .topbar-center {
+        max-width: 480px;
+    }
+
+    .topbar-search {
+        max-width: 420px;
+    }
+
+    .topbar-search .form-input {
+        height: 40px;
+
+        background: #f7f9fc;
+        border: 1px solid #e0e5ec;
+
+        border-radius: 8px;
+
+        color: var(--gov-text);
+
+        transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            background 160ms ease;
+    }
+
+    .topbar-search .form-input:hover {
+        border-color: #cbd3df;
+    }
+
+    .topbar-search .form-input:focus {
+        background: #ffffff;
+
+        border-color: var(--gov-blue);
+
+        box-shadow:
+            0 0 0 3px rgba(29,95,209,0.10);
+    }
+
+
+    /* =====================================================
+       TOPBAR PROFILE
+       ===================================================== */
+
+    .profile-trigger {
+        padding: 6px 9px;
+        border-radius: 8px;
+    }
+
+    .profile-trigger:hover {
+        background: #f3f6fa;
+    }
+
+    .profile-trigger .nav-profile-photo {
+        width: 38px;
+        height: 38px;
+        border-color: var(--gov-blue);
+    }
+
+    .profile-trigger .profile-name {
+        color: var(--gov-text);
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+
+    /* =====================================================
+       MAIN CONTENT
+       ===================================================== */
+
+    .app-main {
+        background: var(--gov-bg);
+    }
+
+    .page {
+        padding: 30px 32px 45px;
+    }
+
+    .app-main > .page,
+    .app-main > div:not(.page),
+    .app-main > section,
+    .app-main > main > div {
+        max-width: 1500px;
+    }
+
+
+    /* =====================================================
+       CARDS
+       ===================================================== */
+
+    .card,
+    .stat-card,
+    .dashboard-card,
+    .summary-card {
+        background: #ffffff;
+
+        border: 1px solid var(--gov-border);
+
+        border-radius: var(--gov-radius);
+
+        box-shadow: var(--gov-shadow);
+
+        transition:
+            box-shadow 180ms ease,
+            border-color 180ms ease;
+    }
+
+    .card:hover,
+    .stat-card:hover,
+    .dashboard-card:hover,
+    .summary-card:hover {
+        border-color: #d5dce6;
+        box-shadow: var(--gov-shadow-hover);
+    }
+
+
+    /* =====================================================
+       DASHBOARD HEADINGS
+       ===================================================== */
+
+    .page-title,
+    .dashboard-title {
+        color: var(--gov-text);
+
+        font-size: 27px;
+        font-weight: 700;
+
+        letter-spacing: -0.5px;
+    }
+
+    .page-subtitle,
+    .dashboard-subtitle {
+        color: var(--gov-text-secondary);
+
+        font-size: 14px;
+    }
+
+
+    /* =====================================================
+       PRIMARY BUTTONS
+       ===================================================== */
+
+    .btn-primary,
+    .button-primary,
+    .btn-primary-action {
+        background: var(--gov-blue);
+        border: 1px solid var(--gov-blue);
+
+        border-radius: 8px;
+
+        font-weight: 600;
+
+        box-shadow: 0 2px 5px rgba(29,95,209,0.18);
+
+        transition:
+            background 160ms ease,
+            box-shadow 160ms ease,
+            transform 160ms ease;
+    }
+
+    .btn-primary:hover,
+    .button-primary:hover,
+    .btn-primary-action:hover {
+        background: var(--gov-blue-dark);
+        border-color: var(--gov-blue-dark);
+
+        box-shadow: 0 4px 10px rgba(29,95,209,0.22);
+
+        transform: translateY(-1px);
+    }
+
+
+    /* =====================================================
+       QUICK ACTION BUTTONS
+       ===================================================== */
+
+    .quick-action,
+    .action-card {
+        background: #ffffff;
+        border: 1px solid var(--gov-border);
+
+        border-radius: 8px;
+
+        color: var(--gov-text);
+
+        transition:
+            border-color 160ms ease,
+            background 160ms ease,
+            box-shadow 160ms ease;
+    }
+
+    .quick-action:hover,
+    .action-card:hover {
+        background: #f8faff;
+        border-color: #b9cdf2;
+
+        box-shadow: 0 4px 12px rgba(29,95,209,0.08);
+    }
+
+
+    /* =====================================================
+       STATUS / BADGES
+       ===================================================== */
+
+    .badge,
+    .status-badge {
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+    }
+
+
+    /* =====================================================
+       TABLES
+       ===================================================== */
+
+    table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+
+    th {
+        background: #f7f9fc;
+        color: #566275;
+
+        font-size: 11px;
+        font-weight: 700;
+
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        border-bottom: 1px solid var(--gov-border);
+    }
+
+    td {
+        color: var(--gov-text);
+        border-bottom: 1px solid #edf0f4;
+        font-size: 13px;
+    }
+
+    tbody tr:hover {
+        background: #f8faff;
+    }
+
+
+    /* =====================================================
+       SCROLLBAR
+       ===================================================== */
+
+    .app-sidebar::-webkit-scrollbar,
+    .sidebar-nav::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .app-sidebar::-webkit-scrollbar-track,
+    .sidebar-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .app-sidebar::-webkit-scrollbar-thumb,
+    .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.15);
+        border-radius: 10px;
+    }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.nav-link:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+    outline: 3px solid rgba(29,95,209,0.25);
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   REDUCE MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
