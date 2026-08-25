@@ -150,7 +150,7 @@ $name = !empty($user['full_name'])
 ?>
 
 <div class="page">
-    <div class="card" style="max-width: 600px;">
+    <div class="card" style="max-width: 900px;">
 
         <div class="card-header">
             <div style="display: flex; align-items: center; gap: var(--space-3);">
