@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
 ?>
 
 <div class="page">
-    <div class="card" style="max-width: 800px;">
+    <div class="card" style="max-width: 900px;">
 
         <!-- Step Indicator -->
         <nav aria-label="Seizure report steps" style="display: flex; justify-content: center; margin-bottom: var(--space-8); position: relative;">
