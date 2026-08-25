@@ -13,7 +13,6 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
 <aside class="app-sidebar" id="appSidebar" aria-label="Main navigation">
     <a href="<?php echo $user_role === 'admin' ? 'admin_dashboard.php' : 'dashboard.php'; ?>" class="sidebar-brand" aria-label="DigiShulk Home">
         <div class="logo" aria-hidden="true"></div>
-        <span class="brand-text">DigiShulk</span>
     </a>
 
     <nav class="sidebar-nav" role="navigation" aria-label="Primary">
