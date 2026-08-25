@@ -119,6 +119,8 @@
         z-index: 1000;
         flex-shrink: 0;
         overflow-y: auto;
+        width: 250px;
+        position: fixed;
     }
 
     .app-sidebar .sidebar-brand {
