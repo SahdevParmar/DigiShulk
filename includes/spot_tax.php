@@ -16,7 +16,7 @@ include 'header.php';
 ?>
 
 <div class="page">
-    <div class="card" style="max-width: 640px;">
+    <div class="card" style="max-width: 900px;">
 
         <!-- Step Indicator -->
         <nav aria-label="Collection steps" style="display: flex; justify-content: center; margin-bottom: var(--space-8); position: relative;">
