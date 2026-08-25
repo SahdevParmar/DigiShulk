@@ -20,7 +20,7 @@ include 'header.php';
 
         <!-- Step Indicator -->
         <nav aria-label="Collection steps" style="display: flex; justify-content: center; margin-bottom: var(--space-8); position: relative;">
-            <div style="position: absolute; top: calc(50% + 20px); left: 0; right: 0; height: 2px; background: var(--color-border); transform: translateY(-50%); z-index: 1;" aria-hidden="true"></div>
+           
             <ol style="display: flex; gap: var(--space-4); z-index: 2; list-style: none; padding: 0; margin: 0;">
                 <li class="step-indicator active" data-step="1" style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2);" aria-current="step">
                     <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;" aria-label="Step 1">1</div>
