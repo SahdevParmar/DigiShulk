@@ -119,7 +119,7 @@
         z-index: 1000;
         flex-shrink: 0;
         overflow-y: auto;
-        width: 270px;
+        width: 260px;
         position: fixed;
     }
 
