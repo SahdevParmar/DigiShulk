@@ -152,7 +152,7 @@ $name = !empty($user['full_name'])
 <div class="page">
     <div class="card" style="max-width: 900px;">
 
-        <div class="card-header">
+        <div class="card-header" align="center" style="display:" flex; flex-justify-content: center; align-items: center; gap: var(--space-4);">
             <div style="display: flex; align-items: center; gap: var(--space-3);">
                 <div class="avatar avatar-lg" style="background-image: url('<?php echo $photo; ?>'); background-size: cover; background-position: center; background: var(--color-primary-light); color: var(--color-primary);">
                     <?php if (empty($user['profile_photo']) || !file_exists("uploads/profile/".$user['profile_photo'])): ?>
