@@ -44,6 +44,7 @@
         z-index: 1000;
         flex-shrink: 0;
         overflow-y: auto;
+        position:fixed
     }
 
     .app-topbar.desktop {
