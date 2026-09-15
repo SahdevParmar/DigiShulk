@@ -1,37 +1,38 @@
 <?php
 session_start();
 include 'db_connect.php';
-include 'sms_helper.php';
+require_once 'helpers/csrf.php';
 
-if(!isset($_SESSION['user_id'])) die("Unauthorized");
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(403);
+    exit('Unauthorized');
+}
 
-$id = $_POST['id'] ?? 0;
+csrf_require_or_die();
 
-$stmt = $conn->prepare("SELECT shopkeeper_phone, total_amount, inspector_id, status FROM transactions WHERE transaction_id=? AND payment_mode='cash'");
-$stmt->bind_param("i", $id);
+$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+$stmt = $conn->prepare("
+    SELECT shopkeeper_phone, total_amount, inspector_id, status
+    FROM transactions
+    WHERE transaction_id = ? AND payment_mode = 'cash'
+");
+$stmt->bind_param('i', $id);
 $stmt->execute();
 $txn = $stmt->get_result()->fetch_assoc();
 
-if(!$txn || $txn['inspector_id'] != $_SESSION['user_id']){
-    die("Invalid request.");
+if (!$txn || $txn['inspector_id'] != $_SESSION['user_id']) {
+    die('Invalid request.');
 }
 
-if($txn['status'] === 'paid'){
-    header("Location: dashboard.php?paid=1");
+if ($txn['status'] === 'paid') {
+    header('Location: dashboard.php?paid=1');
     exit();
 }
 
 $update = $conn->prepare("UPDATE transactions SET status='paid' WHERE transaction_id=?");
-$update->bind_param("i", $id);
+$update->bind_param('i', $id);
 $update->execute();
 
-$sms_response = send_payment_sms($txn['shopkeeper_phone'], $txn['total_amount']);
-
-// Log the SMS result so we can debug delivery issues later
-$log = $conn->prepare("UPDATE transactions SET sms_log=? WHERE transaction_id=?");
-$log->bind_param("si", $sms_response, $id);
-$log->execute();
-
-header("Location: dashboard.php?paid=1");
+header('Location: dashboard.php?paid=1');
 exit();
-?>
