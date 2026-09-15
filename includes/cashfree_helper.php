@@ -140,3 +140,62 @@ function cashfree_verify_webhook(string $rawBody, string $timestamp, string $rec
 
     return hash_equals($generatedSignature, $receivedSignature);
 }
+
+/**
+ * Create a UPI QR payment for an order.
+ *
+ * Cashfree returns a UPI deep-link string (upi://pay?...) that we encode
+ * as a QR client-side. The shopkeeper scans it with any UPI app.
+ *
+ * @param  string $orderId
+ * @return array  Raw Cashfree response.
+ * @throws RuntimeException
+ */
+function cashfree_create_upi_qr($orderId)
+{
+    return cashfree_request(
+        'POST',
+        '/orders/' . rawurlencode($orderId) . '/payments',
+        [
+            'payment_method' => [
+                'upi' => [
+                    'channel' => 'qrcode',
+                ],
+            ],
+        ]
+    );
+}
+
+/**
+ * Extract the UPI deep-link string from a Cashfree QR response.
+ *
+ * Cashfree has changed the response shape across API versions, so we
+ * defensively check several plausible paths.
+ *
+ * @param  array $response
+ * @return string|null  The upi:// URL, or null if not found.
+ */
+function cashfree_extract_upi_string($response)
+{
+    if (!is_array($response)) {
+        return null;
+    }
+
+    $candidates = [
+        isset($response['data']['url'])                             ? $response['data']['url']                             : null,
+        isset($response['data']['qrcode'])                          ? $response['data']['qrcode']                          : null,
+        isset($response['data']['payload']['qrcode'])               ? $response['data']['payload']['qrcode']               : null,
+        isset($response['data']['payload']['url'])                  ? $response['data']['payload']['url']                  : null,
+        isset($response['payment_method_details']['upi']['qrcode']) ? $response['payment_method_details']['upi']['qrcode'] : null,
+        isset($response['payment_method_details']['upi']['url'])    ? $response['payment_method_details']['upi']['url']    : null,
+        isset($response['qrcode'])                                  ? $response['qrcode']                                  : null,
+    ];
+
+    foreach ($candidates as $c) {
+        if (is_string($c) && $c !== '') {
+            return $c;
+        }
+    }
+
+    return null;
+}
