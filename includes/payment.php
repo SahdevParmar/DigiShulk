@@ -277,25 +277,19 @@ if (in_array($txn['status'], ['cancelled', 'failed'], true)) {
 }
 
 /* =========================================================
-   CREATE / LOAD CASHFREE UPI ORDER + QR
+   CREATE / LOAD CASHFREE UPI ORDER
    ========================================================= */
 
-$cashfreeError  = '';
-$upiString      = '';
+$cashfreeError    = '';
+$paymentSessionId = '';
+$gatewayStatus    = '';
 
 if ($txn['payment_mode'] === 'upi') {
 
-    $sessionQrKey = 'qr_for_txn_' . $transactionId;
-
     try {
         $orderId = trim((string) ($txn['payment_ref'] ?? ''));
-
-        // PHP 7.2-safe str_starts_with.
         $isCashfreeOrder = (strpos($orderId, 'DGS_CF_') === 0);
 
-        /* ---------------------------------------------------------
-           1. Ensure a Cashfree order exists and is ACTIVE.
-        --------------------------------------------------------- */
         if (!$isCashfreeOrder) {
 
             $orderId = 'DGS_CF_' . $transactionId . '_' .
@@ -325,6 +319,8 @@ if ($txn['payment_mode'] === 'upi') {
                 throw new RuntimeException('Cashfree did not return a payment session.');
             }
 
+            $paymentSessionId = $order['payment_session_id'];
+
             $stmtUpdate = $conn->prepare("
                 UPDATE transactions SET payment_ref = ? WHERE transaction_id = ?
             ");
@@ -340,7 +336,6 @@ if ($txn['payment_mode'] === 'upi') {
 
             if ($gatewayStatus === 'PAID') {
                 mark_transaction_paid($conn, $transactionId);
-                unset($_SESSION[$sessionQrKey]);
                 $txn['status'] = 'paid';
 
                 require 'header.php';
@@ -348,8 +343,10 @@ if ($txn['payment_mode'] === 'upi') {
                 exit;
             }
 
-            // If order expired or terminated, create a fresh one.
-            if (in_array($gatewayStatus, ['EXPIRED', 'TERMINATED', 'TERMINATION_REQUESTED'], true)) {
+            $paymentSessionId = $order['payment_session_id'] ?? '';
+
+            if ($paymentSessionId === '' ||
+                in_array($gatewayStatus, ['EXPIRED', 'TERMINATED', 'TERMINATION_REQUESTED'], true)) {
 
                 $newOrderId = 'DGS_CF_' . $transactionId . '_' .
                     strtoupper(bin2hex(random_bytes(4)));
@@ -374,7 +371,9 @@ if ($txn['payment_mode'] === 'upi') {
                     $notifyUrl
                 );
 
-                if (empty($order['payment_session_id'])) {
+                $paymentSessionId = $order['payment_session_id'] ?? '';
+
+                if ($paymentSessionId === '') {
                     throw new RuntimeException('Cashfree did not return a new payment session.');
                 }
 
@@ -385,38 +384,12 @@ if ($txn['payment_mode'] === 'upi') {
                 $stmtUpdate->execute();
 
                 $txn['payment_ref'] = $newOrderId;
-                $orderId = $newOrderId;
-
-                // New order means the old QR is invalid.
-                unset($_SESSION[$sessionQrKey]);
             }
-        }
-
-        /* ---------------------------------------------------------
-           2. Get the UPI QR string.
-           Cache in session so a page refresh doesn't spawn a new QR.
-        --------------------------------------------------------- */
-        if (!empty($_SESSION[$sessionQrKey])) {
-            $upiString = $_SESSION[$sessionQrKey];
-        } else {
-
-            $qrResponse = cashfree_create_upi_qr($txn['payment_ref']);
-            $upiString  = cashfree_extract_upi_string($qrResponse);
-
-            if ($upiString === null) {
-                error_log('DigiShulk UPI QR: unexpected response: ' .
-                    json_encode($qrResponse));
-                throw new RuntimeException(
-                    'Cashfree did not return a usable UPI QR.'
-                );
-            }
-
-            $_SESSION[$sessionQrKey] = $upiString;
         }
 
     } catch (Throwable $e) {
         $cashfreeError = $e->getMessage();
-        error_log('DigiShulk Cashfree QR: ' . $cashfreeError);
+        error_log('DigiShulk Cashfree: ' . $cashfreeError);
     }
 }
 
@@ -428,7 +401,7 @@ require 'header.php';
 
         <?php if ($txn['payment_mode'] === 'cash'): ?>
 
-            <!-- ============ CASH ============ -->
+            <!-- CASH (unchanged) -->
             <div class="card-header">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="stat-icon stat-icon-success" style="width:48px;height:48px;">
@@ -440,7 +413,6 @@ require 'header.php';
                     </div>
                 </div>
             </div>
-
             <div class="card-body" style="text-align:center;">
                 <div style="margin-bottom:24px;padding:24px;background:var(--color-surface-muted);border-radius:var(--radius-lg);">
                     <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:6px;">Amount</p>
@@ -448,10 +420,6 @@ require 'header.php';
                         ₹<?= number_format((float) $txn['total_amount'], 2) ?>
                     </div>
                 </div>
-
-                <p style="margin:0 0 8px;color:var(--color-text-muted);font-size:var(--text-sm);">Shop</p>
-                <strong><?= htmlspecialchars($txn['shop_name']) ?></strong>
-
                 <form method="POST" action="confirm_cash.php" style="margin-top:24px;">
                     <?= csrf_field() ?>
                     <input type="hidden" name="id" value="<?= $transactionId ?>">
@@ -460,7 +428,6 @@ require 'header.php';
                         Confirm Cash Received
                     </button>
                 </form>
-
                 <a href="dashboard.php" class="btn btn-ghost btn-block" style="margin-top:16px;">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                     Back to Dashboard
@@ -469,7 +436,7 @@ require 'header.php';
 
         <?php elseif ($cashfreeError !== ''): ?>
 
-            <!-- ============ UPI ERROR ============ -->
+            <!-- UPI ERROR -->
             <div class="card-header">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="stat-icon stat-icon-danger" style="width:48px;height:48px;">
@@ -477,15 +444,13 @@ require 'header.php';
                     </div>
                     <div>
                         <h2 class="card-title" style="margin:0;">UPI Unavailable</h2>
-                        <p class="card-subtitle" style="margin:0;">Could not generate a QR right now.</p>
+                        <p class="card-subtitle" style="margin:0;">Could not open payment right now.</p>
                     </div>
                 </div>
             </div>
-
             <div class="card-body" style="text-align:center;">
                 <p style="font-size:var(--text-sm);color:var(--color-text-muted);">
-                    The payment gateway did not respond correctly. Try again in a moment,
-                    or collect this payment as cash instead.
+                    Please try again in a moment, or collect this payment as cash instead.
                 </p>
                 <a href="payment.php?id=<?= $transactionId ?>" class="btn btn-primary btn-block" style="margin-top:16px;">
                     <i class="fa-solid fa-rotate" aria-hidden="true"></i> Retry
@@ -497,7 +462,7 @@ require 'header.php';
 
         <?php else: ?>
 
-            <!-- ============ UPI QR ============ -->
+            <!-- UPI — QR auto-pops on load -->
             <div class="card-header">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="stat-icon stat-icon-primary" style="width:48px;height:48px;">
@@ -521,13 +486,16 @@ require 'header.php';
                     </div>
                 </div>
 
-                <div id="qrcode" style="display:flex;justify-content:center;align-items:center;padding:16px;background:#fff;border-radius:var(--radius-lg);min-height:280px;">
-                    <!-- QR gets rendered here -->
+                <div id="qrLaunchState" style="padding:40px 0;color:var(--color-text-muted);font-size:var(--text-sm);">
+                    <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                    Opening payment window...
                 </div>
 
-                <div id="qrLoadingState" style="padding:40px 0;color:var(--color-text-muted);font-size:var(--text-sm);">
-                    <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-                    Generating QR...
+                <div id="reopenButton" style="display:none;">
+                    <button type="button" id="reopenPayBtn" class="btn btn-primary btn-block btn-lg">
+                        <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                        Show QR Again
+                    </button>
                 </div>
 
                 <div id="paidState" style="display:none;padding:24px 0;">
@@ -542,9 +510,7 @@ require 'header.php';
                     </div>
                 </div>
 
-                <div id="qrStatus" style="margin-top:12px;font-size:var(--text-xs);color:var(--color-text-muted);">
-                    Waiting for payment...
-                </div>
+                <div id="qrStatus" style="margin-top:12px;font-size:var(--text-xs);color:var(--color-text-muted);"></div>
 
                 <a href="dashboard.php" class="btn btn-ghost btn-block" style="margin-top:16px;">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
@@ -552,35 +518,60 @@ require 'header.php';
                 </a>
             </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+            <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
             <script>
             (function () {
-                var upiString   = <?= json_encode($upiString) ?>;
-                var txnId       = <?= (int) $transactionId ?>;
-                var qrContainer = document.getElementById('qrcode');
-                var loading     = document.getElementById('qrLoadingState');
-                var paidState   = document.getElementById('paidState');
-                var statusEl    = document.getElementById('qrStatus');
+                var txnId   = <?= (int) $transactionId ?>;
+                var session = <?= json_encode($paymentSessionId) ?>;
+                var launch  = document.getElementById('qrLaunchState');
+                var reopen  = document.getElementById('reopenButton');
+                var paidEl  = document.getElementById('paidState');
+                var statusEl = document.getElementById('qrStatus');
 
-                if (typeof QRCode === 'undefined') {
-                    loading.innerHTML = 'QR library failed to load. Check your connection.';
+                if (typeof Cashfree === 'undefined') {
+                    launch.innerHTML = 'Payment library failed to load. Check your connection.';
                     return;
                 }
 
-                try {
-                    new QRCode(qrContainer, {
-                        text: upiString,
-                        width: 260,
-                        height: 260,
-                        colorDark: '#000000',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.M
+                var cashfree = Cashfree({
+                    mode: <?= json_encode(CASHFREE_ENV === 'production' ? 'production' : 'sandbox') ?>
+                });
+
+                function openCheckout() {
+                    launch.style.display = 'block';
+                    launch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Opening payment window...';
+                    reopen.style.display = 'none';
+
+                    cashfree.checkout({
+                        paymentSessionId: session,
+                        redirectTarget: '_modal',
+                        // Lock to UPI so shopkeeper sees QR immediately.
+                        paymentMethods: 'upi'
+                    }).then(function (result) {
+                        // _modal target: Cashfree closes the modal on success and
+                        // resolves this promise. If payment succeeded, polling
+                        // will pick it up. If the user closed the modal, we offer
+                        // a "Show QR Again" button.
+                        if (result && result.error) {
+                            launch.style.display = 'none';
+                            reopen.style.display = 'block';
+                            statusEl.textContent = result.error.message || '';
+                        } else {
+                            // Modal closed cleanly — polling loop will handle state.
+                            launch.style.display = 'none';
+                            reopen.style.display = 'block';
+                        }
+                    }).catch(function (err) {
+                        launch.style.display = 'none';
+                        reopen.style.display = 'block';
+                        statusEl.textContent = 'Could not open payment window.';
                     });
-                    loading.style.display = 'none';
-                } catch (e) {
-                    loading.innerHTML = 'Could not render QR. Retry the page.';
-                    return;
                 }
+
+                document.getElementById('reopenPayBtn').addEventListener('click', openCheckout);
+
+                // Auto-open immediately on page load — no clicks needed.
+                openCheckout();
 
                 // Poll every 3 seconds.
                 var pollTimer = setInterval(function () {
@@ -588,25 +579,18 @@ require 'header.php';
                         .then(function (r) { return r.json(); })
                         .then(function (data) {
                             if (!data) return;
-
                             if (data.status === 'paid') {
                                 clearInterval(pollTimer);
-                                qrContainer.style.display = 'none';
-                                loading.style.display = 'none';
-                                paidState.style.display = 'block';
+                                launch.style.display = 'none';
+                                reopen.style.display = 'none';
+                                paidEl.style.display = 'block';
                                 statusEl.textContent = '';
-
                                 setTimeout(function () {
                                     window.location.href = 'payment.php?id=' + txnId;
                                 }, 1200);
-                                return;
-                            }
-
-                            if (data.gateway_status) {
-                                statusEl.textContent = 'Status: ' + data.gateway_status;
                             }
                         })
-                        .catch(function () { /* silent — retry next tick */ });
+                        .catch(function () {});
                 }, 3000);
             })();
             </script>
