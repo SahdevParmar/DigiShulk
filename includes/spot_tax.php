@@ -24,10 +24,6 @@ include 'header.php';
     <div class="card" style="max-width: 900px;">
 
         <nav aria-label="Collection steps" style="display: flex; justify-content: center; margin-bottom: var(--space-8); position: relative;">
-<<<<<<< Updated upstream
-           
-=======
->>>>>>> Stashed changes
             <ol style="display: flex; gap: var(--space-4); z-index: 2; list-style: none; padding: 0; margin: 0;">
                 <li class="step-indicator active" data-step="1" aria-current="step" style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2);">
                     <div class="step-circle" style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">1</div>
