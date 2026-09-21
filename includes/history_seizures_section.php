@@ -1,112 +1,164 @@
 <?php
-// --- Pagination Logic ---
-$limit = 5; // Sessions per page
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+/**
+ * history_seizures_section.php
+ * Requires: $conn, $is_admin, hist_render_pagination() from history.php
+ */
+
+// --- Pagination (clamped) ---
+$limit  = 5;
+$page   = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $limit;
 
-// --- Filter Logic ---
-$date_from = $_GET['date_from'] ?? '';
-$date_to = $_GET['date_to'] ?? '';
+// --- Filters ---
+$date_from   = $_GET['date_from']   ?? '';
+$date_to     = $_GET['date_to']     ?? '';
 $zone_filter = $_GET['zone_filter'] ?? '';
 
-$base_sql = "FROM seizure_sessions s JOIN users u ON s.inspector_id = u.user_id WHERE 1=1";
-$params = [];
-$types = "";
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) { $date_from = ''; }
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to))   { $date_to   = ''; }
 
-if(!$is_admin){
+// --- Base SQL ---
+$base_sql = "FROM seizure_sessions s LEFT JOIN users u ON s.inspector_id = u.user_id WHERE 1=1";
+$params   = [];
+$types    = "";
+
+if (!$is_admin) {
     $base_sql .= " AND s.inspector_id = ?";
     $params[] = $_SESSION['user_id'];
     $types .= "i";
 }
-if(!empty($date_from)){ $base_sql .= " AND s.seizure_date >= ?"; $params[] = $date_from; $types .= "s"; }
-if(!empty($date_to)){ $base_sql .= " AND s.seizure_date <= ?"; $params[] = $date_to; $types .= "s"; }
-if(!empty($zone_filter)){ $base_sql .= " AND s.zone = ?"; $params[] = $zone_filter; $types .= "s"; }
+if ($date_from !== '')   { $base_sql .= " AND s.seizure_date >= ?"; $params[] = $date_from;   $types .= "s"; }
+if ($date_to   !== '')   { $base_sql .= " AND s.seizure_date <= ?"; $params[] = $date_to;     $types .= "s"; }
+if ($zone_filter !== '') { $base_sql .= " AND s.zone = ?";          $params[] = $zone_filter; $types .= "s"; }
 
-// --- Get Total Records for Pagination ---
-$count_stmt = $conn->prepare("SELECT COUNT(*) as total " . $base_sql);
-if(!empty($params)){ $count_stmt->bind_param($types, ...$params); }
+// --- Count ---
+$count_stmt = $conn->prepare("SELECT COUNT(*) AS total " . $base_sql);
+if (!empty($params)) { $count_stmt->bind_param($types, ...$params); }
 $count_stmt->execute();
-$total_records = $count_stmt->get_result()->fetch_assoc()['total'];
-$total_pages = ceil($total_records / $limit);
+$total_records = (int) ($count_stmt->get_result()->fetch_assoc()['total'] ?? 0);
+$total_pages   = max(1, (int) ceil($total_records / $limit));
 
+if ($page > $total_pages) { $page = $total_pages; $offset = ($page - 1) * $limit; }
 
-// --- Get Records for Current Page ---
-$data_sql = "SELECT s.*, u.full_name as inspector_name " . $base_sql . " ORDER BY s.seizure_date DESC, s.session_id DESC LIMIT ? OFFSET ?";
+// --- Data ---
+$data_sql    = "SELECT s.*, u.full_name AS inspector_name, u.username AS inspector_username "
+             . $base_sql
+             . " ORDER BY s.seizure_date DESC, s.session_id DESC LIMIT ? OFFSET ?";
 $data_params = array_merge($params, [$limit, $offset]);
-$data_types = $types . "ii";
+$data_types  = $types . "ii";
 
 $stmt = $conn->prepare($data_sql);
 $stmt->bind_param($data_types, ...$data_params);
 $stmt->execute();
 $sessions = $stmt->get_result();
+
+// --- Export URL (server-rendered) ---
+$exportParams = $_GET;
+unset($exportParams['page']);
+$exportQuery = http_build_query($exportParams);
 ?>
 
-<!-- Filters & Toolbar -->
-<div class="table-toolbar">
-    <form id="seizureFilterForm" method="GET" class="table-toolbar-filters" style="flex: 1; min-width: 0;">
-        <input type="hidden" name="view" value="seizures">
+<!-- Summary strip -->
+<div class="history-summary">
+    <div class="history-stat">
+        <div class="history-stat-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
+        <div class="history-stat-label">Sessions</div>
+        <div class="history-stat-value hist-counter"
+             data-target="<?= $total_records ?>">0</div>
+    </div>
 
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="date_from"><?php echo __('from'); ?></label>
-            <input type="date" name="date_from" id="date_from" class="form-input" value="<?php echo htmlspecialchars($date_from); ?>">
+    <?php if ($total_pages > 1): ?>
+    <div class="history-stat">
+        <div class="history-stat-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></div>
+        <div class="history-stat-label">Page</div>
+        <div class="history-stat-value">
+            <?= $page ?> <span style="color: var(--color-text-muted); font-weight: 500;">/ <?= $total_pages ?></span>
         </div>
+    </div>
+    <?php endif; ?>
+</div>
 
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="date_to"><?php echo __('to'); ?></label>
-            <input type="date" name="date_to" id="date_to" class="form-input" value="<?php echo htmlspecialchars($date_to); ?>">
-        </div>
+<!-- Filter bar -->
+<form id="seizureFilterForm" method="GET" class="history-filters">
+    <input type="hidden" name="view" value="seizures">
 
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="zone_filter"><?php echo __('zone'); ?></label>
-            <input type="text" name="zone_filter" id="zone_filter" class="form-input" placeholder="e.g. Central" value="<?php echo htmlspecialchars($zone_filter); ?>">
-        </div>
+    <div class="form-field">
+        <label class="form-label" for="date_from"><?php echo __('from'); ?></label>
+        <input type="date" name="date_from" id="date_from" class="form-input"
+               max="<?= date('Y-m-d') ?>"
+               value="<?= htmlspecialchars($date_from) ?>">
+    </div>
 
-        <button type="submit" class="btn btn-primary" style="height: fit-content; margin-top: auto;"><?php echo __('btn_apply'); ?></button>
-    </form>
+    <div class="form-field">
+        <label class="form-label" for="date_to"><?php echo __('to'); ?></label>
+        <input type="date" name="date_to" id="date_to" class="form-input"
+               max="<?= date('Y-m-d') ?>"
+               value="<?= htmlspecialchars($date_to) ?>">
+    </div>
 
-    <div class="table-toolbar-actions">
-        <a href="#" id="exportSeizureExcelBtn" class="btn btn-success">
+    <div class="form-field">
+        <label class="form-label" for="zone_filter"><?php echo __('zone'); ?></label>
+        <input type="text" name="zone_filter" id="zone_filter" class="form-input"
+               placeholder="e.g. Central"
+               value="<?= htmlspecialchars($zone_filter) ?>">
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <?php echo __('btn_apply'); ?>
+    </button>
+
+    <div class="history-actions">
+        <a href="export_seizures_excel.php?<?= htmlspecialchars($exportQuery) ?>"
+           id="exportSeizureExcelBtn"
+           class="history-export-btn history-export-btn-csv">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
-            Export to Excel
+            CSV
         </a>
-        <a href="#" id="exportSeizurePdfBtn" class="btn btn-danger">
+        <a href="export_seizures_pdf.php?<?= htmlspecialchars($exportQuery) ?>"
+           id="exportSeizurePdfBtn"
+           class="history-export-btn history-export-btn-pdf">
             <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
-            Export to PDF
+            PDF
         </a>
     </div>
-</div>
+</form>
 
 <!-- Results -->
 <?php if ($sessions->num_rows > 0): ?>
-    <?php while($session = $sessions->fetch_assoc()): ?>
+    <?php $si = 0; while ($session = $sessions->fetch_assoc()): $si++; ?>
         <?php
-        $items_sql = "SELECT * FROM seizure_items WHERE session_id = ?";
-        $items_stmt = $conn->prepare($items_sql);
-        $items_stmt->bind_param("i", $session['session_id']);
+        // Fetch items for this session
+        $items_stmt = $conn->prepare("SELECT * FROM seizure_items WHERE session_id = ?");
+        $items_stmt->bind_param('i', $session['session_id']);
         $items_stmt->execute();
         $items_result = $items_stmt->get_result();
+        $item_count   = $items_result->num_rows;
         ?>
-        <div class="card" style="margin-bottom: var(--space-4);">
-            <div class="card-header">
-                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3);">
-                    <div>
-                        <h3 class="card-title" style="font-size: var(--text-lg); margin: 0;">
-                            <?php echo htmlspecialchars($session['team_leader_name']); ?>
-                        </h3>
-                        <div style="display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-1); font-size: var(--text-sm); color: var(--color-text-muted);">
-                            <span><i class="fa-solid fa-map-marker-alt" aria-hidden="true"></i> Zone <?php echo htmlspecialchars($session['zone']); ?></span>
-                            <span><i class="fa-solid fa-hashtag" aria-hidden="true"></i> Team <?php echo htmlspecialchars($session['team_number']); ?></span>
-                            <span><i class="fa-solid fa-user" aria-hidden="true"></i> <?php echo htmlspecialchars($session['inspector_name'] ?? $session['username']); ?></span>
-                            <span><i class="fa-solid fa-calendar" aria-hidden="true"></i> <?php echo $session['seizure_date']; ?></span>
-                        </div>
+        <div class="seizure-session hist-rise" style="--d: <?= min($si * 60, 400) ?>ms;">
+            <div class="seizure-head">
+                <div>
+                    <h3 class="seizure-title">
+                        <?= htmlspecialchars($session['team_leader_name']) ?>
+                    </h3>
+                    <div class="seizure-meta">
+                        <span><i class="fa-solid fa-map-marker-alt" aria-hidden="true"></i> Zone <?= htmlspecialchars($session['zone']) ?></span>
+                        <span><i class="fa-solid fa-hashtag" aria-hidden="true"></i> Team <?= htmlspecialchars($session['team_number']) ?></span>
+                        <span>
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            <?= htmlspecialchars($session['inspector_name'] ?? $session['inspector_username'] ?? '—') ?>
+                        </span>
+                        <span><i class="fa-solid fa-calendar" aria-hidden="true"></i> <?= htmlspecialchars($session['seizure_date']) ?></span>
                     </div>
-                    <span class="badge badge-primary"><?php echo $items_result->num_rows; ?> items</span>
                 </div>
+                <span class="seizure-item-count">
+                    <?= $item_count ?> item<?= $item_count === 1 ? '' : 's' ?>
+                </span>
             </div>
 
-            <div class="card-body" style="padding: 0;">
+            <?php if ($item_count > 0): ?>
                 <div class="table-wrapper">
-                    <table class="table responsive-table">
+                    <table class="table responsive-table hist-table">
                         <thead>
                             <tr>
                                 <th>Item</th>
@@ -117,96 +169,60 @@ $sessions = $stmt->get_result();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($item = $items_result->fetch_assoc()): ?>
-                            <tr>
-                                <td data-label="Item"><?php echo htmlspecialchars($item['item_details']); ?></td>
-                                <td data-label="Qty"><?php echo $item['quantity']; ?></td>
-                                <td data-label="Owner"><?php echo htmlspecialchars($item['owner_merchant_name']); ?></td>
-                                <td data-label="Location"><?php echo htmlspecialchars($item['seizure_location']); ?></td>
-                                <td data-label="Godown No."><?php echo htmlspecialchars($item['godown_register_no']); ?></td>
+                            <?php $ri = 0; while ($item = $items_result->fetch_assoc()): $ri++; ?>
+                            <tr class="hist-row" style="--d: <?= min(($si * 60) + ($ri * 25), 600) ?>ms;">
+                                <td data-label="Item"><?= htmlspecialchars($item['item_details']) ?></td>
+                                <td data-label="Qty"><?= (int) $item['quantity'] ?></td>
+                                <td data-label="Owner"><?= htmlspecialchars($item['owner_merchant_name'] ?? '') ?></td>
+                                <td data-label="Location"><?= htmlspecialchars($item['seizure_location'] ?? '') ?></td>
+                                <td data-label="Godown No."><?= htmlspecialchars($item['godown_register_no'] ?? '') ?></td>
                             </tr>
                             <?php endwhile; ?>
                         </tbody>
                     </table>
                 </div>
-            </div>
+            <?php else: ?>
+                <div style="padding: 22px; text-align: center; color: var(--color-text-muted); font-size: 0.85rem;">
+                    <i class="fa-solid fa-inbox" style="opacity: 0.5;" aria-hidden="true"></i>
+                    No items recorded for this session
+                </div>
+            <?php endif; ?>
         </div>
     <?php endwhile; ?>
+
+    <?= hist_render_pagination($page, $total_pages) ?>
+
 <?php else: ?>
     <div class="card">
-        <div class="card-body">
-            <div class="empty-state" style="margin: 0; border: none; border-radius: 0; background: transparent;">
-                <div class="empty-state-icon">
-                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                </div>
-                <p class="empty-state-title">No seizure records found</p>
-                <p class="empty-state-message">Try adjusting your filters or date range</p>
+        <div class="history-empty">
+            <div class="history-empty-icon">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             </div>
+            <p class="history-empty-title">No seizure records found</p>
+            <p class="history-empty-msg">
+                Try adjusting your filters or date range.
+            </p>
+            <a href="history.php?view=seizures" class="btn btn-secondary" style="margin-top: 8px;">
+                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                Clear Filters
+            </a>
         </div>
     </div>
 <?php endif; ?>
 
-<!-- Pagination Controls -->
-<?php if ($total_pages > 1): ?>
-<div class="pagination">
-    <?php
-    $queryParams = $_GET;
-    // Previous button
-    if ($page > 1) {
-        $queryParams['page'] = $page - 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link" aria-label="Previous page">&laquo; Previous</a>';
-    }
-
-    // Page number links
-    $start = max(1, $page - 2);
-    $end = min($total_pages, $page + 2);
-
-    if ($start > 1) {
-        $queryParams['page'] = 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">1</a>';
-        if ($start > 2) {
-            echo '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
-        }
-    }
-
-    for ($i = $start; $i <= $end; $i++) {
-        $queryParams['page'] = $i;
-        $activeClass = ($i == $page) ? 'active' : '';
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link ' . $activeClass . '"' . ($i == $page ? ' aria-current="page"' : '') . '>' . $i . '</a>';
-    }
-
-    if ($end < $total_pages) {
-        if ($end < $total_pages - 1) {
-            echo '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
-        }
-        $queryParams['page'] = $total_pages;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">' . $total_pages . '</a>';
-    }
-
-    // Next button
-    if ($page < $total_pages) {
-        $queryParams['page'] = $page + 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link" aria-label="Next page">Next &raquo;</a>';
-    }
-    ?>
-</div>
-<?php endif; ?>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('seizureFilterForm');
-    const excelBtn = document.getElementById('exportSeizureExcelBtn');
-    const pdfBtn = document.getElementById('exportSeizurePdfBtn');
+(function () {
+    var form     = document.getElementById('seizureFilterForm');
+    var excelBtn = document.getElementById('exportSeizureExcelBtn');
+    var pdfBtn   = document.getElementById('exportSeizurePdfBtn');
+    if (!form || !excelBtn || !pdfBtn) return;
 
     function updateExportLinks() {
-        const formData = new FormData(form);
-        const params = new URLSearchParams(formData).toString();
+        var params = new URLSearchParams(new FormData(form)).toString();
         excelBtn.href = 'export_seizures_excel.php?' + params;
-        pdfBtn.href = 'export_seizures_pdf.php?' + params;
+        pdfBtn.href   = 'export_seizures_pdf.php?'   + params;
     }
 
-    updateExportLinks();
     form.addEventListener('change', updateExportLinks);
-    form.addEventListener('submit', updateExportLinks);
-});
+})();
 </script>

@@ -1,233 +1,253 @@
 <?php
-// --- Pagination Logic ---
-$limit = 10; // Records per page
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+/**
+ * history_tax_section.php
+ * Requires: $conn, $is_admin, hist_render_pagination() from history.php
+ */
+
+// --- Pagination (clamped) ---
+$limit  = 10;
+$page   = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $limit;
 
-// --- Filter Logic ---
-$date_from = $_GET['date_from'] ?? '';
-$date_to = $_GET['date_to'] ?? '';
-$status = $_GET['status'] ?? '';
+// --- Filters ---
+$date_from    = $_GET['date_from']    ?? '';
+$date_to      = $_GET['date_to']      ?? '';
+$status       = $_GET['status']       ?? '';
 $payment_mode = $_GET['payment_mode'] ?? '';
 
-$base_sql = "FROM transactions WHERE 1=1";
-$params = [];
-$types = "";
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) { $date_from = ''; }
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to))   { $date_to   = ''; }
 
-if(!$is_admin){
-    $base_sql .= " AND inspector_id = ?";
+// --- Base SQL (fixed: JOIN users so inspector name is available) ---
+$base_sql = "FROM transactions t LEFT JOIN users u ON t.inspector_id = u.user_id WHERE 1=1";
+$params   = [];
+$types    = "";
+
+if (!$is_admin) {
+    $base_sql .= " AND t.inspector_id = ?";
     $params[] = $_SESSION['user_id'];
     $types .= "i";
 }
-if(!empty($date_from)){ $base_sql .= " AND date(created_at)>= ?"; $params[]=$date_from; $types.="s"; }
-if(!empty($date_to)){ $base_sql .= " AND date(created_at)<=?"; $params[]=$date_to; $types.="s"; }
-if($is_admin && !empty($status)){ $base_sql.=" AND status=?"; $params[]=$status; $types.="s"; }
-if(!empty($payment_mode)){ $base_sql.=" AND payment_mode=?"; $params[]=$payment_mode; $types.="s"; }
+if ($date_from !== '')          { $base_sql .= " AND DATE(t.created_at) >= ?"; $params[] = $date_from;    $types .= "s"; }
+if ($date_to   !== '')          { $base_sql .= " AND DATE(t.created_at) <= ?"; $params[] = $date_to;      $types .= "s"; }
+if ($is_admin && $status !== '') { $base_sql .= " AND t.status = ?";           $params[] = $status;       $types .= "s"; }
+if ($payment_mode !== '')       { $base_sql .= " AND t.payment_mode = ?";      $params[] = $payment_mode; $types .= "s"; }
 
-// --- Get Total Records for Pagination ---
-$count_stmt = $conn->prepare("SELECT COUNT(*) as total " . $base_sql);
-if(!empty($params)){ $count_stmt->bind_param($types, ...$params); }
+// --- Count ---
+$count_stmt = $conn->prepare("SELECT COUNT(*) AS total " . $base_sql);
+if (!empty($params)) { $count_stmt->bind_param($types, ...$params); }
 $count_stmt->execute();
-$total_records = $count_stmt->get_result()->fetch_assoc()['total'];
-$total_pages = ceil($total_records / $limit);
+$total_records = (int) ($count_stmt->get_result()->fetch_assoc()['total'] ?? 0);
+$total_pages   = max(1, (int) ceil($total_records / $limit));
 
-// --- Get Records for Current Page ---
-$data_sql = "SELECT * " . $base_sql . " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+if ($page > $total_pages) { $page = $total_pages; $offset = ($page - 1) * $limit; }
+
+// --- Sum ---
+$sum_stmt = $conn->prepare("SELECT COALESCE(SUM(t.total_amount),0) AS total " . $base_sql);
+if (!empty($params)) { $sum_stmt->bind_param($types, ...$params); }
+$sum_stmt->execute();
+$sum_amount = (float) ($sum_stmt->get_result()->fetch_assoc()['total'] ?? 0);
+
+// --- Data ---
+$data_sql    = "SELECT t.*, u.username, u.full_name AS inspector_name " . $base_sql . " ORDER BY t.created_at DESC LIMIT ? OFFSET ?";
 $data_params = array_merge($params, [$limit, $offset]);
-$data_types = $types . "ii";
+$data_types  = $types . "ii";
 
 $stmt = $conn->prepare($data_sql);
 $stmt->bind_param($data_types, ...$data_params);
 $stmt->execute();
 $result = $stmt->get_result();
+
+// --- Export URL (server-rendered fallback) ---
+$exportParams = $_GET;
+unset($exportParams['page']);
+$exportQuery  = http_build_query($exportParams);
 ?>
 
-<!-- Filters & Toolbar -->
-<div class="table-toolbar">
-    <form id="filterForm" method="GET" class="table-toolbar-filters" style="flex: 1; min-width: 0;">
-        <input type="hidden" name="view" value="tax">
+<!-- Summary strip -->
+<div class="history-summary">
+    <div class="history-stat">
+        <div class="history-stat-icon"><i class="fa-solid fa-receipt" aria-hidden="true"></i></div>
+        <div class="history-stat-label">Records</div>
+        <div class="history-stat-value hist-counter"
+             data-target="<?= $total_records ?>">0</div>
+    </div>
 
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="date_from"><?php echo __('from'); ?></label>
-            <input type="date" name="date_from" id="date_from" class="form-input" value="<?php echo htmlspecialchars($date_from); ?>">
+    <div class="history-stat">
+        <div class="history-stat-icon"><i class="fa-solid fa-indian-rupee-sign" aria-hidden="true"></i></div>
+        <div class="history-stat-label">Total Amount</div>
+        <div class="history-stat-value hist-counter-currency"
+             data-target="<?= number_format($sum_amount, 2, '.', '') ?>">₹0.00</div>
+    </div>
+
+    <?php if ($total_pages > 1): ?>
+    <div class="history-stat">
+        <div class="history-stat-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></div>
+        <div class="history-stat-label">Page</div>
+        <div class="history-stat-value">
+            <?= $page ?> <span style="color: var(--color-text-muted); font-weight: 500;">/ <?= $total_pages ?></span>
         </div>
+    </div>
+    <?php endif; ?>
+</div>
 
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="date_to"><?php echo __('to'); ?></label>
-            <input type="date" name="date_to" id="date_to" class="form-input" value="<?php echo htmlspecialchars($date_to); ?>">
-        </div>
+<!-- Filter bar -->
+<form id="filterForm" method="GET" class="history-filters">
+    <input type="hidden" name="view" value="tax">
 
-        <?php if($is_admin): ?>
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="status"><?php echo __('status'); ?></label>
-            <select name="status" id="status" class="form-select">
-                <option value=""><?php echo __('all'); ?></option>
-                <option value="paid" <?php if($status=='paid') echo 'selected'; ?>><?php echo __('paid'); ?></option>
-                <option value="pending" <?php if($status=='pending') echo 'selected'; ?>><?php echo __('pending'); ?></option>
-            </select>
-        </div>
-        <?php endif; ?>
+    <div class="form-field">
+        <label class="form-label" for="date_from"><?php echo __('from'); ?></label>
+        <input type="date" name="date_from" id="date_from" class="form-input"
+               max="<?= date('Y-m-d') ?>"
+               value="<?= htmlspecialchars($date_from) ?>">
+    </div>
 
-        <div class="form-field" style="margin-bottom: 0;">
-            <label class="form-label" for="payment_mode"><?php echo __('payment_mode'); ?></label>
-            <select name="payment_mode" id="payment_mode" class="form-select">
-                <option value=""><?php echo __('all'); ?></option>
-                <option value="cash" <?php if($payment_mode=='cash') echo 'selected';?>><?php echo __('cash'); ?></option>
-                <option value="upi" <?php if($payment_mode=='upi') echo 'selected';?>><?php echo __('upi'); ?></option>
-            </select>
-        </div>
+    <div class="form-field">
+        <label class="form-label" for="date_to"><?php echo __('to'); ?></label>
+        <input type="date" name="date_to" id="date_to" class="form-input"
+               max="<?= date('Y-m-d') ?>"
+               value="<?= htmlspecialchars($date_to) ?>">
+    </div>
 
-        <button type="submit" class="btn btn-primary" style="height: fit-content; margin-top: auto;"><?php echo __('btn_apply'); ?></button>
-    </form>
+    <?php if ($is_admin): ?>
+    <div class="form-field">
+        <label class="form-label" for="status"><?php echo __('status'); ?></label>
+        <select name="status" id="status" class="form-select">
+            <option value=""><?php echo __('all'); ?></option>
+            <option value="paid"    <?= $status === 'paid'    ? 'selected' : '' ?>><?php echo __('paid'); ?></option>
+            <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>><?php echo __('pending'); ?></option>
+        </select>
+    </div>
+    <?php endif; ?>
 
-    <div class="table-toolbar-actions">
-        <a href="#" id="exportExcelBtn" class="btn btn-success">
+    <div class="form-field">
+        <label class="form-label" for="payment_mode"><?php echo __('payment_mode'); ?></label>
+        <select name="payment_mode" id="payment_mode" class="form-select">
+            <option value=""><?php echo __('all'); ?></option>
+            <option value="cash" <?= $payment_mode === 'cash' ? 'selected' : '' ?>><?php echo __('cash'); ?></option>
+            <option value="upi"  <?= $payment_mode === 'upi'  ? 'selected' : '' ?>><?php echo __('upi'); ?></option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <?php echo __('btn_apply'); ?>
+    </button>
+
+    <div class="history-actions">
+        <a href="export_tax_excel.php?<?= htmlspecialchars($exportQuery) ?>"
+           id="exportExcelBtn"
+           class="history-export-btn history-export-btn-csv">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
-            Export to Excel
+            CSV
         </a>
-        <a href="#" id="exportPdfBtn" class="btn btn-danger">
+        <a href="export_tax_pdf.php?<?= htmlspecialchars($exportQuery) ?>"
+           id="exportPdfBtn"
+           class="history-export-btn history-export-btn-pdf">
             <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
-            Export to PDF
+            PDF
         </a>
     </div>
-</div>
+</form>
 
-<!-- Results Table -->
-<div class="card" style="border: none; box-shadow: none; background: transparent;">
-    <div class="card-body" style="padding: 0;">
-        <div class="table-wrapper">
-            <table class="table responsive-table">
-                <thead>
-                    <tr>
-                        <th><?php echo __('th_shop'); ?></th>
-                        <th><?php echo __('th_amount'); ?></th>
-                        <?php if($is_admin): ?><th><?php echo __('th_status'); ?></th><?php endif; ?>
-                        <th><?php echo __('payment_mode'); ?></th>
-                        <th><?php echo __('th_time'); ?></th>
-                        <th style="width: 80px;"></th>
+<!-- Results table -->
+<?php if ($result->num_rows > 0): ?>
+    <div class="table-wrapper">
+        <table class="table responsive-table hist-table">
+            <thead>
+                <tr>
+                    <th><?php echo __('th_shop'); ?></th>
+                    <th><?php echo __('th_amount'); ?></th>
+                    <?php if ($is_admin): ?><th><?php echo __('th_status'); ?></th><?php endif; ?>
+                    <th><?php echo __('payment_mode'); ?></th>
+                    <th><?php echo __('th_time'); ?></th>
+                    <th style="width: 90px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $i = 0; while ($row = $result->fetch_assoc()): $i++; ?>
+                    <tr class="hist-row" style="--d: <?= min($i * 35, 500) ?>ms;">
+                        <td data-label="<?php echo __('th_shop'); ?>">
+                            <strong><?= htmlspecialchars($row['shop_name']) ?></strong>
+                            <?php if ($is_admin && !empty($row['inspector_name'])): ?>
+                                <br><small style="color: var(--color-text-muted);">
+                                    <i class="fa-solid fa-user" style="opacity: 0.55;" aria-hidden="true"></i>
+                                    <?= htmlspecialchars($row['inspector_name']) ?>
+                                </small>
+                            <?php endif; ?>
+                        </td>
+                        <td data-label="<?php echo __('th_amount'); ?>">
+                            <span style="font-weight: 600; color: var(--color-success);">
+                                ₹<?= number_format((float) $row['total_amount'], 2) ?>
+                            </span>
+                        </td>
+                        <?php if ($is_admin): ?>
+                        <td data-label="<?php echo __('th_status'); ?>">
+                            <?php
+                            $statusClass = $row['status'] === 'paid' ? 'success' : ($row['status'] === 'pending' ? 'warning' : 'danger');
+                            $statusIcon  = $row['status'] === 'paid' ? 'check'   : ($row['status'] === 'pending' ? 'clock'   : 'xmark');
+                            ?>
+                            <span class="badge badge-<?= $statusClass ?> badge-dot">
+                                <i class="fa-solid fa-<?= $statusIcon ?>" aria-hidden="true"></i>
+                                <?= __($row['status']) ?>
+                            </span>
+                        </td>
+                        <?php endif; ?>
+                        <td data-label="<?php echo __('payment_mode'); ?>">
+                            <span class="badge badge-<?= $row['payment_mode'] === 'upi' ? 'primary' : 'neutral' ?>">
+                                <?= __($row['payment_mode']) ?>
+                            </span>
+                        </td>
+                        <td data-label="<?php echo __('th_time'); ?>">
+                            <?= date('d M Y, h:i A', strtotime($row['created_at'])) ?>
+                        </td>
+                        <td>
+                            <a href="payment.php?id=<?= (int) $row['transaction_id'] ?><?= $row['status'] === 'paid' ? '&paid=1' : '' ?>"
+                               class="table-action-btn">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                View
+                            </a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php if ($result->num_rows > 0): ?>
-                        <?php while($row = $result->fetch_assoc()): ?>
-                            <tr>
-                                <td data-label="<?php echo __('th_shop'); ?>">
-                                    <strong><?php echo htmlspecialchars($row['shop_name']); ?></strong>
-                                    <?php if ($is_admin): ?>
-                                        <br><small style="color: var(--color-text-muted);"><?php echo htmlspecialchars($row['username'] ?? ''); ?></small>
-                                    <?php endif; ?>
-                                </td>
-                                <td data-label="<?php echo __('th_amount'); ?>">
-                                    <span style="font-weight: 600; color: var(--color-success);">₹<?php echo number_format($row['total_amount'],2); ?></span>
-                                </td>
-                                <?php if($is_admin): ?>
-                                <td data-label="<?php echo __('th_status'); ?>">
-                                    <?php
-                                    $statusClass = $row['status']=='paid' ? 'success' : ($row['status']=='pending' ? 'warning' : 'danger');
-                                    $statusIcon = $row['status']=='paid' ? 'check' : ($row['status']=='pending' ? 'clock' : 'xmark');
-                                    ?>
-                                    <span class="badge badge-<?= $statusClass ?> badge-dot">
-                                        <i class="fa-solid fa-<?= $statusIcon ?>" aria-hidden="true"></i>
-                                        <?php echo __($row['status']); ?>
-                                    </span>
-                                </td>
-                                <?php endif; ?>
-                                <td data-label="<?php echo __('payment_mode'); ?>">
-                                    <span class="badge badge-<?= $row['payment_mode'] === 'upi' ? 'primary' : 'neutral' ?>">
-                                        <?php echo __($row['payment_mode']); ?>
-                                    </span>
-                                </td>
-                                <td data-label="<?php echo __('th_time'); ?>"><?php echo date('d M Y, h:i A', strtotime($row['created_at'])); ?></td>
-                                <td>
-                                    <a href="payment.php?id=<?php echo $row['transaction_id']; ?><?php echo $row['status'] === 'paid' ? '&paid=1' : ''; ?>" class="table-action-btn" style="padding: var(--space-1) var(--space-2); font-size: var(--text-xs);">
-                                        View
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="<?php echo $is_admin ? 6 : 5; ?>" style="text-align: center; padding: var(--space-12);">
-                                <div class="empty-state" style="margin: 0; border: none; border-radius: 0; padding: var(--space-8); background: transparent;">
-                                    <div class="empty-state-icon" style="width: 48px; height: 48px; font-size: 1.5rem;">
-                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                                    </div>
-                                    <p class="empty-state-title" style="font-size: var(--text-base);">No records found</p>
-                                    <p class="empty-state-message" style="font-size: var(--text-sm);">Try adjusting your filters or date range</p>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?= hist_render_pagination($page, $total_pages) ?>
+
+<?php else: ?>
+    <div class="card">
+        <div class="history-empty">
+            <div class="history-empty-icon">
+                <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+            </div>
+            <p class="history-empty-title">No records found</p>
+            <p class="history-empty-msg">
+                Try adjusting your filters or date range.
+            </p>
+            <a href="history.php?view=tax" class="btn btn-secondary" style="margin-top: 8px;">
+                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                Clear Filters
+            </a>
         </div>
     </div>
-</div>
-
-<!-- Pagination Controls -->
-<?php if ($total_pages > 1): ?>
-<div class="pagination">
-    <?php
-    $queryParams = $_GET;
-    // Previous button
-    if ($page > 1) {
-        $queryParams['page'] = $page - 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link" aria-label="Previous page">&laquo; Previous</a>';
-    }
-
-    // Page number links
-    $start = max(1, $page - 2);
-    $end = min($total_pages, $page + 2);
-
-    if ($start > 1) {
-        $queryParams['page'] = 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">1</a>';
-        if ($start > 2) {
-            echo '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
-        }
-    }
-
-    for ($i = $start; $i <= $end; $i++) {
-        $queryParams['page'] = $i;
-        $activeClass = ($i == $page) ? 'active' : '';
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link ' . $activeClass . '"' . ($i == $page ? ' aria-current="page"' : '') . '>' . $i . '</a>';
-    }
-
-    if ($end < $total_pages) {
-        if ($end < $total_pages - 1) {
-            echo '<span class="pagination-ellipsis" aria-hidden="true">...</span>';
-        }
-        $queryParams['page'] = $total_pages;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link">' . $total_pages . '</a>';
-    }
-
-    // Next button
-    if ($page < $total_pages) {
-        $queryParams['page'] = $page + 1;
-        echo '<a href="?' . http_build_query($queryParams) . '" class="pagination-link" aria-label="Next page">Next &raquo;</a>';
-    }
-    ?>
-</div>
 <?php endif; ?>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('filterForm');
-    const excelBtn = document.getElementById('exportExcelBtn');
-    const pdfBtn = document.getElementById('exportPdfBtn');
+/* Keep export URLs in sync as the user changes filters (nice UX). */
+(function () {
+    var form     = document.getElementById('filterForm');
+    var excelBtn = document.getElementById('exportExcelBtn');
+    var pdfBtn   = document.getElementById('exportPdfBtn');
+    if (!form || !excelBtn || !pdfBtn) return;
 
     function updateExportLinks() {
-        const formData = new FormData(form);
-        const params = new URLSearchParams(formData).toString();
+        var params = new URLSearchParams(new FormData(form)).toString();
         excelBtn.href = 'export_tax_excel.php?' + params;
-        pdfBtn.href = 'export_tax_pdf.php?' + params;
+        pdfBtn.href   = 'export_tax_pdf.php?'   + params;
     }
 
-    // Update on page load
-    updateExportLinks();
-
-    // Update when any filter changes
     form.addEventListener('change', updateExportLinks);
-    form.addEventListener('submit', updateExportLinks);
-});
+})();
 </script>
