@@ -82,21 +82,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log_seizure'])) {
         $conn->begin_transaction();
         try {
             // Session header
-            $stmt = $conn->prepare(
-                "INSERT INTO seizure_sessions
-                    (inspector_id, team_leader_name, zone, team_number,
-                     seizure_date, operation_location, session_notes)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)"
-            );
-            $stmt->bind_param(
-                'issssss',
-                $_SESSION['user_id'], $t_leader, $zone, $t_no,
-                $s_date,
-                ($op_loc  === '' ? null : $op_loc),
-                ($s_notes === '' ? null : $s_notes)
-            );
-            $stmt->execute();
-            $session_id = (int) $conn->insert_id;
+            // PHP 7.2 requires bind_param arguments to be simple variables.
+// Evaluate ternaries into locals first.
+$op_loc_val  = ($op_loc  === '' ? null : $op_loc);
+$s_notes_val = ($s_notes === '' ? null : $s_notes);
+$insp_id     = (int) $_SESSION['user_id'];
+
+$stmt = $conn->prepare(
+    "INSERT INTO seizure_sessions
+        (inspector_id, team_leader_name, zone, team_number,
+         seizure_date, operation_location, session_notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?)"
+);
+$stmt->bind_param(
+    'issssss',
+    $insp_id,
+    $t_leader,
+    $zone,
+    $t_no,
+    $s_date,
+    $op_loc_val,
+    $s_notes_val
+);
+$stmt->execute();
+$session_id = (int) $conn->insert_id;
 
             // Items
             $item_stmt = $conn->prepare(
@@ -129,17 +138,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log_seizure'])) {
                 if (strlen($cond)   > 20)  { $cond   = substr($cond, 0, 20); }
 
                 $item_stmt->bind_param(
-                    'issisdsss',
-                    $session_id,
-                    $g_no,
-                    $item_detail,
-                    $cat,
-                    $qty,
-                    $val,
-                    $cond,
-                    $owner,
-                    $loc
-                );
+    'isssidsss',
+    $session_id,
+    $g_no,
+    $item_detail,
+    $cat,
+    $qty,
+    $val,
+    $cond,
+    $owner,
+    $loc
+);
                 $item_stmt->execute();
                 $saved_count++;
             }
@@ -167,14 +176,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log_seizure'])) {
     $realError = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
 
     $msg = "<div class='sz-alert sz-alert-danger'>
-        <i class='fa-solid fa-triangle-exclamation' aria-hidden='true'></i>
-        <div>
-            <strong>Could not save the seizure report.</strong>
-            <p style='margin:6px 0 0; font-family: monospace; font-size: 0.78rem; word-break: break-all;'>
-                {$realError}
-            </p>
-        </div>
-    </div>";
+    <i class='fa-solid fa-triangle-exclamation' aria-hidden='true'></i>
+    <div>
+        <strong>Could not save the seizure report.</strong>
+        <p style='margin:4px 0 0;'>Please try again. If the problem persists, contact your administrator.</p>
+    </div>
+</div>";
 }
     }
 }
