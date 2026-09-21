@@ -1,34 +1,627 @@
 <?php
-// TEMPORARY — remove after debugging Sprint 2.
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-// Shared Responsive App Navigation
-// Replaces admin_sidebar.php and inspector_nav.php
-// Desktop: Left sidebar for both roles
-// Mobile: Top bar + Bottom nav for both roles
-// Role only changes menu items, not layout
+/**
+ * app_nav.php — Shared responsive navigation for DigiShulk.
+ * Loaded by header.php. Handles both admin and inspector roles.
+ *
+ * Self-contained styles — does NOT depend on style2.css beyond
+ * theme CSS variables.
+ */
 
 require_once __DIR__ . '/helpers/csrf.php';
 
 $user_role = $_SESSION['role'] ?? 'guest';
 $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User');
 
-// Defensive: header.php normally defines $userPhoto; fall back if not.
 if (!isset($userPhoto) || $userPhoto === '') {
     $userPhoto = 'uploads/profile/default.jpg';
 }
+
+$is_admin   = ($user_role === 'admin');
+$is_insp    = ($user_role === 'inspector');
+$home_link  = $is_admin ? 'admin_dashboard.php' : 'dashboard.php';
+$initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 ?>
 
-<!-- Desktop Sidebar (both roles) -->
+<style>
+/* ================================================================
+   DigiShulk — Shared navigation styles
+   Scoped to nav classes only. Zero impact on page content.
+   ================================================================ */
+
+/* ---------------- Animations ---------------- */
+@keyframes navFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes navSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes navIconBounce {
+    0%   { transform: translateY(0); }
+    40%  { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+}
+@keyframes navPulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.35); }
+    70%      { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+}
+@keyframes navShimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+}
+@keyframes navSpinOnce {
+    from { transform: rotate(0deg) scale(1); }
+    to   { transform: rotate(360deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-sidebar *, .app-topbar *, .app-bottom-nav *, .profile-dropdown * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ================================================================
+   DESKTOP SIDEBAR
+   ================================================================ */
+.app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: linear-gradient(180deg,
+        #0b1220 0%,
+        #0f172a 40%,
+        #0a101e 100%);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid rgba(148, 163, 184, 0.08);
+    animation: navFadeIn 0.4s ease-out both;
+}
+
+/* Brand */
+.app-sidebar .sidebar-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 20px;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    position: relative;
+}
+.app-sidebar .sidebar-brand::after {
+    content: '';
+    position: absolute;
+    left: 20px; right: 20px; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
+}
+.app-sidebar .sidebar-brand .logo {
+    width: 120px;
+    height: 34px;
+    background: url('assets/logo.png') no-repeat center / contain;
+    filter: brightness(1.1);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
+.app-sidebar .sidebar-brand:hover .logo {
+    transform: scale(1.05);
+    filter: brightness(1.25);
+}
+
+/* Nav list */
+.app-sidebar .sidebar-nav { padding: 14px 12px; flex: 1; }
+.app-sidebar .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+
+.app-sidebar .nav-list li { margin: 0; }
+
+.app-sidebar .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+.app-sidebar .nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 60%;
+    background: linear-gradient(180deg, #3b82f6, #6366f1);
+    border-radius: 0 4px 4px 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.app-sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s ease;
+}
+.app-sidebar .nav-link span {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-sidebar .nav-link:hover {
+    background: rgba(59, 130, 246, 0.08);
+    color: #e2e8f0;
+}
+.app-sidebar .nav-link:hover::before { transform: translateY(-50%) scaleY(1); }
+.app-sidebar .nav-link:hover i { transform: scale(1.15); color: #60a5fa; }
+
+.app-sidebar .nav-link.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.20), rgba(99, 102, 241, 0.14));
+    color: #fff;
+    box-shadow: 0 8px 20px -10px rgba(59, 130, 246, 0.6),
+                inset 0 0 0 1px rgba(59, 130, 246, 0.28);
+}
+.app-sidebar .nav-link.active::before { transform: translateY(-50%) scaleY(1); }
+.app-sidebar .nav-link.active i { color: #93c5fd; }
+.app-sidebar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+    background-size: 200% 100%;
+    animation: navShimmer 4s linear infinite;
+    pointer-events: none;
+    border-radius: 10px;
+}
+
+/* Sidebar footer */
+.app-sidebar .sidebar-footer {
+    padding: 14px 12px 18px;
+    border-top: 1px solid rgba(148, 163, 184, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.app-sidebar .user-profile {
+    border-radius: 12px;
+    transition: background 0.25s ease;
+}
+.app-sidebar .profile-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    background: rgba(148, 163, 184, 0.05);
+    transition: background 0.22s ease, transform 0.22s ease;
+}
+.app-sidebar .profile-link:hover {
+    background: rgba(59, 130, 246, 0.10);
+    transform: translateY(-1px);
+}
+.app-sidebar .nav-profile-photo {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(59, 130, 246, 0.35);
+    background: #1e293b;
+    flex-shrink: 0;
+    transition: border-color 0.25s ease;
+}
+.app-sidebar .profile-link:hover .nav-profile-photo {
+    border-color: rgba(59, 130, 246, 0.7);
+}
+.app-sidebar .profile-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.app-sidebar .profile-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.app-sidebar .profile-role {
+    font-size: 0.72rem;
+    color: #64748b;
+    text-transform: capitalize;
+    margin-top: 1px;
+}
+
+/* Sidebar logout button (form + button) */
+.app-sidebar form.nav-link.logout-link,
+.app-sidebar button.nav-link.logout-link {
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: #94a3b8;
+    padding: 11px 14px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.22s ease, color 0.22s ease;
+}
+.app-sidebar form.nav-link.logout-link:hover,
+.app-sidebar button.nav-link.logout-link:hover {
+    background: rgba(239, 68, 68, 0.10);
+    color: #fca5a5;
+}
+.app-sidebar form.nav-link.logout-link:hover i,
+.app-sidebar button.nav-link.logout-link:hover i {
+    transform: translateX(2px);
+    color: #f87171;
+}
+
+/* ================================================================
+   TOP BAR (desktop)
+   ================================================================ */
+.app-topbar.desktop {
+    position: fixed;
+    top: 0;
+    left: 260px;
+    right: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    z-index: 90;
+    animation: navFadeIn 0.4s ease-out 0.1s both;
+}
+
+.app-topbar.desktop .topbar-start { flex: 0 0 auto; }
+.app-topbar.desktop .topbar-center { flex: 1; display: flex; justify-content: center; }
+.app-topbar.desktop .topbar-end    { flex: 0 0 auto; }
+
+.app-topbar.desktop .topbar-brand { display: none; } /* brand lives in sidebar on desktop */
+
+/* Search */
+.topbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 560px;
+    width: 100%;
+}
+.search-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+.search-btn:hover {
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #93c5fd;
+    transform: translateY(-1px);
+}
+.search-btn:hover i {
+    animation: navIconBounce 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#spotlightDesktop {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 10px;
+    color: #e2e8f0;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+#spotlightDesktop:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
+    background: rgba(148, 163, 184, 0.08);
+}
+
+/* Profile trigger */
+.topbar-profile { position: relative; }
+.profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 6px 6px;
+    background: rgba(148, 163, 184, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 999px;
+    cursor: pointer;
+    color: #e2e8f0;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.profile-trigger:hover {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+.profile-trigger .nav-profile-photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    background: #1e293b;
+}
+.profile-trigger .caret {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.profile-trigger[aria-expanded="true"] .caret {
+    transform: rotate(180deg);
+}
+
+/* Dropdown */
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 260px;
+    background: linear-gradient(180deg, #131c2e 0%, #0f172a 100%);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 200;
+}
+.profile-dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.dropdown-header {
+    padding: 12px 12px 10px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+    margin-bottom: 6px;
+}
+.dropdown-user-info { display: flex; align-items: center; gap: 12px; }
+.dropdown-user-info .nav-profile-photo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(59, 130, 246, 0.35);
+    background: #1e293b;
+}
+.dropdown-user-details { min-width: 0; }
+.dropdown-user-name {
+    font-weight: 700;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dropdown-user-role {
+    font-size: 0.72rem;
+    color: #64748b;
+    text-transform: capitalize;
+}
+.dropdown-divider {
+    height: 1px;
+    background: rgba(148, 163, 184, 0.10);
+    margin: 6px 4px;
+}
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    cursor: pointer;
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    text-align: left;
+}
+.dropdown-item i {
+    width: 18px;
+    text-align: center;
+    color: #64748b;
+    transition: color 0.15s ease, transform 0.2s ease;
+}
+.dropdown-item:hover {
+    background: rgba(59, 130, 246, 0.10);
+    color: #fff;
+    transform: translateX(2px);
+}
+.dropdown-item:hover i { color: #60a5fa; transform: scale(1.1); }
+
+.dropdown-item.danger:hover {
+    background: rgba(239, 68, 68, 0.10);
+    color: #fca5a5;
+}
+.dropdown-item.danger:hover i { color: #f87171; }
+
+/* Dropdown logout form */
+.profile-dropdown form { margin: 0; }
+
+/* ================================================================
+   MOBILE
+   ================================================================ */
+.app-topbar.mobile { display: none; }
+.app-bottom-nav   { display: none; }
+
+@media (max-width: 900px) {
+    .app-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .app-sidebar.is-open { transform: translateX(0); }
+
+    .app-topbar.desktop { display: none; }
+    .app-topbar.mobile {
+        display: flex;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 56px;
+        padding: 0 14px;
+        align-items: center;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+        z-index: 95;
+    }
+    .app-topbar.mobile .topbar-start { flex: 1; }
+    .app-topbar.mobile .topbar-center { flex: 0 0 auto; }
+    .app-topbar.mobile .topbar-end { flex: 0 0 auto; }
+
+    .app-topbar.mobile .topbar-brand { display: flex; text-decoration: none; }
+    .app-topbar.mobile .topbar-brand .logo {
+        width: 100px;
+        height: 28px;
+        background: url('assets/logo.png') no-repeat center / contain;
+    }
+    .app-topbar.mobile .profile-avatar .nav-profile-photo {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(59, 130, 246, 0.4);
+        background: #1e293b;
+    }
+
+    /* Bottom nav */
+    .app-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 64px;
+        padding: 6px 4px env(safe-area-inset-bottom, 6px);
+        background: rgba(15, 23, 42, 0.96);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(148, 163, 184, 0.10);
+        z-index: 95;
+        justify-content: space-around;
+        align-items: center;
+    }
+    .app-bottom-nav .bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 6px 4px;
+        border-radius: 12px;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        transition: color 0.2s ease, transform 0.2s ease;
+        position: relative;
+    }
+    .app-bottom-nav .bottom-nav-item .nav-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: background 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+    }
+    .app-bottom-nav .bottom-nav-item:hover {
+        color: #cbd5e1;
+    }
+    .app-bottom-nav .bottom-nav-item:hover .nav-icon {
+        background: rgba(59, 130, 246, 0.10);
+        transform: translateY(-2px);
+    }
+    .app-bottom-nav .bottom-nav-item.active {
+        color: #60a5fa;
+    }
+    .app-bottom-nav .bottom-nav-item.active .nav-icon {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(99, 102, 241, 0.18));
+        color: #93c5fd;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px -6px rgba(59, 130, 246, 0.7);
+    }
+    .app-bottom-nav .bottom-nav-item.active::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 22px;
+        height: 3px;
+        border-radius: 0 0 4px 4px;
+        background: linear-gradient(90deg, #3b82f6, #6366f1);
+    }
+
+    /* Overlay */
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 99;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .sidebar-overlay.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+</style>
+
+<!-- ============ DESKTOP SIDEBAR ============ -->
 <aside class="app-sidebar" id="appSidebar" aria-label="Main navigation">
-    <a href="<?php echo $user_role === 'admin' ? 'admin_dashboard.php' : 'dashboard.php'; ?>" class="sidebar-brand" aria-label="DigiShulk Home">
+    <a href="<?= $home_link ?>" class="sidebar-brand" aria-label="DigiShulk Home">
         <div class="logo" aria-hidden="true"></div>
     </a>
 
     <nav class="sidebar-nav" role="navigation" aria-label="Primary">
         <ul class="nav-list">
-            <?php if ($user_role === 'admin'): ?>
+
+            <?php if ($is_admin): ?>
                 <li>
                     <a href="admin_dashboard.php" class="nav-link" data-page="dashboard">
                         <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
@@ -42,12 +635,19 @@ if (!isset($userPhoto) || $userPhoto === '') {
                     </a>
                 </li>
                 <li>
+                    <a href="undercharge_report.php" class="nav-link" data-page="undercharge">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <span>Undercharges</span>
+                    </a>
+                </li>
+                <li>
                     <a href="history.php" class="nav-link" data-page="history">
                         <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
                         <span>History</span>
                     </a>
                 </li>
-            <?php elseif ($user_role === 'inspector'): ?>
+
+            <?php elseif ($is_insp): ?>
                 <li>
                     <a href="dashboard.php" class="nav-link" data-page="dashboard">
                         <i class="fa-solid fa-house" aria-hidden="true"></i>
@@ -73,40 +673,46 @@ if (!isset($userPhoto) || $userPhoto === '') {
                     </a>
                 </li>
             <?php endif; ?>
+
             <li>
                 <a href="settings.php" class="nav-link" data-page="profile">
                     <i class="fa-solid fa-user" aria-hidden="true"></i>
                     <span>Profile</span>
                 </a>
             </li>
+
         </ul>
     </nav>
 
     <div class="sidebar-footer">
         <div class="user-profile" role="region" aria-label="User profile">
             <a href="settings.php" class="profile-link" aria-label="Profile settings">
-                <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="" aria-hidden="true">
+                <img src="<?= htmlspecialchars($userPhoto, ENT_QUOTES, 'UTF-8') ?>"
+                     class="nav-profile-photo"
+                     alt=""
+                     aria-hidden="true"
+                     onerror="this.src='uploads/profile/default.jpg'">
                 <div class="profile-info">
-                    <span class="profile-name"><?php echo $user_name; ?></span>
-                    <span class="profile-role"><?php echo ucfirst($user_role); ?></span>
+                    <span class="profile-name"><?= $user_name ?></span>
+                    <span class="profile-role"><?= htmlspecialchars(ucfirst($user_role), ENT_QUOTES, 'UTF-8') ?></span>
                 </div>
             </a>
         </div>
-        <form method="POST" action="logout.php" class="nav-link logout-link" style="margin:0;padding:0;display:contents;">
-    <?= csrf_field() ?>
-    <button type="submit" class="nav-link logout-link" aria-label="Sign out"
-            style="background:none;border:none;width:100%;text-align:left;cursor:pointer;color:inherit;padding:inherit;">
-        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-        <span>Logout</span>
-    </button>
-</form>
+
+        <form method="POST" action="logout.php" style="margin:0;">
+            <?= csrf_field() ?>
+            <button type="submit" class="nav-link logout-link" aria-label="Sign out">
+                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                <span>Logout</span>
+            </button>
+        </form>
     </div>
 </aside>
 
-<!-- Desktop Top Bar (both roles) -->
+<!-- ============ DESKTOP TOP BAR ============ -->
 <header class="app-topbar desktop" role="banner">
     <div class="topbar-start">
-        <a href="<?php echo $user_role === 'admin' ? 'admin_dashboard.php' : 'dashboard.php'; ?>" class="topbar-brand" aria-label="DigiShulk Home">
+        <a href="<?= $home_link ?>" class="topbar-brand" aria-label="DigiShulk Home">
             <div class="logo" aria-hidden="true"></div>
         </a>
     </div>
@@ -116,24 +722,44 @@ if (!isset($userPhoto) || $userPhoto === '') {
             <button class="search-btn js-open-search" aria-label="Search (Ctrl+K)" type="button">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>
-            <input type="text" id="spotlightDesktop" placeholder="Search shops, transactions, inspectors..." class="form-input" autocomplete="off" aria-label="Search" style="display: none;">
+            <input type="text"
+                   id="spotlightDesktop"
+                   placeholder="Search shops, transactions, inspectors..."
+                   class="form-input"
+                   autocomplete="off"
+                   aria-label="Search"
+                   style="display:none;">
         </div>
     </div>
 
     <div class="topbar-end">
         <div class="topbar-profile">
-            <button class="profile-trigger" id="profileTrigger" aria-label="Profile menu" aria-expanded="false" aria-haspopup="true" type="button">
-                <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="" aria-hidden="true">
-                <span class="profile-name"><?php echo $user_name; ?></span>
+            <button class="profile-trigger"
+                    id="profileTrigger"
+                    aria-label="Profile menu"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    type="button">
+                <img src="<?= htmlspecialchars($userPhoto, ENT_QUOTES, 'UTF-8') ?>"
+                     class="nav-profile-photo"
+                     alt=""
+                     aria-hidden="true"
+                     onerror="this.src='uploads/profile/default.jpg'">
+                <span class="profile-name"><?= $user_name ?></span>
                 <i class="fa-solid fa-chevron-down caret" aria-hidden="true"></i>
             </button>
+
             <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="Profile menu">
                 <div class="dropdown-header">
                     <div class="dropdown-user-info">
-                        <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="" aria-hidden="true">
+                        <img src="<?= htmlspecialchars($userPhoto, ENT_QUOTES, 'UTF-8') ?>"
+                             class="nav-profile-photo"
+                             alt=""
+                             aria-hidden="true"
+                             onerror="this.src='uploads/profile/default.jpg'">
                         <div class="dropdown-user-details">
-                            <div class="dropdown-user-name"><?php echo $user_name; ?></div>
-                            <div class="dropdown-user-role"><?php echo ucfirst($user_role); ?></div>
+                            <div class="dropdown-user-name"><?= $user_name ?></div>
+                            <div class="dropdown-user-role"><?= htmlspecialchars(ucfirst($user_role), ENT_QUOTES, 'UTF-8') ?></div>
                         </div>
                     </div>
                 </div>
@@ -147,46 +773,56 @@ if (!isset($userPhoto) || $userPhoto === '') {
                     Account
                 </a>
                 <div class="dropdown-divider"></div>
-                <a href="logout.php" class="dropdown-item danger" role="menuitem">
-                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-                    Logout
-                </a>
+                <form method="POST" action="logout.php" style="margin:0;">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="dropdown-item danger" role="menuitem">
+                        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                        Logout
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </header>
 
-<!-- Mobile Top Bar (both roles) -->
+<!-- ============ MOBILE TOP BAR ============ -->
 <header class="app-topbar mobile" role="banner">
     <div class="topbar-start">
-        <a href="<?php echo $user_role === 'admin' ? 'admin_dashboard.php' : 'dashboard.php'; ?>" class="topbar-brand" aria-label="DigiShulk Home">
+        <a href="<?= $home_link ?>" class="topbar-brand" aria-label="DigiShulk Home">
             <div class="logo" aria-hidden="true"></div>
         </a>
     </div>
 
     <div class="topbar-center">
-    <button class="search-btn js-open-search" aria-label="Search (Ctrl+K)" type="button">
-        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <button class="search-btn js-open-search" aria-label="Search (Ctrl+K)" type="button">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         </button>
     </div>
 
     <div class="topbar-end">
         <div class="profile-avatar" aria-hidden="true">
-            <img src="<?php echo $userPhoto; ?>" class="nav-profile-photo" alt="">
+            <img src="<?= htmlspecialchars($userPhoto, ENT_QUOTES, 'UTF-8') ?>"
+                 class="nav-profile-photo"
+                 alt=""
+                 onerror="this.src='uploads/profile/default.jpg'">
         </div>
     </div>
 </header>
 
-<!-- Mobile Bottom Navigation (both roles) -->
+<!-- ============ MOBILE BOTTOM NAV ============ -->
 <nav class="app-bottom-nav" role="navigation" aria-label="Primary mobile navigation">
-    <?php if ($user_role === 'admin'): ?>
+    <?php if ($is_admin): ?>
         <a href="admin_dashboard.php" class="bottom-nav-item" data-page="dashboard">
             <span class="nav-icon"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></span>
-            <span>Dashboard</span>
+            <span>Home</span>
         </a>
         <a href="add_inspector.php" class="bottom-nav-item" data-page="inspectors">
             <span class="nav-icon"><i class="fa-solid fa-users-gear" aria-hidden="true"></i></span>
             <span>Inspectors</span>
+        </a>
+        <a href="undercharge_report.php" class="bottom-nav-item" data-page="undercharge">
+            <span class="nav-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+            <span>Gaps</span>
         </a>
         <a href="history.php" class="bottom-nav-item" data-page="history">
             <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
@@ -196,7 +832,8 @@ if (!isset($userPhoto) || $userPhoto === '') {
             <span class="nav-icon"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
             <span>Profile</span>
         </a>
-    <?php elseif ($user_role === 'inspector'): ?>
+
+    <?php elseif ($is_insp): ?>
         <a href="dashboard.php" class="bottom-nav-item" data-page="dashboard">
             <span class="nav-icon"><i class="fa-solid fa-house" aria-hidden="true"></i></span>
             <span>Home</span>
@@ -220,134 +857,144 @@ if (!isset($userPhoto) || $userPhoto === '') {
     <?php endif; ?>
 </nav>
 
-<!-- Sidebar Overlay (mobile) -->
+<!-- ============ SIDEBAR OVERLAY (mobile) ============ -->
 <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
 <script>
-// Sidebar overlay close (no hamburger exists yet in the markup).
+/* ================================================================
+   DigiShulk — Shared nav runtime
+   ================================================================ */
 (function () {
-    const sidebar = document.getElementById('appSidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (!sidebar || !overlay) return;
+    'use strict';
 
-    overlay.addEventListener('click', function () {
-        sidebar.classList.remove('is-open');
-        overlay.classList.remove('is-visible');
-        document.body.style.overflow = '';
-    });
+    /* ---------- 1. Sidebar overlay close (mobile) ---------- */
+    (function () {
+        var sidebar = document.getElementById('appSidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        if (!sidebar || !overlay) return;
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+        function close() {
             sidebar.classList.remove('is-open');
             overlay.classList.remove('is-visible');
             document.body.style.overflow = '';
         }
-    });
-})();
-
-// Desktop Search Toggle — matches both desktop and mobile buttons.
-(function() {
-    const searchBtns = document.querySelectorAll('.js-open-search');
-    const spotlightDesktop = document.getElementById('spotlightDesktop');
-
-    searchBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            if (!spotlightDesktop) return;
-            const isVisible = spotlightDesktop.style.display !== 'none';
-            spotlightDesktop.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) spotlightDesktop.focus();
+        overlay.addEventListener('click', close);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('is-open')) close();
         });
-    });
+    })();
 
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && spotlightDesktop && spotlightDesktop.style.display !== 'none') {
-            spotlightDesktop.style.display = 'none';
-        }
-    });
-})();
+    /* ---------- 2. Search toggle (both buttons) ---------- */
+    (function () {
+        var buttons = document.querySelectorAll('.js-open-search');
+        var input   = document.getElementById('spotlightDesktop');
+        if (!input) return;
 
-// Profile Dropdown
-(function() {
-    const trigger = document.getElementById('profileTrigger');
-    const dropdown = document.getElementById('profileDropdown');
-    
-    if (!trigger || !dropdown) return;
-    
-    function toggleDropdown() {
-        const isOpen = dropdown.classList.contains('open');
-        dropdown.classList.toggle('open');
-        trigger.setAttribute('aria-expanded', !isOpen);
-    }
-    
-    trigger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleDropdown();
-    });
-    
-    // Close on click outside
-    document.addEventListener('click', function(e) {
-        if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
-            trigger.setAttribute('aria-expanded', 'false');
-        }
-    });
-    
-    // Close on Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && dropdown.classList.contains('open')) {
-            dropdown.classList.remove('open');
-            trigger.setAttribute('aria-expanded', 'false');
-            trigger.focus();
-        }
-    });
-    
-    // Keyboard navigation within dropdown
-    dropdown.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab') {
-            const focusableItems = dropdown.querySelectorAll('[role="menuitem"]');
-            const firstItem = focusableItems[0];
-            const lastItem = focusableItems[focusableItems.length - 1];
-            
-            if (e.shiftKey && document.activeElement === firstItem) {
-                e.preventDefault();
-                lastItem.focus();
-            } else if (!e.shiftKey && document.activeElement === lastItem) {
-                e.preventDefault();
-                firstItem.focus();
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var visible = input.style.display !== 'none';
+                input.style.display = visible ? 'none' : 'block';
+                if (!visible) input.focus();
+            });
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && input.style.display !== 'none') {
+                input.style.display = 'none';
             }
+            // Ctrl+K / Cmd+K shortcut
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                var visible = input.style.display !== 'none';
+                input.style.display = visible ? 'none' : 'block';
+                if (!visible) input.focus();
+            }
+        });
+    })();
+
+    /* ---------- 3. Profile dropdown ---------- */
+    (function () {
+        var trigger  = document.getElementById('profileTrigger');
+        var dropdown = document.getElementById('profileDropdown');
+        if (!trigger || !dropdown) return;
+
+        function toggle(open) {
+            var shouldOpen = (typeof open === 'boolean') ? open : !dropdown.classList.contains('open');
+            dropdown.classList.toggle('open', shouldOpen);
+            trigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         }
-    });
-})();
 
+        trigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggle();
+        });
 
+        // Close on outside click
+        document.addEventListener('click', function (e) {
+            if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                toggle(false);
+            }
+        });
 
-// Active page highlighting
-(function() {
-    const currentPath = window.location.pathname.split('/').pop() || 'dashboard.php';
-    const pageMap = {
-        'admin_dashboard.php': 'dashboard',
-        'dashboard.php': 'dashboard',
-        'add_inspector.php': 'inspectors',
-        'edit_inspector.php': 'inspectors',
-        'spot_tax.php': 'spot-tax',
-        'seizure_form.php': 'seizure',
-        'history.php': 'history',
-        'settings.php': 'profile',
-        'payment.php': 'spot-tax',
-        'confirm_cash.php': 'spot-tax',
-        'generate_receipt_pdf.php': 'history',
-        'export_tax_excel.php': 'history',
-        'export_tax_pdf.php': 'history',
-        'export_seizures_excel.php': 'history',
-        'export_seizures_pdf.php': 'history'
-    };
-    const currentPage = pageMap[currentPath] || 'dashboard';
-    
-    document.querySelectorAll('[data-page]').forEach(function(el) {
-        if (el.dataset.page === currentPage) {
-            el.classList.add('active');
-            el.setAttribute('aria-current', 'page');
-        }
-    });
+        // Close on Escape, focus trigger
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+                toggle(false);
+                trigger.focus();
+            }
+        });
+
+        // Keyboard trap for tab navigation
+        dropdown.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            var items = dropdown.querySelectorAll('[role="menuitem"], button, a');
+            if (!items.length) return;
+            var first = items[0];
+            var last  = items[items.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+    })();
+
+    /* ---------- 4. Active page highlighting ---------- */
+    (function () {
+        var currentPath = window.location.pathname.split('/').pop() || 'dashboard.php';
+
+        var pageMap = {
+            'admin_dashboard.php':      'dashboard',
+            'dashboard.php':            'dashboard',
+            'add_inspector.php':        'inspectors',
+            'edit_inspector.php':       'inspectors',
+            'undercharge_report.php':   'undercharge',
+            'spot_tax.php':             'spot-tax',
+            'seizure_form.php':         'seizure',
+            'history.php':              'history',
+            'settings.php':             'profile',
+            'payment.php':              'spot-tax',
+            'confirm_cash.php':         'spot-tax',
+            'generate_receipt_pdf.php': 'history',
+            'transaction_detail.php':   'history',
+            'export_tax_excel.php':     'history',
+            'export_tax_pdf.php':       'history',
+            'export_seizures_excel.php':'history',
+            'export_seizures_pdf.php':  'history'
+        };
+
+        var currentPage = pageMap[currentPath] || 'dashboard';
+
+        document.querySelectorAll('[data-page]').forEach(function (el) {
+            if (el.dataset.page === currentPage) {
+                el.classList.add('active');
+                el.setAttribute('aria-current', 'page');
+            }
+        });
+    })();
+
 })();
 </script>

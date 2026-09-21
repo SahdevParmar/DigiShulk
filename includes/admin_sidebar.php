@@ -23,5 +23,4 @@
 </div>
 <div class="admin-mobile-topbar">
     <div class="logo"></div>
-    <!-- In the future, we can add a hamburger menu icon here -->
 </div>
