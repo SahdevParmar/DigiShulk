@@ -1,57 +1,93 @@
 <?php
 session_start();
-include 'db_connect.php';
-if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
-    header("Location: logout.php");
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: logout.php');
     exit();
 }
-$id=$_GET['id'];
 
-$message = "";
-$message_type = "";
+require_once 'db_connect.php';
+require_once 'helpers/csrf.php';
 
-if($_SERVER["REQUEST_METHOD"]=="GET"){
-    $stmt=$conn->prepare("select * from users where user_id=?");
-    $stmt->bind_param("i",$id);
-    $stmt->execute();
-    $user=$stmt->get_result()->fetch_assoc();
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$id) {
+    header('Location: add_inspector.php');
+    exit();
 }
 
-if($_SERVER["REQUEST_METHOD"]=="POST"){
-    if(isset($_POST['update_password'])){
-        if(!empty($_POST['password'])){
-            $new_pass=password_hash($_POST['password'],PASSWORD_DEFAULT);
-            $stmt=$conn->prepare("Update users set password =? where user_id=?");
-            $stmt->bind_param("si",$new_pass,$id);
-            if($stmt->execute()){
-                $message = "Password updated successfully!";
-                $message_type = "success";
-            } else {
-                $message = "Error updating password: ".$stmt->error;
-                $message_type = "danger";
-            }
-        }else{
-            $message = "No changes made - password field was empty.";
-            $message_type = "warning";
-        }
-    }
-    else if(isset($_POST['delete_inspector'])){
-        $stmt=$conn->prepare("delete from users where user_id=?");
-        $stmt->bind_param("i",$id);
-        if($stmt->execute()){
-            header("Location: add_inspector.php");
-            exit();
+$message = '';
+$message_type = '';
+
+// Load the target user (only inspectors are editable here).
+$stmt = $conn->prepare(
+    "SELECT user_id, username, role FROM users WHERE user_id = ? LIMIT 1"
+);
+$stmt->bind_param('i', $id);
+$stmt->execute();
+$user = $stmt->get_result()->fetch_assoc();
+
+if (!$user) {
+    header('Location: add_inspector.php');
+    exit();
+}
+
+if ($user['role'] !== 'inspector') {
+    // Refuse to edit admins from this screen.
+    header('Location: add_inspector.php');
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    csrf_require_or_die();
+
+    if (isset($_POST['update_password'])) {
+
+        $password = isset($_POST['password']) ? (string) $_POST['password'] : '';
+
+        if ($password === '') {
+            $message = 'No changes made — password field was empty.';
+            $message_type = 'warning';
+        } elseif (strlen($password) < 6) {
+            $message = 'Password must be at least 6 characters.';
+            $message_type = 'danger';
         } else {
-            $message = "Error deleting inspector: ".$stmt->error;
-            $message_type = "danger";
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $up = $conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
+            $up->bind_param('si', $hash, $id);
+
+            if ($up->execute()) {
+                $message = 'Password updated successfully!';
+                $message_type = 'success';
+            } else {
+                error_log('edit_inspector password: ' . $up->error);
+                $message = 'Could not update password. Please try again.';
+                $message_type = 'danger';
+            }
         }
     }
-}
-if(!isset($user)){
-    $stmt=$conn->prepare("select * from users where user_id=?");
-    $stmt->bind_param("i",$id);
-    $stmt->execute();
-    $user=$stmt->get_result()->fetch_assoc();
+
+    elseif (isset($_POST['delete_inspector'])) {
+
+        // Protect against self-deletion and against deleting the last admin.
+        if ((int) $id === (int) $_SESSION['user_id']) {
+            $message = 'You cannot delete your own account.';
+            $message_type = 'danger';
+        } else {
+            $del = $conn->prepare("DELETE FROM users WHERE user_id = ? AND role = 'inspector'");
+            $del->bind_param('i', $id);
+
+            if ($del->execute()) {
+                header('Location: add_inspector.php');
+                exit();
+            } else {
+                error_log('edit_inspector delete: ' . $del->error);
+                $message = 'Cannot delete this inspector — they have transactions or seizure records. '
+                         . 'Reassign or archive them first.';
+                $message_type = 'danger';
+            }
+        }
+    }
 }
 
 include 'header.php';
@@ -76,14 +112,14 @@ include 'header.php';
         <div class="alert alert-<?= $message_type ?>" style="margin: var(--space-4) var(--space-6);">
             <i class="fa-solid fa-<?= $message_type === 'success' ? 'circle-check' : ($message_type === 'warning' ? 'triangle-exclamation' : 'triangle-exclamation') ?> alert-icon" aria-hidden="true"></i>
             <div class="alert-content">
-                <p class="alert-message" style="margin: 0;"><?= $message ?></p>
-            </div>
+<p class="alert-message" style="margin: 0;"><?= htmlspecialchars($message) ?></p>            </div>
         </div>
         <?php endif; ?>
 
         <div class="card-body">
             <!-- Change Password -->
             <form method="POST">
+                <?= csrf_field() ?>
                 <div class="form-field">
                     <label class="form-label" for="username">Username</label>
                     <input type="text" name="username" id="username" class="form-input" value="<?= htmlspecialchars($user['username']) ?>" readonly style="background: var(--color-surface-muted); color: var(--color-text-muted);">
@@ -111,7 +147,7 @@ include 'header.php';
                 </h3>
 
                 <form method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this inspector? This action cannot be undone.');">
-                    <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-3);">Deleting this inspector will permanently remove their account and all associated data.</p>
+                    <?= csrf_field() ?>                    <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-3);">Deleting this inspector will permanently remove their account and all associated data.</p>
                     <button type="submit" name="delete_inspector" class="btn btn-danger">
                         <i class="fa-solid fa-trash" aria-hidden="true"></i>
                         Delete Inspector

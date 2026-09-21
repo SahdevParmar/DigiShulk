@@ -1,158 +1,173 @@
 <?php
 session_start();
-include 'db_connect.php';
 
-if(!isset($_SESSION['user_id'])){
-    header("Location: logout.php");
+if (!isset($_SESSION['user_id'])) {
+    header('Location: logout.php');
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-$message = "";
-$message_type = "";
+require_once 'db_connect.php';
+require_once 'helpers/csrf.php';
+
+$user_id = (int) $_SESSION['user_id'];
+$message = '';
+$message_type = '';
 
 /* ===============================
    Upload Profile Photo
 ===============================*/
 
-if(isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])){
+if (isset($_POST['upload_photo']) && isset($_FILES['profile_photo'])) {
 
-    if($_FILES['profile_photo']['error']==0){
+    csrf_require_or_die();
 
-        $ext = strtolower(pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION));
+    $file = $_FILES['profile_photo'];
 
-        $allowed = ['jpg','jpeg','png','webp'];
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        $message = 'Upload failed. Please try again.';
+        $message_type = 'danger';
+    }
+    elseif ($file['size'] > 5 * 1024 * 1024) {
+        $message = 'Image must be 5 MB or smaller.';
+        $message_type = 'danger';
+    }
+    else {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime  = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
 
-        if(in_array($ext,$allowed)){
+        $allowed = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+        ];
 
-            if(!is_dir("uploads/profile")){
-                mkdir("uploads/profile",0777,true);
+        if (!isset($allowed[$mime])) {
+            $message = 'Only JPG, PNG, and WEBP images are allowed.';
+            $message_type = 'danger';
+        }
+        elseif (getimagesize($file['tmp_name']) === false) {
+            $message = 'That file is not a valid image.';
+            $message_type = 'danger';
+        }
+        else {
+            $ext = $allowed[$mime];
+
+            if (!is_dir('uploads/profile')) {
+                mkdir('uploads/profile', 0755, true);
             }
 
-            $filename = "user_".$user_id.".".$ext;
+            // Delete any previous photo for this user (any extension).
+            foreach (['jpg', 'jpeg', 'png', 'webp'] as $oldExt) {
+                $old = 'uploads/profile/user_' . $user_id . '.' . $oldExt;
+                if (file_exists($old)) { @unlink($old); }
+            }
 
-            move_uploaded_file(
-                $_FILES['profile_photo']['tmp_name'],
-                "uploads/profile/".$filename
-            );
+            $filename = 'user_' . $user_id . '.' . $ext;
+            $dest     = 'uploads/profile/' . $filename;
 
-            $stmt = $conn->prepare("
-            UPDATE users
-            SET profile_photo=?
-            WHERE user_id=?
-            ");
+            if (move_uploaded_file($file['tmp_name'], $dest)) {
 
-            $stmt->bind_param("si",$filename,$user_id);
-            $stmt->execute();
+                $stmt = $conn->prepare("UPDATE users SET profile_photo = ? WHERE user_id = ?");
+                $stmt->bind_param('si', $filename, $user_id);
+                $stmt->execute();
 
-            $message = "Profile photo updated.";
-            $message_type = "success";
+                $message = 'Profile photo updated.';
+                $message_type = 'success';
 
-        }else{
-
-            $message = "Only JPG, PNG and WEBP images are allowed.";
-            $message_type = "danger";
-
+            } else {
+                error_log('settings.php: move_uploaded_file failed for user ' . $user_id);
+                $message = 'Could not save the image. Please try again.';
+                $message_type = 'danger';
+            }
         }
-
     }
-
 }
 
 /* ===============================
    Change Name
 ===============================*/
 
-if(isset($_POST['update_name'])){
+if (isset($_POST['update_name'])) {
 
-    $name = trim($_POST['new_name']);
+    csrf_require_or_die();
 
-    if($name!=""){
+    $name = isset($_POST['new_name']) ? trim((string) $_POST['new_name']) : '';
 
-        $stmt = $conn->prepare("
-        UPDATE users
-        SET full_name=?
-        WHERE user_id=?
-        ");
+    if ($name === '') {
+        $message = 'Name cannot be empty.';
+        $message_type = 'danger';
+    } elseif (strlen($name) > 150) {
+        $message = 'Name is too long.';
+        $message_type = 'danger';
+    } else {
+        $stmt = $conn->prepare("UPDATE users SET full_name = ? WHERE user_id = ?");
+        $stmt->bind_param('si', $name, $user_id);
 
-        $stmt->bind_param("si",$name,$user_id);
-
-        if($stmt->execute()){
-            $message="Name updated successfully.";
-            $message_type = "success";
+        if ($stmt->execute()) {
+            $_SESSION['full_name'] = $name;
+            $message = 'Name updated successfully.';
+            $message_type = 'success';
+        } else {
+            error_log('settings.php name: ' . $stmt->error);
+            $message = 'Could not update name.';
+            $message_type = 'danger';
         }
-
     }
-
 }
 
 /* ===============================
    Change Password
 ===============================*/
 
-if(isset($_POST['update_password'])){
+if (isset($_POST['update_password'])) {
 
-    if(!empty($_POST['password'])){
+    csrf_require_or_die();
 
-        $new_pass = password_hash(
-            $_POST['password'],
-            PASSWORD_DEFAULT
-        );
+    $password = isset($_POST['password']) ? (string) $_POST['password'] : '';
 
-        $stmt = $conn->prepare("
-        UPDATE users
-        SET password=?
-        WHERE user_id=?
-        ");
+    if (strlen($password) < 8) {
+        $message = 'Password must be at least 8 characters.';
+        $message_type = 'danger';
+    } else {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
+        $stmt->bind_param('si', $hash, $user_id);
 
-        $stmt->bind_param("si",$new_pass,$user_id);
-
-        if($stmt->execute()){
-            $message="Password updated successfully.";
-            $message_type = "success";
+        if ($stmt->execute()) {
+            $message = 'Password updated successfully.';
+            $message_type = 'success';
+        } else {
+            error_log('settings.php password: ' . $stmt->error);
+            $message = 'Could not update password.';
+            $message_type = 'danger';
         }
-
     }
-
 }
 
 /* ===============================
    Load User
 ===============================*/
 
-$stmt = $conn->prepare("
-SELECT
-username,
-full_name,
-profile_photo,
-role
-FROM users
-WHERE user_id=?
-LIMIT 1
-");
-
-$stmt->bind_param("i",$user_id);
+$stmt = $conn->prepare(
+    "SELECT username, full_name, profile_photo, role FROM users WHERE user_id = ? LIMIT 1"
+);
+$stmt->bind_param('i', $user_id);
 $stmt->execute();
-
 $user = $stmt->get_result()->fetch_assoc();
 
-include 'header.php';
-
-$photo = "uploads/profile/default.jpg";
-
-if(!empty($user['profile_photo']) && file_exists("uploads/profile/".$user['profile_photo'])){
-    $photo = "uploads/profile/".$user['profile_photo'];
+if (!$user) {
+    header('Location: logout.php');
+    exit();
 }
 
-$name = !empty($user['full_name'])
-            ? $user['full_name']
-            : $user['username'];
+include 'header.php';
 ?>
 
 <div class="page">
     <div class="card" style="max-width: 900px;">
 
-        <div class="card-header" align="center" style="display:" flex; flex-justify-content: center; align-items: center; gap: var(--space-4);">
+        <div class="card-header" style="display: flex; justify-content: center; align-items: center; gap: var(--space-4);">
             <div style="display: flex; align-items: center; gap: var(--space-3);">
                 <div class="avatar avatar-lg" style="background-image: url('<?php echo $photo; ?>'); background-size: cover; background-position: center; background: var(--color-primary-light); color: var(--color-primary);">
                     <?php if (empty($user['profile_photo']) || !file_exists("uploads/profile/".$user['profile_photo'])): ?>
@@ -183,6 +198,7 @@ $name = !empty($user['full_name'])
             </h3>
 
             <form method="POST" enctype="multipart/form-data" class="form-field" style="margin-bottom: 0;">
+                <?= csrf_field() ?>
                 <label class="form-label">Upload new photo</label>
                 <input
                     type="file"
@@ -207,6 +223,7 @@ $name = !empty($user['full_name'])
             </h3>
 
             <form method="POST" class="form-field" style="margin-bottom: 0;">
+                <?= csrf_field() ?>
                 <label class="form-label" for="new_name">Display Name</label>
                 <input
                     type="text"
@@ -230,6 +247,7 @@ $name = !empty($user['full_name'])
             </h3>
 
             <form method="POST" class="form-field" style="margin-bottom: 0;">
+                <?= csrf_field() ?>
                 <label class="form-label" for="password">New Password</label>
                 <input
                     type="password"
@@ -255,10 +273,11 @@ $name = !empty($user['full_name'])
             </h3>
 
             <form method="POST" action="logout.php" style="display: inline;">
+                <?= csrf_field() ?>
                 <button type="submit" class="btn btn-danger">
                     <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
                     Logout
-                </button>
+                    </button>
             </form>
         </div>
 

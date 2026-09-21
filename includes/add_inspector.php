@@ -1,27 +1,76 @@
 <?php
 session_start();
-if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
-    header("Location: logout.php");
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: logout.php');
     exit();
 }
-include 'db_connect.php';
 
+require_once 'db_connect.php';
+require_once 'helpers/csrf.php';
 
-if($_SERVER["REQUEST_METHOD"]=="POST"){
-    $username=$_POST['username'];
-    $password=password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $stmt=$conn->prepare("insert into users(username,password,role) values(?,?,'inspector')");
-    $stmt->bind_param("ss",$username,$password);
-    if($stmt->execute()){
-        $message = "Inspector added successfully!";
-        $message_type = "success";
+$message = '';
+$message_type = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    csrf_require_or_die();
+
+    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
+    $password = isset($_POST['password']) ? (string) $_POST['password'] : '';
+
+    $errors = [];
+
+    if ($username === '') {
+        $errors[] = 'Username is required.';
+    } elseif (strlen($username) > 20) {
+        $errors[] = 'Username must be 20 characters or fewer.';
+    } elseif (!preg_match('/^[a-zA-Z0-9_.-]+$/', $username)) {
+        $errors[] = 'Username may only contain letters, numbers, dot, dash, and underscore.';
+    }
+
+    if (strlen($password) < 6) {
+        $errors[] = 'Password must be at least 6 characters.';
+    }
+
+    if (empty($errors)) {
+        // Check for duplicate username (case-insensitive).
+        $chk = $conn->prepare("SELECT user_id FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1");
+        if ($chk) {
+            $chk->bind_param('s', $username);
+            $chk->execute();
+            if ($chk->get_result()->num_rows > 0) {
+                $errors[] = 'That username is already taken.';
+            }
+        }
+    }
+
+    if (empty($errors)) {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+
+        $stmt = $conn->prepare(
+            "INSERT INTO users (username, password, role) VALUES (?, ?, 'inspector')"
+        );
+        $stmt->bind_param('ss', $username, $hash);
+
+        if ($stmt->execute()) {
+            $message = 'Inspector added successfully!';
+            $message_type = 'success';
+        } else {
+            // Never leak raw DB error to the browser.
+            error_log('add_inspector: ' . $stmt->error);
+            $message = 'Could not add inspector. Please try again.';
+            $message_type = 'danger';
+        }
     } else {
-        $message = "Error adding inspector: ".$stmt->error;
-        $message_type = "danger";
+        $message = implode(' ', $errors);
+        $message_type = 'danger';
     }
 }
 
-$inspectors=$conn->query("select user_id,username,last_active from users where role='inspector' order by user_id desc");
+$inspectors = $conn->query(
+    "SELECT user_id, username, last_active FROM users WHERE role='inspector' ORDER BY user_id DESC"
+);
 
 include 'header.php';
 ?>
@@ -38,7 +87,7 @@ include 'header.php';
     <div class="alert alert-<?= $message_type ?>" style="margin-bottom: var(--space-6);">
         <i class="fa-solid fa-<?= $message_type === 'success' ? 'circle-check' : 'triangle-exclamation' ?> alert-icon" aria-hidden="true"></i>
         <div class="alert-content">
-            <p class="alert-message" style="margin: 0;"><?= $message ?></p>
+            <p class="alert-message" style="margin: 0;"><?= htmlspecialchars($message) ?></p>
         </div>
     </div>
     <?php endif; ?>
@@ -106,6 +155,7 @@ include 'header.php';
         </div>
         <div class="card-body">
             <form method="POST" novalidate>
+                <?= csrf_field() ?>
                 <div class="form-grid form-grid-2">
                     <div class="form-field">
                         <label class="form-label" for="username">Username <span class="required" aria-hidden="true">*</span></label>

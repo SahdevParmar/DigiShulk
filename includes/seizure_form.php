@@ -1,60 +1,122 @@
 <?php
-include 'header.php';
+// --- FIX: authentication + role + CSRF + db connect -------------------
+session_start();
 
-$msg = "";
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
-    $t_leader = $_POST['team_leader_name'];
-    $zone = $_POST['zone'];
-    $t_no = $_POST['team_number'];
-    $s_date = $_POST['seizure_date'];
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'inspector') {
+    header('Location: logout.php');
+    exit();
+}
 
-    // These arrive as arrays — one entry per item row the inspector added
-    $godown_nos = $_POST['godown_register_no'] ?? [];
-    $items      = $_POST['item_details'] ?? [];
-    $qtys       = $_POST['quantity_seized'] ?? [];
-    $owners     = $_POST['owner_merchant_name'] ?? [];
-    $locations  = $_POST['seizure_location'] ?? [];
+require_once 'db_connect.php';
+require_once 'helpers/csrf.php';
 
-    // 1. Insert the session header row
-    $stmt = $conn->prepare("INSERT INTO seizure_sessions (inspector_id, team_leader_name, zone, team_number, seizure_date) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issss", $_SESSION['user_id'], $t_leader, $zone, $t_no, $s_date);
-    $stmt->execute();
-    $session_id = $conn->insert_id;
+$msg = '';
 
-    // 2. Insert each item row, linked back to that session
-    $item_stmt = $conn->prepare("INSERT INTO seizure_items (session_id, godown_register_no, item_details, quantity, owner_merchant_name, seizure_location) VALUES (?, ?, ?, ?, ?, ?)");
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log_seizure'])) {
 
-    $saved_count = 0;
-    foreach ($items as $i => $item_detail) {
-        if (trim($item_detail) === '') continue; // skip any blank/unused row
+    csrf_require_or_die();
 
-        $g_no  = $godown_nos[$i] ?? '';
-        $qty   = intval($qtys[$i] ?? 0);
-        $owner = $owners[$i] ?? '';
-        $loc   = $locations[$i] ?? '';
+    $t_leader = isset($_POST['team_leader_name']) ? trim($_POST['team_leader_name']) : '';
+    $zone     = isset($_POST['zone'])             ? trim($_POST['zone'])             : '';
+    $t_no     = isset($_POST['team_number'])      ? trim($_POST['team_number'])      : '';
+    $s_date   = isset($_POST['seizure_date'])     ? trim($_POST['seizure_date'])     : '';
 
-        $item_stmt->bind_param("ississ", $session_id, $g_no, $item_detail, $qty, $owner, $loc);
-        $item_stmt->execute();
-        $saved_count++;
+    $godown_nos = isset($_POST['godown_register_no'])    ? (array) $_POST['godown_register_no']    : [];
+    $items      = isset($_POST['item_details'])          ? (array) $_POST['item_details']          : [];
+    $qtys       = isset($_POST['quantity_seized'])       ? (array) $_POST['quantity_seized']       : [];
+    $owners     = isset($_POST['owner_merchant_name'])   ? (array) $_POST['owner_merchant_name']   : [];
+    $locations  = isset($_POST['seizure_location'])      ? (array) $_POST['seizure_location']      : [];
+
+    // Server-side validation — mirror the client-side rules.
+    $errors = [];
+    if ($t_leader === '') { $errors[] = 'Team leader is required.'; }
+    if ($zone === '')     { $errors[] = 'Zone is required.'; }
+    if ($t_no === '')     { $errors[] = 'Team number is required.'; }
+    if ($s_date === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $s_date)) {
+        $errors[] = 'A valid seizure date is required.';
     }
 
-    if ($saved_count > 0) {
-        $msg = "<div class='alert alert-success' style='margin-bottom: var(--space-4);'>
-            <i class='fa-solid fa-circle-check alert-icon' aria-hidden='true'></i>
-            <div class='alert-content'>
-                <p class='alert-title'>" . __('success_msg') . "</p>
-                <p class='alert-message'>" . $saved_count . " " . __('items_saved') . "</p>
-            </div>
-        </div>";
-    } else {
-        $msg = "<div class='alert alert-warning' style='margin-bottom: var(--space-4);'>
+    // Reject if no item has any details.
+    $hasItem = false;
+    foreach ($items as $i => $detail) {
+        if (trim((string) $detail) !== '') { $hasItem = true; break; }
+    }
+    if (!$hasItem) {
+        $errors[] = 'Add at least one seized item with details.';
+    }
+
+    if (!empty($errors)) {
+        $msg = "<div class='alert alert-danger' style='margin-bottom: var(--space-4);'>
             <i class='fa-solid fa-triangle-exclamation alert-icon' aria-hidden='true'></i>
             <div class='alert-content'>
-                <p class='alert-title'>" . __('no_items_error') . "</p>
-            </div>
-        </div>";
+                <p class='alert-title'>Please fix the following:</p>
+                <ul style='margin:0;padding-left:1.2em;'>";
+        foreach ($errors as $e) {
+            $msg .= '<li>' . htmlspecialchars($e) . '</li>';
+        }
+        $msg .= "</ul></div></div>";
+    } else {
+
+        $conn->begin_transaction();
+
+        try {
+            $stmt = $conn->prepare(
+                "INSERT INTO seizure_sessions
+                    (inspector_id, team_leader_name, zone, team_number, seizure_date)
+                 VALUES (?, ?, ?, ?, ?)"
+            );
+            $stmt->bind_param('issss', $_SESSION['user_id'], $t_leader, $zone, $t_no, $s_date);
+            $stmt->execute();
+            $session_id = (int) $conn->insert_id;
+
+            $item_stmt = $conn->prepare(
+                "INSERT INTO seizure_items
+                    (session_id, godown_register_no, item_details, quantity, owner_merchant_name, seizure_location)
+                 VALUES (?, ?, ?, ?, ?, ?)"
+            );
+
+            $saved_count = 0;
+            foreach ($items as $i => $item_detail) {
+                $item_detail = trim((string) $item_detail);
+                if ($item_detail === '') { continue; }
+
+                $g_no  = isset($godown_nos[$i]) ? (string) $godown_nos[$i] : '';
+                $qty   = isset($qtys[$i])       ? (int) $qtys[$i]          : 0;
+                $owner = isset($owners[$i])     ? (string) $owners[$i]     : '';
+                $loc   = isset($locations[$i])  ? (string) $locations[$i]  : '';
+
+                if ($qty < 1) { $qty = 1; }
+
+                $item_stmt->bind_param('ississ', $session_id, $g_no, $item_detail, $qty, $owner, $loc);
+                $item_stmt->execute();
+                $saved_count++;
+            }
+
+            $conn->commit();
+
+            $msg = "<div class='alert alert-success' style='margin-bottom: var(--space-4);'>
+                <i class='fa-solid fa-circle-check alert-icon' aria-hidden='true'></i>
+                <div class='alert-content'>
+                    <p class='alert-title'>" . __('success_msg') . "</p>
+                    <p class='alert-message'>" . (int) $saved_count . " " . __('items_saved') . "</p>
+                </div>
+            </div>";
+
+        } catch (Throwable $e) {
+            $conn->rollback();
+            error_log('DigiShulk seizure_form: ' . $e->getMessage());
+            $msg = "<div class='alert alert-danger' style='margin-bottom: var(--space-4);'>
+                <i class='fa-solid fa-triangle-exclamation alert-icon' aria-hidden='true'></i>
+                <div class='alert-content'>
+                    <p class='alert-title'>Could not save the seizure report.</p>
+                    <p class='alert-message'>Please try again. If the problem persists, contact your administrator.</p>
+                </div>
+            </div>";
+        }
     }
 }
+
+include 'header.php';
 ?>
 
 <div class="page">
@@ -82,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_seizure'])) {
         <?php echo $msg; ?>
 
         <form method="POST" action="" id="seizureForm" class="card-body" novalidate>
-
+            <?= csrf_field() ?>
             <!-- Step 1: Session Details -->
             <div class="form-step active" data-step="1">
                 <div style="text-align: center; margin-bottom: var(--space-6);">

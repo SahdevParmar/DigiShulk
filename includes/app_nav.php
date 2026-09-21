@@ -7,6 +7,11 @@
 
 $user_role = $_SESSION['role'] ?? 'guest';
 $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User');
+
+// Defensive: header.php normally defines $userPhoto; fall back if not.
+if (!isset($userPhoto) || $userPhoto === '') {
+    $userPhoto = 'uploads/profile/default.jpg';
+}
 ?>
 
 <!-- Desktop Sidebar (both roles) -->
@@ -81,10 +86,14 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
                 </div>
             </a>
         </div>
-        <a href="logout.php" class="nav-link logout-link" aria-label="Sign out">
-            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
-            <span>Logout</span>
-        </a>
+        <form method="POST" action="logout.php" class="nav-link logout-link" style="margin:0;padding:0;display:contents;">
+    <?= csrf_field() ?>
+    <button type="submit" class="nav-link logout-link" aria-label="Sign out"
+            style="background:none;border:none;width:100%;text-align:left;cursor:pointer;color:inherit;padding:inherit;">
+        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+        <span>Logout</span>
+    </button>
+</form>
     </div>
 </aside>
 
@@ -98,7 +107,7 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
 
     <div class="topbar-center">
         <div class="topbar-search">
-            <button class="search-btn" id="openSearch" aria-label="Search (Ctrl+K)" type="button">
+            <button class="search-btn js-open-search" aria-label="Search (Ctrl+K)" type="button">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>
             <input type="text" id="spotlightDesktop" placeholder="Search shops, transactions, inspectors..." class="form-input" autocomplete="off" aria-label="Search" style="display: none;">
@@ -150,8 +159,8 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
     </div>
 
     <div class="topbar-center">
-        <button class="search-btn" id="openSearch" aria-label="Search (Ctrl+K)" type="button">
-            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+    <button class="search-btn js-open-search" aria-label="Search (Ctrl+K)" type="button">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         </button>
     </div>
 
@@ -209,82 +218,41 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
 <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
 <script>
-// Sidebar toggle for mobile
-(function() {
+// Sidebar overlay close (no hamburger exists yet in the markup).
+(function () {
     const sidebar = document.getElementById('appSidebar');
     const overlay = document.getElementById('sidebarOverlay');
-    const toggle = document.getElementById('sidebarToggle');
-    
-    if (!sidebar || !overlay || !toggle) return;
-    
-    function openSidebar() {
-        sidebar.classList.add('is-open');
-        overlay.classList.add('is-visible');
-        toggle.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
-        // Focus trap - focus first focusable element
-        const firstLink = sidebar.querySelector('.nav-link');
-        if (firstLink) firstLink.focus();
-    }
-    
-    function closeSidebar() {
+    if (!sidebar || !overlay) return;
+
+    overlay.addEventListener('click', function () {
         sidebar.classList.remove('is-open');
         overlay.classList.remove('is-visible');
-        toggle.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
-        toggle.focus();
-    }
-    
-    toggle.addEventListener('click', function() {
-        if (sidebar.classList.contains('is-open')) {
-            closeSidebar();
-        } else {
-            openSidebar();
-        }
     });
-    
-    overlay.addEventListener('click', closeSidebar);
-    
-    // Close on Escape
-    document.addEventListener('keydown', function(e) {
+
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
-            closeSidebar();
-        }
-    });
-    
-    // Close sidebar when clicking a nav link on mobile
-    sidebar.querySelectorAll('.nav-link').forEach(function(link) {
-        link.addEventListener('click', function() {
-            if (window.innerWidth < 769) {
-                closeSidebar();
-            }
-        });
-    });
-    
-    // Handle resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 769 && sidebar.classList.contains('is-open')) {
-            closeSidebar();
+            sidebar.classList.remove('is-open');
+            overlay.classList.remove('is-visible');
+            document.body.style.overflow = '';
         }
     });
 })();
 
-// Desktop Search Toggle
+// Desktop Search Toggle — matches both desktop and mobile buttons.
 (function() {
-    const searchBtn = document.getElementById('openSearch');
+    const searchBtns = document.querySelectorAll('.js-open-search');
     const spotlightDesktop = document.getElementById('spotlightDesktop');
-    
-    if (searchBtn && spotlightDesktop) {
-        searchBtn.addEventListener('click', function() {
+
+    searchBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!spotlightDesktop) return;
             const isVisible = spotlightDesktop.style.display !== 'none';
             spotlightDesktop.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) {
-                spotlightDesktop.focus();
-            }
+            if (!isVisible) spotlightDesktop.focus();
         });
-    }
-    
-    // Hide desktop search on Escape
+    });
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && spotlightDesktop && spotlightDesktop.style.display !== 'none') {
             spotlightDesktop.style.display = 'none';
@@ -345,16 +313,7 @@ $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ??
     });
 })();
 
-// Notification badge demo (remove in production)
-(function() {
-    const badge = document.getElementById('notificationBadge');
-    if (badge) {
-        // Demo: show badge after 2 seconds
-        setTimeout(() => {
-            badge.style.display = 'flex';
-        }, 2000);
-    }
-})();
+
 
 // Active page highlighting
 (function() {

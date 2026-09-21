@@ -1,3 +1,14 @@
+<?php
+session_start();
+
+// If already logged in, skip the form.
+if (isset($_SESSION['role'])) {
+    header('Location: ' . ($_SESSION['role'] === 'admin' ? 'admin_dashboard.php' : 'dashboard.php'));
+    exit();
+}
+
+require_once 'helpers/csrf.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +27,7 @@
             <p style="text-align: center; color: var(--color-text-muted); margin-bottom: var(--space-6);">Sign in to your DigiShulk account</p>
 
             <form action="auth.php" method="POST" novalidate>
+                <?= csrf_field() ?>
                 <div class="form-field">
                     <label class="form-label" for="username">Username</label>
                     <input
@@ -48,7 +60,7 @@
             </form>
 
             <p style="margin-top: var(--space-6); text-align: center; font-size: var(--text-sm); color: var(--color-text-subtle);">
-                DigiShulk &mdash; RMC Digital Tax Collection System
+                DigiShulk — RMC Digital Tax Collection System
             </p>
         </div>
     </main>
