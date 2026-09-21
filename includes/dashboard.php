@@ -173,7 +173,7 @@ $weekChange = $lastWeekTotal > 0 ? round((($thisWeekTotal - $lastWeekTotal) / $l
     <!-- Page Header -->
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6);">
         <div>
-            <h1 style="font-size: var(--text-3xl); font-weight: 700; color: var(--color-text); margin: 0;">Good morning, <?= $inspectorName ?> 👋</h1>
+            <h1 style="font-size: var(--text-3xl); font-weight: 700; color: black; margin: 0;">Good morning, <?= $inspectorName ?> 👋</h1>
             <p class="subtitle" style="margin-top: var(--space-1);">Today is <?php echo date('l, F j, Y'); ?></p>
         </div>
     </div>
