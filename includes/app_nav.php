@@ -1,9 +1,15 @@
 <?php
+// TEMPORARY — remove after debugging Sprint 2.
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 // Shared Responsive App Navigation
 // Replaces admin_sidebar.php and inspector_nav.php
 // Desktop: Left sidebar for both roles
 // Mobile: Top bar + Bottom nav for both roles
 // Role only changes menu items, not layout
+
+require_once __DIR__ . '/helpers/csrf.php';
 
 $user_role = $_SESSION['role'] ?? 'guest';
 $user_name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'User');
