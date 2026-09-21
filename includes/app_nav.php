@@ -285,10 +285,9 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     display: flex;
     align-items: center;
     padding: 0 24px;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     z-index: 90;
     animation: navFadeIn 0.4s ease-out 0.1s both;
 }
