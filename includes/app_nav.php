@@ -682,6 +682,54 @@ $logo_url = 'css/layout/logo.png';
         pointer-events: auto;
     }
 }
+/* Base: every avatar is a circle with a locked aspect ratio */
+img.nav-profile-photo {
+    border-radius: 50%    !important;
+    aspect-ratio: 1 / 1   !important;
+    object-fit: cover     !important;
+    display: block        !important;
+    padding: 0            !important;
+    flex-shrink: 0        !important;
+    box-sizing: border-box !important;
+}
+
+/* Sidebar footer avatar */
+.app-sidebar .profile-link img.nav-profile-photo {
+    width: 38px  !important;
+    height: 38px !important;
+}
+
+/* Desktop topbar trigger avatar */
+.app-topbar.desktop .profile-trigger img.nav-profile-photo {
+    width: 32px  !important;
+    height: 32px !important;
+}
+
+/* Desktop dropdown header avatar */
+.profile-dropdown .dropdown-user-info img.nav-profile-photo {
+    width: 42px  !important;
+    height: 42px !important;
+}
+
+/* Mobile topbar avatar — outer wrapper AND image */
+.app-topbar.mobile .topbar-end .profile-avatar {
+    width: 40px            !important;
+    height: 40px           !important;
+    border-radius: 50%     !important;
+    overflow: hidden       !important;
+    padding: 0             !important;
+    display: flex          !important;
+    align-items: center    !important;
+    justify-content: center !important;
+    background: var(--nav-bg) !important;
+    box-sizing: border-box !important;
+}
+.app-topbar.mobile .profile-avatar img.nav-profile-photo {
+    width: 40px  !important;
+    height: 40px !important;
+    max-width: 40px  !important;
+    max-height: 40px !important;
+}
 </style>
 
 <!-- ============ DESKTOP SIDEBAR (nav only — no brand) ============ -->
