@@ -20,14 +20,14 @@ if (isset($_SESSION['role'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#14285a">
 
-    <title>DigiShulk — RMC Digital Tax Collection</title>
+    <title>DigiShulk — RMC Digital Tax Collection System</title>
 
     <meta name="description" content="DigiShulk is the digital spot tax and seizure reporting platform for Rajkot Municipal Corporation. UPI and cash collection, instant receipts, real-time field reporting.">
-    <meta property="og:title" content="DigiShulk — RMC Digital Tax Collection">
-    <meta property="og:description" content="Spot tax collection, seizure reporting, and field operations for Rajkot Municipal Corporation.">
+    <meta property="og:title" content="DigiShulk — RMC Digital Tax Collection System">
+    <meta property="og:description" content="Digital spot tax collection, seizure reporting, and field operations for Rajkot Municipal Corporation.">
     <meta property="og:type" content="website">
 
-    <!-- Favicon: use the supplied logo mark -->
+    <!-- Favicon: use the supplied logo -->
     <link rel="icon" type="image/png" href="includes/css/layout/logo.png">
     <link rel="apple-touch-icon" href="includes/css/layout/logo.png">
 
@@ -36,13 +36,9 @@ if (isset($_SESSION['role'])) {
 
     <style>
     /* ================================================================
-       DigiShulk — Landing page
-       Design: municipal-grade. Restrained. Human.
-       Palette pulled from the actual logo:
-         navy   #14285a
-         blue   #1e50a2
-         green  #3ba55c
-         gold   #f0a020 (used sparingly)
+       DigiShulk — Landing page (animated)
+       Self-contained. Does not load style2.css.
+       Palette driven by the DigiShulk logo (navy + green + gold).
        ================================================================ */
 
     *, *::before, *::after {
@@ -52,977 +48,824 @@ if (isset($_SESSION['role'])) {
     }
 
     :root {
-        --navy:    #14285a;
-        --blue:    #1e50a2;
-        --blue-lt: #2d69c4;
-        --green:   #3ba55c;
-        --gold:    #f0a020;
-        --ink:     #0b1424;
-        --ink-2:   #334155;
-        --ink-3:   #64748b;
-        --ink-4:   #94a3b8;
-        --paper:   #ffffff;
-        --paper-2: #f7f8fa;
-        --paper-3: #eef1f6;
-        --line:    #e2e6ec;
-        --line-2:  #cfd6e0;
+        --navy:   #14285a;
+        --blue:   #1e50a2;
+        --blue-2: #3b82f6;
+        --green:  #3ba55c;
+        --gold:   #f0a020;
 
-        --radius:  10px;
-        --radius-lg: 14px;
-        --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        --ink:      #0f172a;
+        --ink-2:    #475569;
+        --ink-3:    #94a3b8;
 
-        --serif: Georgia, 'Times New Roman', serif;
-        --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter',
-                Roboto, 'Helvetica Neue', Arial, sans-serif;
+        --bg:       #f8fafc;
+        --paper:    #ffffff;
+        --border:   rgba(15, 23, 42, 0.08);
+
+        --radius:   14px;
+        --radius-lg:22px;
+        --ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    html { -webkit-text-size-adjust: 100%; }
+    html, body { height: 100%; }
 
     body {
-        font-family: var(--sans);
-        background: var(--paper);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter',
+                     Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg);
         color: var(--ink);
-        line-height: 1.55;
+        min-height: 100vh;
+        overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
+        line-height: 1.5;
     }
 
-    a { color: inherit; text-decoration: none; }
+    /* ---------------- Animations ---------------- */
+    @keyframes rise {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes orbFloat {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33%      { transform: translate(40px, -50px) scale(1.05); }
+        66%      { transform: translate(-30px, 30px) scale(0.94); }
+    }
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-8px); }
+    }
+    @keyframes logoGlow {
+        0%, 100% { opacity: 0.35; transform: scale(1); }
+        50%      { opacity: 0.55; transform: scale(1.06); }
+    }
+    @keyframes pulseDot {
+        0%, 100% { box-shadow: 0 0 0 4px rgba(59, 165, 92, 0.22); }
+        50%      { box-shadow: 0 0 0 9px rgba(59, 165, 92, 0); }
+    }
+    @keyframes shimmer {
+        0%   { background-position: -200% 0; }
+        100% { background-position:  200% 0; }
+    }
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% center; }
+        50%      { background-position: 100% center; }
+    }
+    @keyframes floatUp {
+        0%   { transform: translateY(100vh) scale(0.6); opacity: 0; }
+        10%  { opacity: 1; }
+        90%  { opacity: 1; }
+        100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+    }
 
-    /* ---------------- Top strip ---------------- */
-    .gov-strip {
-        background: var(--navy);
-        color: rgba(255, 255, 255, 0.75);
-        font-size: 0.75rem;
-        letter-spacing: 0.02em;
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    /* ---------------- Background orbs ---------------- */
+    .bg-orbs {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
     }
-    .gov-strip-inner {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
+    .bg-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        opacity: 0.38;
+        animation: orbFloat 22s ease-in-out infinite;
+        will-change: transform;
+    }
+    .bg-orb-1 {
+        width: 520px;
+        height: 520px;
+        background: radial-gradient(circle, var(--blue) 0%, transparent 70%);
+        top: -180px;
+        left: -140px;
+        animation-delay: 0s;
+    }
+    .bg-orb-2 {
+        width: 460px;
+        height: 460px;
+        background: radial-gradient(circle, var(--green) 0%, transparent 70%);
+        top: 25%;
+        right: -160px;
+        animation-delay: -8s;
+    }
+    .bg-orb-3 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
+        bottom: -150px;
+        left: 32%;
+        animation-delay: -16s;
+    }
+
+    /* ---------------- Grid overlay ---------------- */
+    .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background-image:
+            linear-gradient(rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+        background-size: 48px 48px;
+        -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 75%);
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 75%);
+        pointer-events: none;
+        opacity: 0.9;
+    }
+
+    /* ---------------- Floating particles ---------------- */
+    .particles {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: rgba(30, 80, 162, 0.5);
+        animation: floatUp linear infinite;
+        will-change: transform;
+    }
+    .particle.gold   { background: rgba(240, 160, 32, 0.5); }
+    .particle.green  { background: rgba(59, 165, 92, 0.5); }
+
+    /* ---------------- Brand bar (top) ---------------- */
+    .brand-bar {
+        position: relative;
+        z-index: 2;
+        padding: 22px 24px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
+        justify-content: center;
+        animation: rise 0.8s var(--ease) both;
     }
-    .gov-strip-left,
-    .gov-strip-right {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        flex-wrap: wrap;
-    }
-    .gov-strip-item {
+    .brand-bar-inner {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-    }
-    .gov-strip-item i {
-        color: var(--green);
-        font-size: 0.7rem;
-    }
-
-    /* ---------------- Header ---------------- */
-    .site-header {
-        background: var(--paper);
-        border-bottom: 1px solid var(--line);
-        padding: 20px 0;
-    }
-    .site-header-inner {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-    }
-    .brand {
-        display: flex;
-        align-items: center;
         gap: 14px;
-        text-decoration: none;
+        padding: 10px 20px 10px 12px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        box-shadow: 0 8px 24px -12px rgba(20, 40, 90, 0.25);
     }
-    .brand-mark {
-        width: 48px;
-        height: 48px;
-        object-fit: contain;
-        flex-shrink: 0;
+    .brand-bar img {
+        height: 40px;
+        width: auto;
+        display: block;
     }
-    .brand-text {
+    .brand-bar-text {
         display: flex;
         flex-direction: column;
         line-height: 1.1;
+        border-left: 1px solid var(--border);
+        padding-left: 14px;
     }
-    .brand-name {
-        font-family: var(--serif);
-        font-size: 1.35rem;
+    .brand-bar-name {
+        font-size: 0.9rem;
         font-weight: 700;
         color: var(--navy);
-        letter-spacing: -0.01em;
+        letter-spacing: -0.005em;
     }
-    .brand-sub {
-        font-size: 0.72rem;
+    .brand-bar-sub {
+        font-size: 0.68rem;
         color: var(--ink-3);
         letter-spacing: 0.06em;
         text-transform: uppercase;
         margin-top: 2px;
-        font-weight: 500;
+        font-weight: 600;
     }
 
-    .header-nav {
+    /* ---------------- Page shell ---------------- */
+    .landing-page {
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - 90px);
         display: flex;
         align-items: center;
-        gap: 26px;
-        font-size: 0.88rem;
-        color: var(--ink-2);
-        font-weight: 500;
+        justify-content: center;
+        padding: 40px 24px 72px;
     }
-    .header-nav a {
+    .hero {
+        max-width: 900px;
+        width: 100%;
+        text-align: center;
         position: relative;
-        padding: 6px 0;
-        transition: color 0.2s var(--ease);
     }
-    .header-nav a::after {
+
+    /* ---------------- Hero logo ---------------- */
+    .hero-logo-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 28px;
+        animation: rise 0.9s var(--ease) 0.05s both;
+        position: relative;
+    }
+    .hero-logo {
+        position: relative;
+        display: inline-block;
+        animation: logoFloat 5s ease-in-out infinite;
+    }
+    .hero-logo img {
+        height: 120px;
+        width: auto;
+        display: block;
+        filter: drop-shadow(0 20px 40px rgba(20, 40, 90, 0.18))
+                drop-shadow(0 4px 12px rgba(20, 40, 90, 0.10));
+    }
+    /* Glow blob behind the logo */
+    .hero-logo::before {
         content: '';
         position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 2px;
-        background: var(--blue);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.25s var(--ease);
-    }
-    .header-nav a:hover {
-        color: var(--navy);
-    }
-    .header-nav a:hover::after {
-        transform: scaleX(1);
+        inset: -20px -40px;
+        background: radial-gradient(ellipse at center,
+            rgba(59, 165, 92, 0.30) 0%,
+            rgba(30, 80, 162, 0.20) 40%,
+            transparent 70%);
+        filter: blur(28px);
+        z-index: -1;
+        animation: logoGlow 4s ease-in-out infinite;
     }
 
-    /* ---------------- Hero ---------------- */
-    .hero {
-        flex: 1;
+    /* ---------------- Kicker pill ---------------- */
+    .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 16px 7px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(59, 165, 92, 0.28);
+        color: #256d3f;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 6px 18px -8px rgba(59, 165, 92, 0.35);
+        animation: rise 0.9s var(--ease) 0.15s both;
+    }
+    .kicker::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(110deg,
+            transparent 40%,
+            rgba(59, 165, 92, 0.12) 50%,
+            transparent 60%);
+        background-size: 200% 100%;
+        animation: shimmer 3.2s linear infinite;
+        pointer-events: none;
+    }
+    .kicker-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        flex-shrink: 0;
+        animation: pulseDot 2.2s ease-in-out infinite;
+    }
+
+    /* ---------------- Hero title ---------------- */
+    .hero-title {
+        font-size: clamp(3rem, 9vw, 5.4rem);
+        font-weight: 800;
+        line-height: 0.98;
+        letter-spacing: -0.045em;
+        margin-bottom: 24px;
+        background: linear-gradient(120deg,
+            #14285a 0%,
+            #1e50a2 30%,
+            #3ba55c 60%,
+            #f0a020 85%,
+            #14285a 100%);
+        background-size: 250% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation:
+            rise 0.9s var(--ease) 0.25s both,
+            gradientShift 9s ease-in-out infinite;
+        padding-bottom: 4px;
+    }
+
+    /* ---------------- Description ---------------- */
+    .hero-desc {
+        font-size: clamp(1rem, 2vw, 1.13rem);
+        color: var(--ink-2);
+        line-height: 1.65;
+        max-width: 54ch;
+        margin: 0 auto 40px;
+        font-weight: 400;
+        animation: rise 0.9s var(--ease) 0.35s both;
+    }
+    .hero-desc strong {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    /* ---------------- Feature grid ---------------- */
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        gap: 12px;
+        max-width: 820px;
+        margin: 0 auto 42px;
+        animation: rise 0.9s var(--ease) 0.45s both;
+    }
+    .feature-card {
         display: flex;
         align-items: center;
-        padding: 72px 0 88px;
-        background: var(--paper);
+        gap: 13px;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        text-align: left;
+        transition:
+            transform 0.3s var(--ease),
+            box-shadow 0.3s var(--ease),
+            border-color 0.3s var(--ease),
+            background 0.3s var(--ease);
         position: relative;
         overflow: hidden;
     }
-    /* A single, quiet diagonal line art — evokes the shape in the logo */
-    .hero::before {
+    .feature-card::before {
         content: '';
         position: absolute;
+        left: 0;
         top: 0;
-        right: 0;
-        width: 55%;
-        height: 100%;
-        background:
-            linear-gradient(135deg,
-                transparent 0%,
-                transparent 42%,
-                rgba(30, 80, 162, 0.035) 42%,
-                rgba(30, 80, 162, 0.035) 42.4%,
-                transparent 42.4%,
-                transparent 58%,
-                rgba(59, 165, 92, 0.045) 58%,
-                rgba(59, 165, 92, 0.045) 58.4%,
-                transparent 58.4%);
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, var(--blue), var(--green));
+        transform: scaleY(0);
+        transform-origin: center;
+        transition: transform 0.35s var(--ease);
+    }
+    .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(30, 80, 162, 0.30);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 20px 40px -18px rgba(20, 40, 90, 0.35);
+    }
+    .feature-card:hover::before {
+        transform: scaleY(1);
+    }
+    .feature-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.98rem;
+        flex-shrink: 0;
+        transition: transform 0.35s var(--ease);
+    }
+    .feature-card:hover .feature-icon {
+        transform: scale(1.12) rotate(-6deg);
+    }
+    .feature-icon.blue   { background: rgba(30, 80, 162, 0.13);  color: var(--blue); }
+    .feature-icon.green  { background: rgba(59, 165, 92, 0.13);  color: #16a34a; }
+    .feature-icon.gold   { background: rgba(240, 160, 32, 0.15); color: #b45309; }
+    .feature-icon.red    { background: rgba(239, 68, 68, 0.13);  color: #dc2626; }
+    .feature-label {
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.3;
+        letter-spacing: -0.005em;
+    }
+
+    /* ---------------- CTA ---------------- */
+    .cta-wrap {
+        animation: rise 0.9s var(--ease) 0.55s both;
+        margin-bottom: 40px;
+    }
+    .cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 40px;
+        border-radius: 16px;
+        background: linear-gradient(135deg,
+            var(--navy) 0%,
+            var(--blue) 55%,
+            var(--navy) 100%);
+        background-size: 200% auto;
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        text-decoration: none;
+        letter-spacing: -0.01em;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+            0 22px 44px -14px rgba(20, 40, 90, 0.55),
+            0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+        transition:
+            transform 0.28s var(--ease),
+            box-shadow 0.28s var(--ease),
+            background-position 0.6s var(--ease);
+    }
+    .cta:hover {
+        transform: translateY(-3px);
+        background-position: 100% center;
+        box-shadow:
+            0 32px 58px -14px rgba(20, 40, 90, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+    }
+    .cta:active {
+        transform: translateY(-1px);
+        transition-duration: 0.1s;
+    }
+    .cta::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(110deg,
+            transparent 35%,
+            rgba(255, 255, 255, 0.28) 50%,
+            transparent 65%);
+        background-size: 200% 100%;
+        animation: shimmer 3.4s linear infinite;
         pointer-events: none;
     }
-    .hero-inner {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1.15fr 1fr;
-        gap: 64px;
-        align-items: center;
-        position: relative;
-    }
-
-    @media (max-width: 900px) {
-        .hero-inner {
-            grid-template-columns: 1fr;
-            gap: 48px;
-        }
-    }
-
-    .hero-copy {
-        animation: enter 0.7s var(--ease) both;
-    }
-    @keyframes enter {
-        from { opacity: 0; transform: translateY(14px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero-kicker {
+    .cta .cta-icon {
         display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-        color: var(--blue);
-        padding: 6px 12px;
-        background: rgba(30, 80, 162, 0.07);
-        border-radius: 4px;
-        margin-bottom: 22px;
+        transition: transform 0.3s var(--ease);
     }
-    .hero-kicker::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--green);
-    }
-
-    .hero-title {
-        font-family: var(--serif);
-        font-size: clamp(2.4rem, 4.4vw, 3.6rem);
-        font-weight: 700;
-        line-height: 1.08;
-        letter-spacing: -0.02em;
-        color: var(--navy);
-        margin-bottom: 22px;
-    }
-    .hero-title em {
-        font-style: normal;
-        color: var(--green);
-    }
-
-    .hero-lede {
-        font-size: 1.05rem;
-        color: var(--ink-2);
-        line-height: 1.65;
-        max-width: 52ch;
-        margin-bottom: 34px;
-    }
-
-    .hero-actions {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-bottom: 28px;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 13px 24px;
-        border-radius: 8px;
-        font-size: 0.94rem;
-        font-weight: 600;
-        letter-spacing: -0.005em;
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: background 0.2s var(--ease),
-                    border-color 0.2s var(--ease),
-                    color 0.2s var(--ease),
-                    box-shadow 0.2s var(--ease);
-        font-family: inherit;
-    }
-    .btn-primary {
-        background: var(--navy);
-        color: #fff;
-        border-color: var(--navy);
-        box-shadow: 0 1px 2px rgba(20, 40, 90, 0.15);
-    }
-    .btn-primary:hover {
-        background: var(--blue);
-        border-color: var(--blue);
-        box-shadow: 0 6px 18px -6px rgba(20, 40, 90, 0.45);
-    }
-    .btn-primary i {
-        transition: transform 0.2s var(--ease);
-        font-size: 0.85rem;
-    }
-    .btn-primary:hover i {
+    .cta:hover .cta-icon {
         transform: translateX(2px);
     }
-
-    .btn-ghost {
-        background: transparent;
-        color: var(--ink-2);
-        border-color: var(--line-2);
-    }
-    .btn-ghost:hover {
-        color: var(--navy);
-        border-color: var(--navy);
-        background: var(--paper-2);
-    }
-
-    .hero-footnote {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.8rem;
-        color: var(--ink-3);
-    }
-    .hero-footnote i {
-        color: var(--green);
+    .cta .cta-arrow {
+        display: inline-flex;
         font-size: 0.85rem;
+        opacity: 0.85;
+        transition: transform 0.3s var(--ease);
+    }
+    .cta:hover .cta-arrow {
+        transform: translateX(5px);
+        opacity: 1;
     }
 
-    /* ---------------- Trust badges ---------------- */
+    /* ---------------- Trust row ---------------- */
     .trust-row {
         display: flex;
-        align-items: center;
-        gap: 28px;
-        padding: 20px 0 0;
-        margin-top: 28px;
-        border-top: 1px solid var(--line);
         flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px 22px;
+        margin-bottom: 40px;
+        padding: 14px 22px;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        animation: rise 0.9s var(--ease) 0.62s both;
+        max-width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
     }
     .trust-item {
         display: inline-flex;
         align-items: center;
-        gap: 9px;
-        font-size: 0.82rem;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
         color: var(--ink-2);
-        font-weight: 500;
+        letter-spacing: 0.01em;
     }
     .trust-item i {
-        width: 16px;
-        text-align: center;
         color: var(--blue);
         font-size: 0.9rem;
     }
-
-    /* ---------------- Right-side illustration ---------------- */
-    .hero-visual {
-        position: relative;
-        animation: enter 0.7s var(--ease) 0.15s both;
-    }
-    /* Card that holds the logo — feels like a "product seal" */
-    .seal-card {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: var(--radius-lg);
-        padding: 36px 32px 28px;
-        box-shadow:
-            0 1px 2px rgba(11, 20, 36, 0.04),
-            0 12px 40px -18px rgba(20, 40, 90, 0.18);
-        position: relative;
-    }
-    .seal-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 32px;
-        right: 32px;
-        height: 3px;
-        background: linear-gradient(90deg,
-            var(--navy) 0%, var(--navy) 40%,
-            var(--green) 40%, var(--green) 100%);
-        border-radius: 0 0 3px 3px;
-    }
-    .seal-logo {
-        width: 100%;
-        max-width: 340px;
-        height: auto;
-        display: block;
-        margin: 6px auto 22px;
-    }
-    .seal-divider {
-        height: 1px;
-        background: var(--line);
-        margin: 22px 0;
-    }
-    .seal-meta {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px 24px;
-    }
-    .seal-meta-item {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-    }
-    .seal-meta-label {
-        font-size: 0.68rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--ink-4);
-        font-weight: 600;
-    }
-    .seal-meta-value {
-        font-size: 0.9rem;
-        color: var(--ink);
-        font-weight: 600;
-        letter-spacing: -0.005em;
-    }
-    .seal-meta-value.mono {
-        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-        font-size: 0.82rem;
-        color: var(--ink-2);
-    }
-
-    @media (max-width: 900px) {
-        .hero-visual { max-width: 460px; margin: 0 auto; }
-        .seal-meta { grid-template-columns: 1fr 1fr; }
-    }
-
-    /* ---------------- Capabilities section ---------------- */
-    .capabilities {
-        background: var(--paper-2);
-        padding: 72px 0;
-        border-top: 1px solid var(--line);
-    }
-    .cap-inner {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
-    }
-    .cap-head {
-        max-width: 620px;
-        margin-bottom: 44px;
-    }
-    .cap-head h2 {
-        font-family: var(--serif);
-        font-size: 1.85rem;
-        font-weight: 700;
-        color: var(--navy);
-        letter-spacing: -0.015em;
-        line-height: 1.2;
-        margin-bottom: 12px;
-    }
-    .cap-head p {
-        color: var(--ink-3);
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    .cap-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-    @media (max-width: 900px) {
-        .cap-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 520px) {
-        .cap-grid { grid-template-columns: 1fr; }
-    }
-
-    .cap-card {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 26px 22px;
-        transition: border-color 0.2s var(--ease),
-                    transform 0.2s var(--ease),
-                    box-shadow 0.2s var(--ease);
-    }
-    .cap-card:hover {
-        border-color: var(--line-2);
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px -18px rgba(20, 40, 90, 0.22);
-    }
-    .cap-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(30, 80, 162, 0.08);
-        color: var(--blue);
-        font-size: 0.95rem;
-        margin-bottom: 18px;
-    }
-    .cap-icon.green { background: rgba(59, 165, 92, 0.10); color: var(--green); }
-    .cap-icon.gold  { background: rgba(240, 160, 32, 0.11); color: #b6771a; }
-    .cap-icon.navy  { background: rgba(20, 40, 90, 0.08);  color: var(--navy); }
-
-    .cap-title {
-        font-size: 0.98rem;
-        font-weight: 700;
-        color: var(--ink);
-        margin-bottom: 8px;
-        letter-spacing: -0.005em;
-    }
-    .cap-desc {
-        font-size: 0.86rem;
-        color: var(--ink-3);
-        line-height: 1.55;
-    }
-
-    /* ---------------- CTA band ---------------- */
-    .cta-band {
-        background: var(--navy);
-        color: #fff;
-        padding: 56px 0;
-    }
-    .cta-band-inner {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 32px;
-        flex-wrap: wrap;
-    }
-    .cta-band-text h2 {
-        font-family: var(--serif);
-        font-size: 1.6rem;
-        font-weight: 700;
-        letter-spacing: -0.015em;
-        margin-bottom: 6px;
-        line-height: 1.25;
-    }
-    .cta-band-text p {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.95rem;
-        max-width: 52ch;
-        line-height: 1.55;
-    }
-    .cta-band .btn-primary {
-        background: #fff;
-        color: var(--navy);
-        border-color: #fff;
-        padding: 14px 26px;
-    }
-    .cta-band .btn-primary:hover {
-        background: var(--paper-2);
-        border-color: var(--paper-2);
-        box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.5);
+    .trust-item.green i { color: var(--green); }
+    .trust-item.gold  i { color: var(--gold); }
+    .trust-sep {
+        width: 1px;
+        height: 14px;
+        background: var(--border);
     }
 
     /* ---------------- Footer ---------------- */
-    .site-footer {
-        background: var(--paper);
-        border-top: 1px solid var(--line);
-        padding: 44px 0 28px;
-        font-size: 0.83rem;
-        color: var(--ink-3);
-    }
-    .footer-inner {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 24px;
-        display: grid;
-        grid-template-columns: 1.4fr 1fr 1fr;
-        gap: 40px;
-        margin-bottom: 32px;
-    }
-    @media (max-width: 720px) {
-        .footer-inner { grid-template-columns: 1fr; gap: 28px; }
-    }
-    .footer-brand {
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-    }
-    .footer-brand img {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-    .footer-brand-text p {
-        color: var(--ink-3);
-        line-height: 1.6;
-        margin-top: 6px;
-        max-width: 36ch;
-    }
-    .footer-brand-name {
-        font-family: var(--serif);
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--navy);
-    }
-    .footer-col h4 {
-        font-size: 0.72rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--ink-4);
-        margin-bottom: 14px;
-        font-weight: 700;
-    }
-    .footer-col ul {
-        list-style: none;
+    .hero-footer {
         display: flex;
         flex-direction: column;
-        gap: 9px;
-    }
-    .footer-col li {
-        color: var(--ink-2);
-        font-size: 0.86rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 9px;
-    }
-    .footer-col li i {
-        color: var(--ink-4);
-        font-size: 0.75rem;
-        margin-top: 5px;
-        width: 12px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-    .footer-col a {
-        transition: color 0.15s var(--ease);
-    }
-    .footer-col a:hover {
-        color: var(--blue);
-    }
-
-    .footer-bottom {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 20px 24px 0;
-        border-top: 1px solid var(--line);
-        display: flex;
+        gap: 12px;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        flex-wrap: wrap;
-        font-size: 0.78rem;
-        color: var(--ink-4);
-    }
-    .footer-version {
-        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-        font-size: 0.72rem;
-        padding: 3px 8px;
-        background: var(--paper-2);
-        border-radius: 4px;
         color: var(--ink-3);
-        letter-spacing: 0.02em;
+        font-size: 0.78rem;
+        line-height: 1.6;
+        animation: rise 0.9s var(--ease) 0.7s both;
+    }
+    .hero-footer-sep {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+    }
+    .hero-footer-sep::before,
+    .hero-footer-sep::after {
+        content: '';
+        height: 1px;
+        width: 36px;
+        background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.6), transparent);
+    }
+    .hero-footer-credits {
+        display: inline-flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 14px;
+        color: var(--ink-2);
+        font-weight: 500;
+    }
+    .hero-footer-credits span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .hero-footer-credits i {
+        color: var(--ink-3);
+        font-size: 0.7rem;
+        opacity: 0.75;
     }
 
     /* ---------------- Reduced motion ---------------- */
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
         }
+        .bg-orb,
+        .particle,
+        .hero-logo,
+        .hero-logo::before {
+            animation: none !important;
+        }
+        .hero-logo::before { opacity: 0.4; }
     }
 
     /* ---------------- Mobile ---------------- */
     @media (max-width: 640px) {
-        .gov-strip-inner { justify-content: center; text-align: center; }
-        .gov-strip { font-size: 0.7rem; }
+        .brand-bar { padding: 16px 20px; }
+        .brand-bar-inner { padding: 8px 16px 8px 10px; gap: 10px; }
+        .brand-bar img { height: 34px; }
+        .brand-bar-name { font-size: 0.82rem; }
+        .brand-bar-sub { font-size: 0.62rem; }
 
-        .site-header { padding: 16px 0; }
-        .brand-mark { width: 40px; height: 40px; }
-        .brand-name { font-size: 1.15rem; }
-        .brand-sub { font-size: 0.66rem; }
-        .header-nav { display: none; }
+        .landing-page { padding: 24px 20px 56px; }
 
-        .hero { padding: 44px 0 56px; }
+        .hero-logo img { height: 88px; }
+        .hero-logo::before { inset: -14px -28px; }
+
+        .kicker {
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            padding: 6px 13px 6px 10px;
+        }
         .hero-title { margin-bottom: 18px; }
-        .hero-lede { font-size: 0.98rem; margin-bottom: 26px; }
-        .hero-actions { gap: 10px; }
-        .btn { padding: 12px 20px; font-size: 0.9rem; }
-        .hero-actions .btn { flex: 1; justify-content: center; }
+        .hero-desc { margin-bottom: 32px; font-size: 0.98rem; }
+
+        .features {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 34px;
+        }
+        .feature-card { padding: 12px 13px; gap: 10px; }
+        .feature-icon { width: 34px; height: 34px; font-size: 0.85rem; border-radius: 10px; }
+        .feature-label { font-size: 0.78rem; }
+
+        .cta { padding: 16px 30px; font-size: 0.96rem; border-radius: 14px; }
+        .cta-wrap { margin-bottom: 32px; }
 
         .trust-row {
-            gap: 18px;
-            padding-top: 18px;
-            margin-top: 22px;
+            gap: 8px 14px;
+            padding: 12px 16px;
+            font-size: 0.74rem;
         }
-        .trust-item { font-size: 0.78rem; }
+        .trust-sep { display: none; }
 
-        .seal-card { padding: 26px 22px 22px; }
-        .seal-logo { max-width: 260px; margin-bottom: 16px; }
+        .hero-footer { font-size: 0.72rem; }
+    }
 
-        .capabilities { padding: 52px 0; }
-        .cap-head { margin-bottom: 30px; }
-        .cap-head h2 { font-size: 1.5rem; }
-
-        .cta-band { padding: 40px 0; }
-        .cta-band-text h2 { font-size: 1.3rem; }
-        .cta-band-inner { gap: 22px; }
-        .cta-band .btn-primary { width: 100%; justify-content: center; }
-
-        .site-footer { padding: 36px 0 22px; }
-        .footer-bottom { flex-direction: column; text-align: center; gap: 10px; }
+    @media (max-width: 400px) {
+        .features { grid-template-columns: 1fr; }
+        .brand-bar-text { display: none; }
     }
     </style>
 </head>
 <body>
 
-<!-- ============ Government strip ============ -->
-<div class="gov-strip">
-    <div class="gov-strip-inner">
-        <div class="gov-strip-left">
-            <span class="gov-strip-item">
-                <i class="fa-solid fa-landmark" aria-hidden="true"></i>
-                An initiative of Rajkot Municipal Corporation
-            </span>
-        </div>
-        <div class="gov-strip-right">
-            <span class="gov-strip-item">
-                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-                Official portal
-            </span>
-            <span class="gov-strip-item">
-                <i class="fa-solid fa-headset" aria-hidden="true"></i>
-                Support: 0281–222–0000
-            </span>
+<!-- ============ Animated background ============ -->
+<div class="bg-orbs" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+</div>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="particles" id="particles" aria-hidden="true"></div>
+
+<!-- ============ Small brand bar ============ -->
+<div class="brand-bar">
+    <div class="brand-bar-inner">
+        <img src="includes/css/layout/logo.png" alt="DigiShulk">
+        <div class="brand-bar-text">
+            <span class="brand-bar-name">DigiShulk</span>
+            <span class="brand-bar-sub">RMC Tax Collection</span>
         </div>
     </div>
 </div>
 
-<!-- ============ Header ============ -->
-<header class="site-header">
-    <div class="site-header-inner">
-        <a href="index.php" class="brand" aria-label="DigiShulk home">
-            <img src="includes/css/layout/logo.png"
-                 alt="DigiShulk"
-                 class="brand-mark">
-            <span class="brand-text">
-                <span class="brand-name">DigiShulk</span>
-                <span class="brand-sub">RMC Tax Collection</span>
-            </span>
-        </a>
+<!-- ============ Landing content ============ -->
+<main class="landing-page">
+    <div class="hero">
 
-        <nav class="header-nav" aria-label="Primary">
-            <a href="#capabilities">Capabilities</a>
-            <a href="#about">About</a>
-            <a href="includes/login.php">Sign in</a>
-        </nav>
-    </div>
-</header>
-
-<!-- ============ Hero ============ -->
-<main class="hero">
-    <div class="hero-inner">
-
-        <div class="hero-copy">
-            <div class="hero-kicker">Field-ready since 2024</div>
-
-            <h1 class="hero-title">
-                Collect smarter.<br>
-                Report cleaner.<br>
-                Serve <em>faster</em>.
-            </h1>
-
-            <p class="hero-lede">
-                DigiShulk replaces paper slips and month-end reconciliation with
-                a single field app — spot tax collection, seizure logging, and
-                instant receipts, all synced back to RMC's central records in
-                real time.
-            </p>
-
-            <div class="hero-actions">
-                <a href="includes/login.php" class="btn btn-primary">
-                    <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
-                    Sign in to your account
-                </a>
-                <a href="#capabilities" class="btn btn-ghost">
-                    Learn more
-                </a>
-            </div>
-
-            <div class="hero-footnote">
-                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                <span>Authorised RMC personnel only. Single sign-on enforced.</span>
-            </div>
-
-            <div class="trust-row" aria-label="Platform guarantees">
-                <span class="trust-item">
-                    <i class="fa-solid fa-lock" aria-hidden="true"></i>
-                    Secure
-                </span>
-                <span class="trust-item">
-                    <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
-                    Trusted
-                </span>
-                <span class="trust-item">
-                    <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
-                    Simple
-                </span>
-            </div>
-        </div>
-
-        <div class="hero-visual">
-            <div class="seal-card">
+        <!-- Hero logo -->
+        <div class="hero-logo-wrap">
+            <div class="hero-logo">
                 <img src="includes/css/layout/logo.png"
-                     alt="DigiShulk — RMC Digital Tax Collection"
-                     class="seal-logo">
-
-                <div class="seal-divider"></div>
-
-                <div class="seal-meta">
-                    <div class="seal-meta-item">
-                        <span class="seal-meta-label">Deployment</span>
-                        <span class="seal-meta-value">Rajkot, Gujarat</span>
-                    </div>
-                    <div class="seal-meta-item">
-                        <span class="seal-meta-label">System status</span>
-                        <span class="seal-meta-value" style="color: var(--green);">
-                            <i class="fa-solid fa-circle" style="font-size: 0.5rem; vertical-align: middle; margin-right: 5px;" aria-hidden="true"></i>
-                            Operational
-                        </span>
-                    </div>
-                    <div class="seal-meta-item">
-                        <span class="seal-meta-label">Payments via</span>
-                        <span class="seal-meta-value">UPI &amp; Cash</span>
-                    </div>
-                    <div class="seal-meta-item">
-                        <span class="seal-meta-label">Build</span>
-                        <span class="seal-meta-value mono">v1.0.0</span>
-                    </div>
-                </div>
+                     alt="DigiShulk — RMC Digital Tax Collection">
             </div>
         </div>
+
+        <!-- Kicker -->
+        <div class="kicker" role="presentation">
+            <span class="kicker-dot" aria-hidden="true"></span>
+            RMC Digital Initiative
+        </div>
+
+        <!-- Title -->
+        <h1 class="hero-title">DigiShulk</h1>
+
+        <!-- Description -->
+        <p class="hero-desc">
+            A modern digital platform for <strong>Rajkot Municipal Corporation</strong>
+            to streamline spot tax collection, seizure reporting, and field operations —
+            built for inspectors, by inspectors.
+        </p>
+
+        <!-- Features -->
+        <div class="features" role="list">
+            <div class="feature-card" role="listitem">
+                <div class="feature-icon blue">
+                    <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+                </div>
+                <span class="feature-label">Spot Tax Collection</span>
+            </div>
+
+            <div class="feature-card" role="listitem">
+                <div class="feature-icon gold">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                </div>
+                <span class="feature-label">Seizure Reporting</span>
+            </div>
+
+            <div class="feature-card" role="listitem">
+                <div class="feature-icon green">
+                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                </div>
+                <span class="feature-label">UPI &amp; Cash Payments</span>
+            </div>
+
+            <div class="feature-card" role="listitem">
+                <div class="feature-icon red">
+                    <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+                </div>
+                <span class="feature-label">Instant Receipts</span>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-wrap">
+            <a href="includes/login.php" class="cta">
+                <span class="cta-icon">
+                    <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                </span>
+                <span>Sign In to Dashboard</span>
+                <span class="cta-arrow">
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </span>
+            </a>
+        </div>
+
+        <!-- Trust row -->
+        <div class="trust-row" aria-label="Platform guarantees">
+            <span class="trust-item">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                Secure
+            </span>
+            <span class="trust-sep" aria-hidden="true"></span>
+            <span class="trust-item green">
+                <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                Trusted
+            </span>
+            <span class="trust-sep" aria-hidden="true"></span>
+            <span class="trust-item gold">
+                <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                Simple
+            </span>
+        </div>
+
+        <!-- Footer -->
+        <footer class="hero-footer">
+            <span class="hero-footer-sep">Authorized Personnel Only</span>
+            <div class="hero-footer-credits">
+                <span><i class="fa-solid fa-code" aria-hidden="true"></i> Sahdev Parmar</span>
+                <span><i class="fa-solid fa-code" aria-hidden="true"></i> Shubham Yadav</span>
+                <span><i class="fa-solid fa-code" aria-hidden="true"></i> Yashraj Solanki</span>
+            </div>
+        </footer>
 
     </div>
 </main>
 
-<!-- ============ Capabilities ============ -->
-<section class="capabilities" id="capabilities">
-    <div class="cap-inner">
+<script>
+/* ================================================================
+   Floating particles — subtle background life.
+   Skips generation entirely for reduced-motion users.
+   ================================================================ */
+(function () {
+    'use strict';
 
-        <div class="cap-head">
-            <h2>Built for the field, not the desk.</h2>
-            <p>
-                Every feature in DigiShulk was designed around what inspectors
-                actually need on the ground — one-handed use, unreliable
-                networks, and shopkeepers who want a receipt in hand.
-            </p>
-        </div>
+    var reduced = window.matchMedia &&
+                  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
 
-        <div class="cap-grid">
+    var host = document.getElementById('particles');
+    if (!host) return;
 
-            <div class="cap-card">
-                <div class="cap-icon">
-                    <i class="fa-solid fa-receipt" aria-hidden="true"></i>
-                </div>
-                <h3 class="cap-title">Spot tax collection</h3>
-                <p class="cap-desc">
-                    Inspector selects a stall type, enters size, and the fee is
-                    calculated instantly from the official rates table.
-                </p>
-            </div>
+    var palette = ['', 'gold', 'green'];
+    var COUNT = 18;
 
-            <div class="cap-card">
-                <div class="cap-icon green">
-                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
-                </div>
-                <h3 class="cap-title">UPI &amp; cash payments</h3>
-                <p class="cap-desc">
-                    A QR code appears the moment UPI is chosen. Cash collections
-                    are confirmed with a single tap.
-                </p>
-            </div>
+    for (var i = 0; i < COUNT; i++) {
+        var p = document.createElement('span');
+        p.className = 'particle ' + palette[Math.floor(Math.random() * palette.length)];
 
-            <div class="cap-card">
-                <div class="cap-icon gold">
-                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                </div>
-                <h3 class="cap-title">Seizure reporting</h3>
-                <p class="cap-desc">
-                    Structured item logging with owner, location, godown register
-                    number, and estimated value — all in one form.
-                </p>
-            </div>
+        p.style.left      = (Math.random() * 100) + '%';
+        p.style.width     = (2 + Math.random() * 4) + 'px';
+        p.style.height    = p.style.width;
+        p.style.opacity   = (0.35 + Math.random() * 0.5).toFixed(2);
+        p.style.animationDuration = (16 + Math.random() * 20) + 's';
+        p.style.animationDelay    = (-Math.random() * 30) + 's';
 
-            <div class="cap-card">
-                <div class="cap-icon navy">
-                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-                </div>
-                <h3 class="cap-title">Supervisor oversight</h3>
-                <p class="cap-desc">
-                    Zone-wise dashboards, undercharge detection, and instant CSV
-                    or PDF exports for review meetings.
-                </p>
-            </div>
+        host.appendChild(p);
+    }
+})();
 
-        </div>
-    </div>
-</section>
+/* ================================================================
+   Subtle parallax on background orbs — desktop only.
+   ================================================================ */
+(function () {
+    'use strict';
 
-<!-- ============ CTA band ============ -->
-<section class="cta-band">
-    <div class="cta-band-inner">
-        <div class="cta-band-text">
-            <h2>Ready when you are.</h2>
-            <p>
-                Sign in with your RMC credentials to start collecting. If you
-                don't have an account yet, contact your zone supervisor.
-            </p>
-        </div>
-        <a href="includes/login.php" class="btn btn-primary">
-            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
-            Sign in
-        </a>
-    </div>
-</section>
+    var reduced = window.matchMedia &&
+                  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+    if (window.innerWidth < 768) return;
 
-<!-- ============ Footer ============ -->
-<footer class="site-footer" id="about">
-    <div class="footer-inner">
+    var orbs = document.querySelectorAll('.bg-orb');
+    if (!orbs.length) return;
 
-        <div class="footer-brand">
-            <img src="includes/css/layout/logo.png" alt="DigiShulk">
-            <div class="footer-brand-text">
-                <div class="footer-brand-name">DigiShulk</div>
-                <p>
-                    A digital platform for RMC to streamline spot tax collection,
-                    seizure reporting, and field operations.
-                </p>
-            </div>
-        </div>
+    var mx = 0, my = 0;
+    var ticking = false;
 
-        <div class="footer-col">
-            <h4>Contact</h4>
-            <ul>
-                <li>
-                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-                    <span>Rajkot Municipal Corporation,<br>Dhebarbhai Road, Rajkot 360001</span>
-                </li>
-                <li>
-                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
-                    <span>0281–222–0000</span>
-                </li>
-                <li>
-                    <i class="fa-solid fa-envelope" aria-hidden="true"></i>
-                    <span><a href="mailto:support@rmc.gov.in">support@rmc.gov.in</a></span>
-                </li>
-            </ul>
-        </div>
+    window.addEventListener('mousemove', function (e) {
+        mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        my = (e.clientY / window.innerHeight - 0.5) * 2;
 
-        <div class="footer-col">
-            <h4>Support hours</h4>
-            <ul>
-                <li>
-                    <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                    <span>Mon–Fri, 10:00 – 18:00 IST</span>
-                </li>
-                <li>
-                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                    <span>For account issues, contact your zone supervisor first.</span>
-                </li>
-            </ul>
-        </div>
-
-    </div>
-
-    <div class="footer-bottom">
-        <span>
-            &copy; <?= date('Y') ?> Rajkot Municipal Corporation. All rights reserved.
-        </span>
-        <span class="footer-version">DigiShulk v1.0.0</span>
-    </div>
-</footer>
+        if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(function () {
+                orbs.forEach(function (orb, idx) {
+                    var strength = 10 + idx * 6;
+                    orb.style.transform =
+                        'translate(' + (mx * strength) + 'px, ' + (my * strength) + 'px)';
+                });
+                ticking = false;
+            });
+        }
+    }, { passive: true });
+})();
+</script>
 
 </body>
 </html>
