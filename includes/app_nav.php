@@ -28,7 +28,6 @@ $logo_url = 'css/layout/logo.png';
    DigiShulk — Shared navigation
    Palette from the logo: navy #14285a · blue #1e50a2 ·
                           green #3ba55c · gold #f0a020
-   Scoped to nav classes only.
    ================================================================ */
 
 :root {
@@ -44,7 +43,6 @@ $logo_url = 'css/layout/logo.png';
     --nav-ink-2:    #475569;
     --nav-ink-3:    #94a3b8;
     --nav-line:     #e5e7eb;
-    --nav-line-2:   #d1d5db;
     --nav-paper:    #ffffff;
     --nav-bg:       #f8fafc;
 
@@ -64,6 +62,11 @@ $logo_url = 'css/layout/logo.png';
 @keyframes navShimmer {
     0%   { background-position: -200% 0; }
     100% { background-position:  200% 0; }
+}
+/* Same glow pulse as the login page logo */
+@keyframes navLogoGlow {
+    0%, 100% { opacity: 0.45; transform: scale(1); }
+    50%      { opacity: 0.8;  transform: scale(1.06); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -95,45 +98,11 @@ $logo_url = 'css/layout/logo.png';
     animation: navFadeIn 0.35s ease-out both;
 }
 
-/* Brand — logo sits on a white chip so it's readable on the dark sidebar */
-.app-sidebar .sidebar-brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 16px;
-    text-decoration: none;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.10);
-    position: relative;
+/* Nav list — starts right at the top since there's no brand here anymore */
+.app-sidebar .sidebar-nav {
+    padding: 22px 12px 14px;
+    flex: 1;
 }
-.app-sidebar .sidebar-brand::after {
-    content: '';
-    position: absolute;
-    left: 24px; right: 24px; bottom: -1px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59, 165, 92, 0.45), transparent);
-}
-.app-sidebar .sidebar-brand-chip {
-    display: block;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 10px 14px;
-    width: 100%;
-    max-width: 210px;
-    box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s var(--nav-ease), box-shadow 0.3s var(--nav-ease);
-}
-.app-sidebar .sidebar-brand:hover .sidebar-brand-chip {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 26px -10px rgba(0, 0, 0, 0.6);
-}
-.app-sidebar .sidebar-brand img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-/* Nav list */
-.app-sidebar .sidebar-nav { padding: 14px 12px; flex: 1; }
 .app-sidebar .nav-list {
     list-style: none;
     margin: 0;
@@ -289,7 +258,7 @@ $logo_url = 'css/layout/logo.png';
 }
 
 /* ================================================================
-   DESKTOP TOP BAR (white)
+   DESKTOP TOP BAR (white) — logo on the left
    ================================================================ */
 .app-topbar.desktop {
     position: fixed;
@@ -297,18 +266,65 @@ $logo_url = 'css/layout/logo.png';
     left: 260px;
     right: 0;
     height: 64px;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    padding: 0 24px;
     gap: 16px;
+    padding: 0 24px;
     background: var(--nav-paper);
     border-bottom: 1px solid var(--nav-line);
     z-index: 90;
     animation: navFadeIn 0.35s ease-out 0.08s both;
 }
-.app-topbar.desktop .topbar-start  { flex: 0 0 auto; display: flex; align-items: center; }
-.app-topbar.desktop .topbar-center { flex: 1; display: flex; justify-content: center; }
-.app-topbar.desktop .topbar-end    { flex: 0 0 auto; display: flex; align-items: center; }
+.app-topbar.desktop .topbar-start {
+    display: flex;
+    align-items: center;
+    justify-self: start;
+}
+.app-topbar.desktop .topbar-center {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+}
+.app-topbar.desktop .topbar-end {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+}
+
+/* Brand — logo with the same drop-shadow + glow treatment as the login page */
+.app-topbar.desktop .topbar-brand {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    text-decoration: none;
+    padding: 4px 2px;
+}
+.app-topbar.desktop .topbar-brand::before {
+    content: '';
+    position: absolute;
+    inset: -10px -24px;
+    background: radial-gradient(ellipse at center,
+        rgba(59, 165, 92, 0.18) 0%,
+        rgba(30, 80, 162, 0.14) 45%,
+        transparent 72%);
+    filter: blur(20px);
+    z-index: -1;
+    pointer-events: none;
+    animation: navLogoGlow 5s ease-in-out infinite;
+}
+.app-topbar.desktop .topbar-brand img {
+    height: 42px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 6px 14px rgba(20, 40, 90, 0.12));
+    transition: filter 0.28s var(--nav-ease),
+                transform 0.28s var(--nav-ease);
+}
+.app-topbar.desktop .topbar-brand:hover img {
+    filter: drop-shadow(0 10px 22px rgba(20, 40, 90, 0.22));
+    transform: translateY(-1px);
+}
 
 /* Search */
 .topbar-search {
@@ -506,7 +522,6 @@ $logo_url = 'css/layout/logo.png';
 .app-bottom-nav   { display: none; }
 
 @media (max-width: 900px) {
-    /* Sidebar slides off-screen on mobile */
     .app-sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s var(--nav-ease);
@@ -515,7 +530,7 @@ $logo_url = 'css/layout/logo.png';
 
     .app-topbar.desktop { display: none; }
 
-    /* --------- Mobile topbar — CSS Grid for perfect alignment --------- */
+    /* Mobile topbar — CSS Grid for perfect alignment */
     .app-topbar.mobile {
         display: grid;
         grid-template-columns: 44px 1fr 44px;
@@ -532,24 +547,10 @@ $logo_url = 'css/layout/logo.png';
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
         z-index: 95;
     }
-    .app-topbar.mobile .topbar-start {
-        justify-self: start;
-        display: flex;
-        align-items: center;
-    }
-    .app-topbar.mobile .topbar-center {
-        justify-self: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .app-topbar.mobile .topbar-end {
-        justify-self: end;
-        display: flex;
-        align-items: center;
-    }
+    .app-topbar.mobile .topbar-start { justify-self: start; display: flex; align-items: center; }
+    .app-topbar.mobile .topbar-center { justify-self: center; display: flex; align-items: center; }
+    .app-topbar.mobile .topbar-end { justify-self: end; display: flex; align-items: center; }
 
-    /* Mobile logo — small, uses the mark on the left */
     .app-topbar.mobile .topbar-brand {
         display: flex;
         align-items: center;
@@ -565,15 +566,14 @@ $logo_url = 'css/layout/logo.png';
         height: 100%;
         object-fit: contain;
         object-position: left center;
+        filter: drop-shadow(0 3px 8px rgba(20, 40, 90, 0.10));
     }
 
-    /* Search button matches the avatar size */
     .app-topbar.mobile .search-btn {
         width: 40px;
         height: 40px;
     }
 
-    /* Avatar */
     .app-topbar.mobile .profile-avatar {
         width: 40px;
         height: 40px;
@@ -593,7 +593,7 @@ $logo_url = 'css/layout/logo.png';
         background: var(--nav-bg);
     }
 
-    /* --------- Mobile bottom nav (white) --------- */
+    /* Mobile bottom nav (white) */
     .app-bottom-nav {
         display: grid;
         grid-auto-flow: column;
@@ -641,16 +641,12 @@ $logo_url = 'css/layout/logo.png';
                     transform 0.25s var(--nav-ease),
                     color 0.2s ease;
     }
-    .app-bottom-nav .bottom-nav-item:hover {
-        color: var(--nav-ink);
-    }
+    .app-bottom-nav .bottom-nav-item:hover { color: var(--nav-ink); }
     .app-bottom-nav .bottom-nav-item:hover .nav-icon {
         background: rgba(30, 80, 162, 0.08);
         transform: translateY(-2px);
     }
-    .app-bottom-nav .bottom-nav-item.active {
-        color: var(--nav-blue);
-    }
+    .app-bottom-nav .bottom-nav-item.active { color: var(--nav-blue); }
     .app-bottom-nav .bottom-nav-item.active .nav-icon {
         background: linear-gradient(135deg,
             rgba(30, 80, 162, 0.16),
@@ -688,14 +684,8 @@ $logo_url = 'css/layout/logo.png';
 }
 </style>
 
-<!-- ============ DESKTOP SIDEBAR ============ -->
+<!-- ============ DESKTOP SIDEBAR (nav only — no brand) ============ -->
 <aside class="app-sidebar" id="appSidebar" aria-label="Main navigation">
-    <a href="<?= $home_link ?>" class="sidebar-brand" aria-label="DigiShulk — Home">
-        <span class="sidebar-brand-chip">
-            <img src="<?= $logo_url ?>" alt="DigiShulk">
-        </span>
-    </a>
-
     <nav class="sidebar-nav" role="navigation" aria-label="Primary">
         <ul class="nav-list">
 
@@ -787,9 +777,13 @@ $logo_url = 'css/layout/logo.png';
     </div>
 </aside>
 
-<!-- ============ DESKTOP TOP BAR ============ -->
+<!-- ============ DESKTOP TOP BAR (logo on the left) ============ -->
 <header class="app-topbar desktop" role="banner">
-    <div class="topbar-start"></div>
+    <div class="topbar-start">
+        <a href="<?= $home_link ?>" class="topbar-brand" aria-label="DigiShulk — Home">
+            <img src="<?= $logo_url ?>" alt="DigiShulk">
+        </a>
+    </div>
 
     <div class="topbar-center">
         <div class="topbar-search">
