@@ -176,12 +176,14 @@ $session_id = (int) $conn->insert_id;
     $realError = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
 
     $msg = "<div class='sz-alert sz-alert-danger'>
-    <i class='fa-solid fa-triangle-exclamation' aria-hidden='true'></i>
-    <div>
-        <strong>Could not save the seizure report.</strong>
-        <p style='margin:4px 0 0;'>Please try again. If the problem persists, contact your administrator.</p>
-    </div>
-</div>";
+        <i class='fa-solid fa-triangle-exclamation' aria-hidden='true'></i>
+        <div>
+            <strong>Could not save the seizure report.</strong>
+            <p style='margin:6px 0 0; font-family: monospace; font-size: 0.78rem; word-break: break-all;'>
+                {$realError}
+            </p>
+        </div>
+    </div>";
 }
     }
 }
