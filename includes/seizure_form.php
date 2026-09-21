@@ -157,21 +157,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log_seizure'])) {
             </div>";
 
         } catch (Throwable $e) {
-            $conn->rollback();
-            error_log('DigiShulk seizure_form: ' . $e->getMessage());
+    $conn->rollback();
+    error_log('DigiShulk seizure_form: ' . $e->getMessage());
 
-            // Also preserve data on DB error
-            $_SESSION['seizure_form_data'] = $_POST;
-            $form = $_POST;
+    $_SESSION['seizure_form_data'] = $_POST;
+    $form = $_POST;
 
-            $msg = "<div class='sz-alert sz-alert-danger'>
-                <i class='fa-solid fa-triangle-exclamation' aria-hidden='true'></i>
-                <div>
-                    <strong>Could not save the seizure report.</strong>
-                    <p style='margin:4px 0 0;'>Please try again. If the problem persists, contact your administrator.</p>
-                </div>
-            </div>";
-        }
+    // ⚠️ TEMPORARY — REMOVE AFTER DEBUGGING
+    $realError = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+
+    $msg = "<div class='sz-alert sz-alert-danger'>
+        <i class='fa-solid fa-triangle-exclamation' aria-hidden='true'></i>
+        <div>
+            <strong>Could not save the seizure report.</strong>
+            <p style='margin:6px 0 0; font-family: monospace; font-size: 0.78rem; word-break: break-all;'>
+                {$realError}
+            </p>
+        </div>
+    </div>";
+}
     }
 }
 
