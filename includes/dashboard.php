@@ -251,6 +251,7 @@ $hasCollectionToday = ((float) $stats['total']) > 0;
 
 /* --- Hero card --- */
 .dash-hero {
+    color: var(--color-text);   /* ← ADD THIS LINE */
     position: relative;
     overflow: hidden;
     background:
@@ -430,7 +431,7 @@ $hasCollectionToday = ((float) $stats['total']) > 0;
     <!-- Page Header -->
     <div class="dash-reveal" style="--delay: 0ms; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6);">
         <div>
-            <h1 style="font-size: var(--text-3xl); font-weight: 700; color: var(--color-text); margin: 0; display: flex; align-items: center; gap: var(--space-3);">
+            <h1 style="font-size: var(--text-3xl); font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: var(--space-3);">
                 <i class="fa-solid fa-<?= $greetIcon ?>" style="color: var(--color-primary);" aria-hidden="true"></i>
                 <?= $greeting ?>, <?= $inspectorName ?> 👋
             </h1>
