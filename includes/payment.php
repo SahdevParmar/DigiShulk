@@ -118,6 +118,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
 
     $errors = [];
 
+    // --- Optional fields (all low-risk, no validation errors) ---
+$ownerName = trim($_POST['owner_name'] ?? '');
+$zone      = trim($_POST['zone']       ?? '');
+$notes     = trim($_POST['notes']      ?? '');
+$latitude  = is_numeric($_POST['latitude']  ?? null) ? (float) $_POST['latitude']  : null;
+$longitude = is_numeric($_POST['longitude'] ?? null) ? (float) $_POST['longitude'] : null;
+
+// Trim caps to match schema
+if (strlen($ownerName) > 150) { $ownerName = substr($ownerName, 0, 150); }
+if (strlen($zone)      > 100) { $zone      = substr($zone, 0, 100); }
+if (strlen($notes)     > 500) { $notes     = substr($notes, 0, 500); }
+
     if ($shopName === '')    { $errors['shop_name']    = 'Shop name is required'; }
     if ($shopAddress === '') { $errors['shop_address'] = 'Address is required'; }
 
@@ -136,6 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
     if ($stallType === '') {
         $errors['stall_type'] = 'Stall type is required';
     }
+
 
     if (!empty($errors)) {
         $_SESSION['form_errors'] = $errors;
@@ -186,22 +199,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
 
     $transactionId = (int) $conn->insert_id;
 
-    // Save/update shop for autocomplete.
-    $stmt2 = $conn->prepare("
-        INSERT INTO shops
-        (shop_name, address, phone, stall_type, last_amount, last_visit)
-        VALUES (?, ?, ?, ?, ?, CURDATE())
-        ON DUPLICATE KEY UPDATE
-            address     = VALUES(address),
-            stall_type  = VALUES(stall_type),
-            last_amount = VALUES(last_amount),
-            last_visit  = CURDATE()
-    ");
+$stmt2 = $conn->prepare("
+    INSERT INTO shops
+    (shop_name, owner_name, address, phone, zone, stall_type, notes, latitude, longitude, last_amount, last_visit)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())
+    ON DUPLICATE KEY UPDATE
+        owner_name  = COALESCE(NULLIF(VALUES(owner_name), ''), owner_name),
+        address     = VALUES(address),
+        zone        = COALESCE(NULLIF(VALUES(zone), ''), zone),
+        stall_type  = VALUES(stall_type),
+        notes       = COALESCE(NULLIF(VALUES(notes), ''), notes),
+        latitude    = COALESCE(VALUES(latitude),  latitude),
+        longitude   = COALESCE(VALUES(longitude), longitude),
+        last_amount = VALUES(last_amount),
+        last_visit  = CURDATE()
+");
 
-    if ($stmt2) {
-        $stmt2->bind_param('ssssd', $shopName, $shopAddress, $phone, $stallType, $totalAmount);
-        $stmt2->execute();
-    }
+if ($stmt2) {
+    $stmt2->bind_param(
+        'sssssssddd',
+        $shopName,
+        $ownerName,
+        $shopAddress,
+        $phone,
+        $zone,
+        $stallType,
+        $notes,
+        $latitude,
+        $longitude,
+        $totalAmount
+    );
+    $stmt2->execute();
+}
 
     // Receipt number — generated once, independent of gateway.
     $receiptNumber = 'RMC-' . date('Ymd') . '-' .
