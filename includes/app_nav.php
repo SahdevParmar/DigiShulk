@@ -3,8 +3,7 @@
  * app_nav.php — Shared responsive navigation for DigiShulk.
  * Loaded by header.php. Handles both admin and inspector roles.
  *
- * Self-contained styles — does NOT depend on style2.css beyond
- * theme CSS variables.
+ * Self-contained styles — does NOT depend on style2.css.
  */
 
 require_once __DIR__ . '/helpers/csrf.php';
@@ -16,43 +15,55 @@ if (!isset($userPhoto) || $userPhoto === '') {
     $userPhoto = 'uploads/profile/default.jpg';
 }
 
-$is_admin   = ($user_role === 'admin');
-$is_insp    = ($user_role === 'inspector');
-$home_link  = $is_admin ? 'admin_dashboard.php' : 'dashboard.php';
-$initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
+$is_admin  = ($user_role === 'admin');
+$is_insp   = ($user_role === 'inspector');
+$home_link = $is_admin ? 'admin_dashboard.php' : 'dashboard.php';
+
+// Logo path — relative to any page inside /includes/
+$logo_url = 'css/layout/logo.png';
 ?>
 
 <style>
 /* ================================================================
-   DigiShulk — Shared navigation styles
-   Scoped to nav classes only. Zero impact on page content.
+   DigiShulk — Shared navigation
+   Palette from the logo: navy #14285a · blue #1e50a2 ·
+                          green #3ba55c · gold #f0a020
+   Scoped to nav classes only.
    ================================================================ */
+
+:root {
+    --nav-navy:     #14285a;
+    --nav-navy-2:   #0e1e42;
+    --nav-navy-3:   #0a1730;
+    --nav-blue:     #1e50a2;
+    --nav-blue-2:   #3b82f6;
+    --nav-green:    #3ba55c;
+    --nav-gold:     #f0a020;
+
+    --nav-ink:      #0f172a;
+    --nav-ink-2:    #475569;
+    --nav-ink-3:    #94a3b8;
+    --nav-line:     #e5e7eb;
+    --nav-line-2:   #d1d5db;
+    --nav-paper:    #ffffff;
+    --nav-bg:       #f8fafc;
+
+    --nav-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 /* ---------------- Animations ---------------- */
 @keyframes navFadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
-@keyframes navSlideDown {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
 @keyframes navIconBounce {
     0%   { transform: translateY(0); }
     40%  { transform: translateY(-3px); }
     100% { transform: translateY(0); }
 }
-@keyframes navPulseGlow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.35); }
-    70%      { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
-}
 @keyframes navShimmer {
     0%   { background-position: -200% 0; }
     100% { background-position:  200% 0; }
-}
-@keyframes navSpinOnce {
-    from { transform: rotate(0deg) scale(1); }
-    to   { transform: rotate(360deg) scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -63,7 +74,7 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 }
 
 /* ================================================================
-   DESKTOP SIDEBAR
+   DESKTOP SIDEBAR (dark navy)
    ================================================================ */
 .app-sidebar {
     position: fixed;
@@ -72,51 +83,65 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     width: 260px;
     height: 100vh;
     background: linear-gradient(180deg,
-        #0b1220 0%,
-        #0f172a 40%,
-        #0a101e 100%);
+        var(--nav-navy)   0%,
+        var(--nav-navy-2) 55%,
+        var(--nav-navy-3) 100%);
     display: flex;
     flex-direction: column;
     z-index: 100;
     overflow-y: auto;
     overflow-x: hidden;
     border-right: 1px solid rgba(148, 163, 184, 0.08);
-    animation: navFadeIn 0.4s ease-out both;
+    animation: navFadeIn 0.35s ease-out both;
 }
 
-/* Brand */
+/* Brand — logo sits on a white chip so it's readable on the dark sidebar */
 .app-sidebar .sidebar-brand {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 22px 20px;
+    padding: 20px 16px;
     text-decoration: none;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.10);
     position: relative;
 }
 .app-sidebar .sidebar-brand::after {
     content: '';
     position: absolute;
-    left: 20px; right: 20px; bottom: 0;
+    left: 24px; right: 24px; bottom: -1px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(59, 165, 92, 0.45), transparent);
 }
-.app-sidebar .sidebar-brand .logo {
-    width: 120px;
-    height: 34px;
-    background: url('assets/logo.png') no-repeat center / contain;
-    filter: brightness(1.1);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+.app-sidebar .sidebar-brand-chip {
+    display: block;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 210px;
+    box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s var(--nav-ease), box-shadow 0.3s var(--nav-ease);
 }
-.app-sidebar .sidebar-brand:hover .logo {
-    transform: scale(1.05);
-    filter: brightness(1.25);
+.app-sidebar .sidebar-brand:hover .sidebar-brand-chip {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px -10px rgba(0, 0, 0, 0.6);
+}
+.app-sidebar .sidebar-brand img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 /* Nav list */
 .app-sidebar .sidebar-nav { padding: 14px 12px; flex: 1; }
-.app-sidebar .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-
+.app-sidebar .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 .app-sidebar .nav-list li { margin: 0; }
 
 .app-sidebar .nav-link {
@@ -126,13 +151,12 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     gap: 12px;
     padding: 11px 14px;
     border-radius: 10px;
-    color: #94a3b8;
+    color: rgba(226, 232, 240, 0.7);
     text-decoration: none;
     font-weight: 500;
     font-size: 0.9rem;
-    transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background 0.22s var(--nav-ease),
+                color 0.22s var(--nav-ease);
     overflow: hidden;
 }
 .app-sidebar .nav-link::before {
@@ -143,42 +167,40 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     transform: translateY(-50%) scaleY(0);
     width: 3px;
     height: 60%;
-    background: linear-gradient(180deg, #3b82f6, #6366f1);
+    background: linear-gradient(180deg, var(--nav-blue-2), var(--nav-green));
     border-radius: 0 4px 4px 0;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s var(--nav-ease);
 }
 .app-sidebar .nav-link i {
     width: 20px;
     text-align: center;
     font-size: 0.95rem;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s ease;
-}
-.app-sidebar .nav-link span {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s var(--nav-ease), color 0.22s ease;
 }
 
 .app-sidebar .nav-link:hover {
-    background: rgba(59, 130, 246, 0.08);
-    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
 }
 .app-sidebar .nav-link:hover::before { transform: translateY(-50%) scaleY(1); }
-.app-sidebar .nav-link:hover i { transform: scale(1.15); color: #60a5fa; }
+.app-sidebar .nav-link:hover i { transform: scale(1.12); color: var(--nav-blue-2); }
 
 .app-sidebar .nav-link.active {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.20), rgba(99, 102, 241, 0.14));
-    color: #fff;
-    box-shadow: 0 8px 20px -10px rgba(59, 130, 246, 0.6),
-                inset 0 0 0 1px rgba(59, 130, 246, 0.28);
+    background: linear-gradient(135deg, rgba(30, 80, 162, 0.45), rgba(59, 165, 92, 0.20));
+    color: #ffffff;
+    box-shadow:
+        0 8px 20px -10px rgba(30, 80, 162, 0.7),
+        inset 0 0 0 1px rgba(59, 165, 92, 0.28);
 }
 .app-sidebar .nav-link.active::before { transform: translateY(-50%) scaleY(1); }
-.app-sidebar .nav-link.active i { color: #93c5fd; }
+.app-sidebar .nav-link.active i { color: #7dd3a8; }
 .app-sidebar .nav-link.active::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+    background: linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.06) 50%, transparent 60%);
     background-size: 200% 100%;
-    animation: navShimmer 4s linear infinite;
+    animation: navShimmer 4.5s linear infinite;
     pointer-events: none;
     border-radius: 10px;
 }
@@ -186,16 +208,12 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 /* Sidebar footer */
 .app-sidebar .sidebar-footer {
     padding: 14px 12px 18px;
-    border-top: 1px solid rgba(148, 163, 184, 0.08);
+    border-top: 1px solid rgba(148, 163, 184, 0.10);
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.app-sidebar .user-profile {
-    border-radius: 12px;
-    transition: background 0.25s ease;
-}
 .app-sidebar .profile-link {
     display: flex;
     align-items: center;
@@ -203,11 +221,11 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     padding: 10px 12px;
     border-radius: 12px;
     text-decoration: none;
-    background: rgba(148, 163, 184, 0.05);
+    background: rgba(255, 255, 255, 0.04);
     transition: background 0.22s ease, transform 0.22s ease;
 }
 .app-sidebar .profile-link:hover {
-    background: rgba(59, 130, 246, 0.10);
+    background: rgba(255, 255, 255, 0.07);
     transform: translateY(-1px);
 }
 .app-sidebar .nav-profile-photo {
@@ -215,13 +233,13 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     height: 38px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(59, 130, 246, 0.35);
-    background: #1e293b;
+    border: 2px solid rgba(59, 165, 92, 0.45);
+    background: var(--nav-navy-2);
     flex-shrink: 0;
     transition: border-color 0.25s ease;
 }
 .app-sidebar .profile-link:hover .nav-profile-photo {
-    border-color: rgba(59, 130, 246, 0.7);
+    border-color: var(--nav-green);
 }
 .app-sidebar .profile-info {
     display: flex;
@@ -231,20 +249,19 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 .app-sidebar .profile-name {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #e2e8f0;
+    color: #ffffff;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .app-sidebar .profile-role {
     font-size: 0.72rem;
-    color: #64748b;
+    color: rgba(226, 232, 240, 0.55);
     text-transform: capitalize;
     margin-top: 1px;
 }
 
-/* Sidebar logout button (form + button) */
-.app-sidebar form.nav-link.logout-link,
+/* Sidebar logout */
 .app-sidebar button.nav-link.logout-link {
     width: 100%;
     background: transparent;
@@ -252,7 +269,7 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     cursor: pointer;
     font-family: inherit;
     text-align: left;
-    color: #94a3b8;
+    color: rgba(226, 232, 240, 0.7);
     padding: 11px 14px;
     border-radius: 10px;
     display: flex;
@@ -262,19 +279,17 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     font-weight: 500;
     transition: background 0.22s ease, color 0.22s ease;
 }
-.app-sidebar form.nav-link.logout-link:hover,
 .app-sidebar button.nav-link.logout-link:hover {
-    background: rgba(239, 68, 68, 0.10);
+    background: rgba(239, 68, 68, 0.14);
     color: #fca5a5;
 }
-.app-sidebar form.nav-link.logout-link:hover i,
 .app-sidebar button.nav-link.logout-link:hover i {
     transform: translateX(2px);
     color: #f87171;
 }
 
 /* ================================================================
-   TOP BAR (desktop)
+   DESKTOP TOP BAR (white)
    ================================================================ */
 .app-topbar.desktop {
     position: fixed;
@@ -285,18 +300,15 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     display: flex;
     align-items: center;
     padding: 0 24px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    gap: 16px;
+    background: var(--nav-paper);
+    border-bottom: 1px solid var(--nav-line);
     z-index: 90;
-    animation: navFadeIn 0.4s ease-out 0.1s both;
+    animation: navFadeIn 0.35s ease-out 0.08s both;
 }
-
-.app-topbar.desktop .topbar-start { flex: 0 0 auto; }
+.app-topbar.desktop .topbar-start  { flex: 0 0 auto; display: flex; align-items: center; }
 .app-topbar.desktop .topbar-center { flex: 1; display: flex; justify-content: center; }
-.app-topbar.desktop .topbar-end    { flex: 0 0 auto; }
-
-.app-topbar.desktop .topbar-brand { display: none; } /* brand lives in sidebar on desktop */
+.app-topbar.desktop .topbar-end    { flex: 0 0 auto; display: flex; align-items: center; }
 
 /* Search */
 .topbar-search {
@@ -311,41 +323,44 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: rgba(148, 163, 184, 0.06);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    color: #cbd5e1;
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-line);
+    color: var(--nav-ink-2);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease,
+                border-color 0.2s ease, color 0.2s ease;
     flex-shrink: 0;
 }
 .search-btn:hover {
-    background: rgba(59, 130, 246, 0.14);
-    border-color: rgba(59, 130, 246, 0.4);
-    color: #93c5fd;
+    background: rgba(30, 80, 162, 0.08);
+    border-color: rgba(30, 80, 162, 0.4);
+    color: var(--nav-blue);
     transform: translateY(-1px);
 }
 .search-btn:hover i {
-    animation: navIconBounce 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: navIconBounce 0.5s var(--nav-ease);
 }
 
 #spotlightDesktop {
     flex: 1;
     padding: 10px 14px;
-    background: rgba(148, 163, 184, 0.06);
-    border: 1px solid rgba(148, 163, 184, 0.12);
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-line);
     border-radius: 10px;
-    color: #e2e8f0;
+    color: var(--nav-ink);
     font-family: inherit;
     font-size: 0.9rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
+#spotlightDesktop::placeholder { color: var(--nav-ink-3); }
 #spotlightDesktop:focus {
     outline: none;
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
-    background: rgba(148, 163, 184, 0.08);
+    border-color: var(--nav-blue);
+    background: var(--nav-paper);
+    box-shadow: 0 0 0 4px rgba(30, 80, 162, 0.12);
 }
 
 /* Profile trigger */
@@ -354,33 +369,33 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 6px 12px 6px 6px;
-    background: rgba(148, 163, 184, 0.06);
-    border: 1px solid rgba(148, 163, 184, 0.12);
+    padding: 5px 12px 5px 5px;
+    background: var(--nav-bg);
+    border: 1px solid var(--nav-line);
     border-radius: 999px;
     cursor: pointer;
-    color: #e2e8f0;
+    color: var(--nav-ink);
     font-family: inherit;
     font-size: 0.85rem;
     font-weight: 600;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 .profile-trigger:hover {
-    background: rgba(59, 130, 246, 0.12);
-    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(30, 80, 162, 0.06);
+    border-color: rgba(30, 80, 162, 0.35);
 }
 .profile-trigger .nav-profile-photo {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(59, 130, 246, 0.3);
-    background: #1e293b;
+    border: 2px solid rgba(30, 80, 162, 0.28);
+    background: var(--nav-bg);
 }
 .profile-trigger .caret {
     font-size: 0.7rem;
-    color: #94a3b8;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--nav-ink-2);
+    transition: transform 0.25s var(--nav-ease);
 }
 .profile-trigger[aria-expanded="true"] .caret {
     transform: rotate(180deg);
@@ -392,15 +407,17 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     top: calc(100% + 10px);
     right: 0;
     min-width: 260px;
-    background: linear-gradient(180deg, #131c2e 0%, #0f172a 100%);
-    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: var(--nav-paper);
+    border: 1px solid var(--nav-line);
     border-radius: 14px;
     padding: 8px;
-    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+    box-shadow:
+        0 20px 48px -16px rgba(15, 23, 42, 0.22),
+        0 4px 12px rgba(15, 23, 42, 0.05);
     opacity: 0;
     transform: translateY(-8px) scale(0.98);
     pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.2s ease, transform 0.2s var(--nav-ease);
     z-index: 200;
 }
 .profile-dropdown.open {
@@ -410,7 +427,7 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 }
 .dropdown-header {
     padding: 12px 12px 10px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+    border-bottom: 1px solid var(--nav-line);
     margin-bottom: 6px;
 }
 .dropdown-user-info { display: flex; align-items: center; gap: 12px; }
@@ -419,13 +436,12 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     height: 42px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(59, 130, 246, 0.35);
-    background: #1e293b;
+    border: 2px solid rgba(30, 80, 162, 0.28);
+    background: var(--nav-bg);
 }
-.dropdown-user-details { min-width: 0; }
 .dropdown-user-name {
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--nav-ink);
     font-size: 0.9rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -433,12 +449,12 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 }
 .dropdown-user-role {
     font-size: 0.72rem;
-    color: #64748b;
+    color: var(--nav-ink-2);
     text-transform: capitalize;
 }
 .dropdown-divider {
     height: 1px;
-    background: rgba(148, 163, 184, 0.10);
+    background: var(--nav-line);
     margin: 6px 4px;
 }
 .dropdown-item {
@@ -447,11 +463,11 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
     gap: 12px;
     padding: 10px 12px;
     border-radius: 10px;
-    color: #cbd5e1;
+    color: var(--nav-ink-2);
     text-decoration: none;
     font-size: 0.88rem;
     font-weight: 500;
-    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
     cursor: pointer;
     width: 100%;
     background: transparent;
@@ -462,23 +478,25 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 .dropdown-item i {
     width: 18px;
     text-align: center;
-    color: #64748b;
+    color: var(--nav-ink-3);
     transition: color 0.15s ease, transform 0.2s ease;
 }
 .dropdown-item:hover {
-    background: rgba(59, 130, 246, 0.10);
-    color: #fff;
-    transform: translateX(2px);
+    background: rgba(30, 80, 162, 0.08);
+    color: var(--nav-blue);
 }
-.dropdown-item:hover i { color: #60a5fa; transform: scale(1.1); }
-
+.dropdown-item:hover i {
+    color: var(--nav-blue);
+    transform: scale(1.1);
+}
+.dropdown-item.danger { color: #dc2626; }
+.dropdown-item.danger i { color: #ef4444; }
 .dropdown-item.danger:hover {
-    background: rgba(239, 68, 68, 0.10);
-    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
 }
-.dropdown-item.danger:hover i { color: #f87171; }
+.dropdown-item.danger:hover i { color: #dc2626; }
 
-/* Dropdown logout form */
 .profile-dropdown form { margin: 0; }
 
 /* ================================================================
@@ -488,73 +506,128 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 .app-bottom-nav   { display: none; }
 
 @media (max-width: 900px) {
-    .app-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    /* Sidebar slides off-screen on mobile */
+    .app-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s var(--nav-ease);
+    }
     .app-sidebar.is-open { transform: translateX(0); }
 
     .app-topbar.desktop { display: none; }
+
+    /* --------- Mobile topbar — CSS Grid for perfect alignment --------- */
     .app-topbar.mobile {
-        display: flex;
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        height: 56px;
-        padding: 0 14px;
+        display: grid;
+        grid-template-columns: 44px 1fr 44px;
         align-items: center;
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+        gap: 8px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        padding: 0 12px;
+        background: var(--nav-paper);
+        border-bottom: 1px solid var(--nav-line);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
         z-index: 95;
     }
-    .app-topbar.mobile .topbar-start { flex: 1; }
-    .app-topbar.mobile .topbar-center { flex: 0 0 auto; }
-    .app-topbar.mobile .topbar-end { flex: 0 0 auto; }
+    .app-topbar.mobile .topbar-start {
+        justify-self: start;
+        display: flex;
+        align-items: center;
+    }
+    .app-topbar.mobile .topbar-center {
+        justify-self: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .app-topbar.mobile .topbar-end {
+        justify-self: end;
+        display: flex;
+        align-items: center;
+    }
 
-    .app-topbar.mobile .topbar-brand { display: flex; text-decoration: none; }
-    .app-topbar.mobile .topbar-brand .logo {
-        width: 100px;
-        height: 28px;
-        background: url('assets/logo.png') no-repeat center / contain;
+    /* Mobile logo — small, uses the mark on the left */
+    .app-topbar.mobile .topbar-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--nav-paper);
+    }
+    .app-topbar.mobile .topbar-brand img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: left center;
+    }
+
+    /* Search button matches the avatar size */
+    .app-topbar.mobile .search-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Avatar */
+    .app-topbar.mobile .profile-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: var(--nav-bg);
     }
     .app-topbar.mobile .profile-avatar .nav-profile-photo {
-        width: 34px;
-        height: 34px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid rgba(59, 130, 246, 0.4);
-        background: #1e293b;
+        border: 2px solid rgba(30, 80, 162, 0.28);
+        background: var(--nav-bg);
     }
 
-    /* Bottom nav */
+    /* --------- Mobile bottom nav (white) --------- */
     .app-bottom-nav {
-        display: flex;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
         position: fixed;
-        bottom: 0; left: 0; right: 0;
-        height: 64px;
-        padding: 6px 4px env(safe-area-inset-bottom, 6px);
-        background: rgba(15, 23, 42, 0.96);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-top: 1px solid rgba(148, 163, 184, 0.10);
+        bottom: 0;
+        left: 0;
+        right: 0;
+        min-height: 64px;
+        padding: 6px 4px calc(env(safe-area-inset-bottom, 6px) + 4px);
+        background: var(--nav-paper);
+        border-top: 1px solid var(--nav-line);
+        box-shadow: 0 -2px 12px -4px rgba(15, 23, 42, 0.06);
         z-index: 95;
-        justify-content: space-around;
         align-items: center;
     }
     .app-bottom-nav .bottom-nav-item {
-        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 3px;
-        padding: 6px 4px;
+        padding: 6px 2px;
         border-radius: 12px;
-        color: #64748b;
+        color: var(--nav-ink-3);
         text-decoration: none;
         font-size: 0.68rem;
         font-weight: 600;
         letter-spacing: 0.01em;
-        transition: color 0.2s ease, transform 0.2s ease;
+        transition: color 0.2s ease;
         position: relative;
+        text-align: center;
+        line-height: 1.1;
+        min-width: 0;
     }
     .app-bottom-nav .bottom-nav-item .nav-icon {
         display: inline-flex;
@@ -564,23 +637,27 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
         height: 32px;
         border-radius: 10px;
         font-size: 1rem;
-        transition: background 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+        transition: background 0.25s ease,
+                    transform 0.25s var(--nav-ease),
+                    color 0.2s ease;
     }
     .app-bottom-nav .bottom-nav-item:hover {
-        color: #cbd5e1;
+        color: var(--nav-ink);
     }
     .app-bottom-nav .bottom-nav-item:hover .nav-icon {
-        background: rgba(59, 130, 246, 0.10);
+        background: rgba(30, 80, 162, 0.08);
         transform: translateY(-2px);
     }
     .app-bottom-nav .bottom-nav-item.active {
-        color: #60a5fa;
+        color: var(--nav-blue);
     }
     .app-bottom-nav .bottom-nav-item.active .nav-icon {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(99, 102, 241, 0.18));
-        color: #93c5fd;
+        background: linear-gradient(135deg,
+            rgba(30, 80, 162, 0.16),
+            rgba(59, 165, 92, 0.14));
+        color: var(--nav-blue);
         transform: translateY(-2px);
-        box-shadow: 0 6px 14px -6px rgba(59, 130, 246, 0.7);
+        box-shadow: 0 6px 14px -6px rgba(30, 80, 162, 0.45);
     }
     .app-bottom-nav .bottom-nav-item.active::before {
         content: '';
@@ -591,14 +668,14 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
         width: 22px;
         height: 3px;
         border-radius: 0 0 4px 4px;
-        background: linear-gradient(90deg, #3b82f6, #6366f1);
+        background: linear-gradient(90deg, var(--nav-blue), var(--nav-green));
     }
 
-    /* Overlay */
+    /* Sidebar overlay */
     .sidebar-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.55);
+        background: rgba(15, 23, 42, 0.55);
         z-index: 99;
         opacity: 0;
         pointer-events: none;
@@ -613,8 +690,10 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 
 <!-- ============ DESKTOP SIDEBAR ============ -->
 <aside class="app-sidebar" id="appSidebar" aria-label="Main navigation">
-    <a href="<?= $home_link ?>" class="sidebar-brand" aria-label="DigiShulk Home">
-        <div class="logo" aria-hidden="true"></div>
+    <a href="<?= $home_link ?>" class="sidebar-brand" aria-label="DigiShulk — Home">
+        <span class="sidebar-brand-chip">
+            <img src="<?= $logo_url ?>" alt="DigiShulk">
+        </span>
     </a>
 
     <nav class="sidebar-nav" role="navigation" aria-label="Primary">
@@ -710,11 +789,7 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 
 <!-- ============ DESKTOP TOP BAR ============ -->
 <header class="app-topbar desktop" role="banner">
-    <div class="topbar-start">
-        <a href="<?= $home_link ?>" class="topbar-brand" aria-label="DigiShulk Home">
-            <div class="logo" aria-hidden="true"></div>
-        </a>
-    </div>
+    <div class="topbar-start"></div>
 
     <div class="topbar-center">
         <div class="topbar-search">
@@ -787,13 +862,13 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 <!-- ============ MOBILE TOP BAR ============ -->
 <header class="app-topbar mobile" role="banner">
     <div class="topbar-start">
-        <a href="<?= $home_link ?>" class="topbar-brand" aria-label="DigiShulk Home">
-            <div class="logo" aria-hidden="true"></div>
+        <a href="<?= $home_link ?>" class="topbar-brand" aria-label="DigiShulk — Home">
+            <img src="<?= $logo_url ?>" alt="DigiShulk">
         </a>
     </div>
 
     <div class="topbar-center">
-        <button class="search-btn js-open-search" aria-label="Search (Ctrl+K)" type="button">
+        <button class="search-btn js-open-search" aria-label="Search" type="button">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         </button>
     </div>
@@ -883,30 +958,29 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
         });
     })();
 
-    /* ---------- 2. Search toggle (both buttons) ---------- */
+    /* ---------- 2. Search toggle ---------- */
     (function () {
         var buttons = document.querySelectorAll('.js-open-search');
         var input   = document.getElementById('spotlightDesktop');
         if (!input) return;
 
+        function toggle() {
+            var visible = input.style.display !== 'none';
+            input.style.display = visible ? 'none' : 'block';
+            if (!visible) input.focus();
+        }
+
         buttons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var visible = input.style.display !== 'none';
-                input.style.display = visible ? 'none' : 'block';
-                if (!visible) input.focus();
-            });
+            btn.addEventListener('click', toggle);
         });
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && input.style.display !== 'none') {
                 input.style.display = 'none';
             }
-            // Ctrl+K / Cmd+K shortcut
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                var visible = input.style.display !== 'none';
-                input.style.display = visible ? 'none' : 'block';
-                if (!visible) input.focus();
+                toggle();
             }
         });
     })();
@@ -928,14 +1002,12 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
             toggle();
         });
 
-        // Close on outside click
         document.addEventListener('click', function (e) {
             if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
                 toggle(false);
             }
         });
 
-        // Close on Escape, focus trigger
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && dropdown.classList.contains('open')) {
                 toggle(false);
@@ -943,7 +1015,6 @@ $initial    = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
             }
         });
 
-        // Keyboard trap for tab navigation
         dropdown.addEventListener('keydown', function (e) {
             if (e.key !== 'Tab') return;
             var items = dropdown.querySelectorAll('[role="menuitem"], button, a');
