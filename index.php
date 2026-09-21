@@ -18,19 +18,18 @@ if (isset($_SESSION['role'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#3b82f6">
+    <meta name="theme-color" content="#14285a">
 
-    <title>DigiShulk — RMC Digital Tax Collection System</title>
+    <title>DigiShulk — RMC Digital Tax Collection</title>
 
-    <!-- SEO / sharing -->
-    <meta name="description" content="DigiShulk is the digital spot tax and seizure reporting platform for Rajkot Municipal Corporation. Built for inspectors — UPI and cash collection, instant receipts, real-time field reporting.">
-    <meta property="og:title" content="DigiShulk — RMC Digital Tax Collection System">
-    <meta property="og:description" content="Digital spot tax collection, seizure reporting, and field operations for Rajkot Municipal Corporation.">
+    <meta name="description" content="DigiShulk is the digital spot tax and seizure reporting platform for Rajkot Municipal Corporation. UPI and cash collection, instant receipts, real-time field reporting.">
+    <meta property="og:title" content="DigiShulk — RMC Digital Tax Collection">
+    <meta property="og:description" content="Spot tax collection, seizure reporting, and field operations for Rajkot Municipal Corporation.">
     <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
 
-    <!-- Favicon (data-URI SVG — no external file needed) -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233b82f6'/%3E%3Cstop offset='1' stop-color='%23a855f7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' font-family='-apple-system,sans-serif' font-size='34' font-weight='800' fill='%23fff' text-anchor='middle' dominant-baseline='middle'%3E%E2%82%B9%3C/text%3E%3C/svg%3E">
+    <!-- Favicon: use the supplied logo mark -->
+    <link rel="icon" type="image/png" href="includes/css/layout/logo.png">
+    <link rel="apple-touch-icon" href="includes/css/layout/logo.png">
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -38,8 +37,12 @@ if (isset($_SESSION['role'])) {
     <style>
     /* ================================================================
        DigiShulk — Landing page
-       Fully self-contained styles. Zero external dependency beyond
-       Font Awesome. Does not rely on style2.css.
+       Design: municipal-grade. Restrained. Human.
+       Palette pulled from the actual logo:
+         navy   #14285a
+         blue   #1e50a2
+         green  #3ba55c
+         gold   #f0a020 (used sparingly)
        ================================================================ */
 
     *, *::before, *::after {
@@ -49,730 +52,977 @@ if (isset($_SESSION['role'])) {
     }
 
     :root {
-        --bg-base: #f8fafc;
-        --text-primary: #0f172a;
-        --text-secondary: #475569;
-        --text-muted: #94a3b8;
-        --primary: #3b82f6;
-        --primary-dark: #2563eb;
-        --accent: #a855f7;
-        --success: #22c55e;
-        --warning: #eab308;
-        --danger: #ef4444;
-        --border: rgba(15, 23, 42, 0.08);
-        --radius-sm: 10px;
-        --radius-md: 14px;
-        --radius-lg: 22px;
-        --ease: cubic-bezier(0.16, 1, 0.3, 1);
+        --navy:    #14285a;
+        --blue:    #1e50a2;
+        --blue-lt: #2d69c4;
+        --green:   #3ba55c;
+        --gold:    #f0a020;
+        --ink:     #0b1424;
+        --ink-2:   #334155;
+        --ink-3:   #64748b;
+        --ink-4:   #94a3b8;
+        --paper:   #ffffff;
+        --paper-2: #f7f8fa;
+        --paper-3: #eef1f6;
+        --line:    #e2e6ec;
+        --line-2:  #cfd6e0;
+
+        --radius:  10px;
+        --radius-lg: 14px;
+        --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+        --serif: Georgia, 'Times New Roman', serif;
+        --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter',
+                Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
 
-    html, body {
-        height: 100%;
-    }
+    html { -webkit-text-size-adjust: 100%; }
 
     body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter',
-                     Roboto, 'Helvetica Neue', Arial, sans-serif;
-        background: var(--bg-base);
-        color: var(--text-primary);
-        min-height: 100vh;
-        overflow-x: hidden;
+        font-family: var(--sans);
+        background: var(--paper);
+        color: var(--ink);
+        line-height: 1.55;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-        line-height: 1.5;
-    }
-
-    /* ---------------- Animations ---------------- */
-    @keyframes rise {
-        from { opacity: 0; transform: translateY(18px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to   { opacity: 1; }
-    }
-    @keyframes orbFloat {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33%      { transform: translate(40px, -50px) scale(1.05); }
-        66%      { transform: translate(-30px, 30px) scale(0.94); }
-    }
-    @keyframes logoFloat {
-        0%, 100% { transform: translateY(0); }
-        50%      { transform: translateY(-6px); }
-    }
-    @keyframes logoGlow {
-        0%, 100% { opacity: 0.35; transform: scale(1); }
-        50%      { opacity: 0.55; transform: scale(1.08); }
-    }
-    @keyframes pulseDot {
-        0%, 100% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.22); }
-        50%      { box-shadow: 0 0 0 9px rgba(34, 197, 94, 0); }
-    }
-    @keyframes shimmer {
-        0%   { background-position: -200% 0; }
-        100% { background-position:  200% 0; }
-    }
-    @keyframes gradientShift {
-        0%, 100% { background-position: 0% center; }
-        50%      { background-position: 100% center; }
-    }
-    @keyframes floatUp {
-        0%   { transform: translateY(100vh) scale(0.6); opacity: 0; }
-        10%  { opacity: 1; }
-        90%  { opacity: 1; }
-        100% { transform: translateY(-20vh) scale(1); opacity: 0; }
-    }
-
-    /* ---------------- Background orbs ---------------- */
-    .bg-orbs {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
-    }
-    .bg-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(90px);
-        opacity: 0.42;
-        animation: orbFloat 22s ease-in-out infinite;
-        will-change: transform;
-    }
-    .bg-orb-1 {
-        width: 520px;
-        height: 520px;
-        background: radial-gradient(circle, #3b82f6, transparent 70%);
-        top: -180px;
-        left: -140px;
-        animation-delay: 0s;
-    }
-    .bg-orb-2 {
-        width: 460px;
-        height: 460px;
-        background: radial-gradient(circle, #a855f7, transparent 70%);
-        top: 25%;
-        right: -160px;
-        animation-delay: -8s;
-    }
-    .bg-orb-3 {
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, #22c55e, transparent 70%);
-        bottom: -150px;
-        left: 32%;
-        animation-delay: -16s;
-    }
-
-    /* ---------------- Grid overlay ---------------- */
-    .bg-grid {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        background-image:
-            linear-gradient(rgba(15, 23, 42, 0.045) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
-        background-size: 48px 48px;
-        -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 75%);
-        mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 75%);
-        pointer-events: none;
-        opacity: 0.9;
-    }
-
-    /* ---------------- Floating particles ---------------- */
-    .particles {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        overflow: hidden;
-    }
-    .particle {
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: rgba(59, 130, 246, 0.5);
-        animation: floatUp linear infinite;
-        will-change: transform;
-    }
-    .particle.gold { background: rgba(234, 179, 8, 0.5); }
-    .particle.purple { background: rgba(168, 85, 247, 0.5); }
-    .particle.green { background: rgba(34, 197, 94, 0.5); }
-
-    /* ---------------- Page shell ---------------- */
-    .landing-page {
-        position: relative;
-        z-index: 1;
         min-height: 100vh;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 64px 24px;
-    }
-    .hero {
-        max-width: 900px;
-        width: 100%;
-        text-align: center;
-        position: relative;
+        flex-direction: column;
     }
 
-    /* ---------------- Logo mark ---------------- */
-    .hero-logo-wrap {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 28px;
-        animation: rise 0.9s var(--ease) 0.05s both;
+    a { color: inherit; text-decoration: none; }
+
+    /* ---------------- Top strip ---------------- */
+    .gov-strip {
+        background: var(--navy);
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .hero-logo {
-        width: 96px;
-        height: 96px;
-        border-radius: 26px;
-        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 55%, #a855f7 100%);
+    .gov-strip-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .gov-strip-left,
+    .gov-strip-right {
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 2.9rem;
-        color: #fff;
-        position: relative;
-        box-shadow:
-            0 24px 48px -12px rgba(59, 130, 246, 0.55),
-            0 0 0 1px rgba(255, 255, 255, 0.35) inset,
-            0 0 0 1px rgba(59, 130, 246, 0.15);
-        animation: logoFloat 5s ease-in-out infinite;
+        gap: 18px;
+        flex-wrap: wrap;
     }
-    .hero-logo::before {
-        content: '';
-        position: absolute;
-        inset: -12px;
-        border-radius: 34px;
-        background: inherit;
-        filter: blur(22px);
-        z-index: -1;
-        animation: logoGlow 4s ease-in-out infinite;
-    }
-    .hero-logo i {
-        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
-    }
-
-    /* ---------------- Kicker pill ---------------- */
-    .kicker {
+    .gov-strip-item {
         display: inline-flex;
         align-items: center;
-        gap: 9px;
-        padding: 7px 16px 7px 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.75);
-        border: 1px solid rgba(59, 130, 246, 0.22);
-        color: #1d4ed8;
-        font-size: 0.76rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        margin-bottom: 22px;
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 6px 18px -8px rgba(59, 130, 246, 0.35);
-        animation: rise 0.9s var(--ease) 0.15s both;
+        gap: 7px;
     }
-    .kicker::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(110deg,
-            transparent 40%,
-            rgba(59, 130, 246, 0.10) 50%,
-            transparent 60%);
-        background-size: 200% 100%;
-        animation: shimmer 3.2s linear infinite;
-        pointer-events: none;
-    }
-    .kicker-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--success);
-        flex-shrink: 0;
-        animation: pulseDot 2.2s ease-in-out infinite;
+    .gov-strip-item i {
+        color: var(--green);
+        font-size: 0.7rem;
     }
 
-    /* ---------------- Hero title ---------------- */
-    .hero-title {
-        font-size: clamp(3rem, 9vw, 6rem);
-        font-weight: 800;
-        line-height: 0.98;
-        letter-spacing: -0.045em;
-        margin-bottom: 24px;
-        background: linear-gradient(120deg,
-            #0f172a 0%,
-            #1e293b 30%,
-            #3b82f6 60%,
-            #a855f7 90%,
-            #0f172a 100%);
-        background-size: 250% auto;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation:
-            rise 0.9s var(--ease) 0.25s both,
-            gradientShift 9s ease-in-out infinite;
-        padding-bottom: 4px;
+    /* ---------------- Header ---------------- */
+    .site-header {
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        padding: 20px 0;
     }
-
-    /* ---------------- Description ---------------- */
-    .hero-desc {
-        font-size: clamp(1rem, 2vw, 1.13rem);
-        color: var(--text-secondary);
-        line-height: 1.65;
-        max-width: 54ch;
-        margin: 0 auto 40px;
-        font-weight: 400;
-        animation: rise 0.9s var(--ease) 0.35s both;
-    }
-    .hero-desc strong {
-        color: var(--text-primary);
-        font-weight: 600;
-    }
-
-    /* ---------------- Feature grid ---------------- */
-    .features {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
-        gap: 12px;
-        max-width: 820px;
-        margin: 0 auto 42px;
-        animation: rise 0.9s var(--ease) 0.45s both;
-    }
-    .feature-card {
+    .site-header-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
         display: flex;
         align-items: center;
-        gap: 13px;
-        padding: 14px 18px;
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        text-align: left;
-        transition:
-            transform 0.3s var(--ease),
-            box-shadow 0.3s var(--ease),
-            border-color 0.3s var(--ease),
-            background 0.3s var(--ease);
-        cursor: default;
-        position: relative;
-        overflow: hidden;
+        justify-content: space-between;
+        gap: 20px;
     }
-    .feature-card::before {
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+    }
+    .brand-mark {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+    }
+    .brand-name {
+        font-family: var(--serif);
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--navy);
+        letter-spacing: -0.01em;
+    }
+    .brand-sub {
+        font-size: 0.72rem;
+        color: var(--ink-3);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        font-weight: 500;
+    }
+
+    .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        font-size: 0.88rem;
+        color: var(--ink-2);
+        font-weight: 500;
+    }
+    .header-nav a {
+        position: relative;
+        padding: 6px 0;
+        transition: color 0.2s var(--ease);
+    }
+    .header-nav a::after {
         content: '';
         position: absolute;
         left: 0;
-        top: 0;
+        right: 0;
         bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, var(--primary), var(--accent));
-        transform: scaleY(0);
-        transform-origin: center;
-        transition: transform 0.35s var(--ease);
+        height: 2px;
+        background: var(--blue);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.25s var(--ease);
     }
-    .feature-card:hover {
-        transform: translateY(-4px);
-        border-color: rgba(59, 130, 246, 0.30);
-        background: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 20px 40px -18px rgba(59, 130, 246, 0.4);
+    .header-nav a:hover {
+        color: var(--navy);
     }
-    .feature-card:hover::before {
-        transform: scaleY(1);
-    }
-    .feature-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.98rem;
-        flex-shrink: 0;
-        transition: transform 0.35s var(--ease);
-    }
-    .feature-card:hover .feature-icon {
-        transform: scale(1.12) rotate(-6deg);
-    }
-    .feature-icon.blue   { background: rgba(59, 130, 246, 0.13); color: #2563eb; }
-    .feature-icon.amber  { background: rgba(234, 179, 8, 0.15);  color: #b45309; }
-    .feature-icon.green  { background: rgba(34, 197, 94, 0.13);  color: #16a34a; }
-    .feature-icon.red    { background: rgba(239, 68, 68, 0.13);  color: #dc2626; }
-    .feature-label {
-        font-size: 0.86rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        line-height: 1.3;
-        letter-spacing: -0.005em;
+    .header-nav a:hover::after {
+        transform: scaleX(1);
     }
 
-    /* ---------------- CTA ---------------- */
-    .cta-wrap {
-        animation: rise 0.9s var(--ease) 0.55s both;
-        margin-bottom: 46px;
-    }
-    .cta {
-        display: inline-flex;
+    /* ---------------- Hero ---------------- */
+    .hero {
+        flex: 1;
+        display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 18px 40px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 55%, #3b82f6 100%);
-        background-size: 200% auto;
-        color: #fff;
-        font-size: 1.05rem;
-        font-weight: 700;
-        text-decoration: none;
-        letter-spacing: -0.01em;
+        padding: 72px 0 88px;
+        background: var(--paper);
         position: relative;
         overflow: hidden;
-        box-shadow:
-            0 22px 44px -14px rgba(59, 130, 246, 0.65),
-            0 0 0 1px rgba(255, 255, 255, 0.14) inset;
-        transition:
-            transform 0.28s var(--ease),
-            box-shadow 0.28s var(--ease),
-            background-position 0.6s var(--ease);
     }
-    .cta:hover {
-        transform: translateY(-3px);
-        background-position: 100% center;
-        box-shadow:
-            0 32px 58px -14px rgba(59, 130, 246, 0.8),
-            0 0 0 1px rgba(255, 255, 255, 0.18) inset;
-    }
-    .cta:active {
-        transform: translateY(-1px);
-        transition-duration: 0.1s;
-    }
-    .cta::before {
+    /* A single, quiet diagonal line art — evokes the shape in the logo */
+    .hero::before {
         content: '';
         position: absolute;
-        inset: 0;
-        background: linear-gradient(110deg,
-            transparent 35%,
-            rgba(255, 255, 255, 0.30) 50%,
-            transparent 65%);
-        background-size: 200% 100%;
-        animation: shimmer 3.4s linear infinite;
+        top: 0;
+        right: 0;
+        width: 55%;
+        height: 100%;
+        background:
+            linear-gradient(135deg,
+                transparent 0%,
+                transparent 42%,
+                rgba(30, 80, 162, 0.035) 42%,
+                rgba(30, 80, 162, 0.035) 42.4%,
+                transparent 42.4%,
+                transparent 58%,
+                rgba(59, 165, 92, 0.045) 58%,
+                rgba(59, 165, 92, 0.045) 58.4%,
+                transparent 58.4%);
         pointer-events: none;
     }
-    .cta .cta-icon {
-        display: inline-flex;
-        transition: transform 0.3s var(--ease);
-    }
-    .cta:hover .cta-icon {
-        transform: translateX(4px);
-    }
-    .cta .cta-arrow {
-        display: inline-flex;
-        font-size: 0.85rem;
-        opacity: 0.85;
-        transition: transform 0.3s var(--ease);
-    }
-    .cta:hover .cta-arrow {
-        transform: translateX(5px);
-        opacity: 1;
+    .hero-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 64px;
+        align-items: center;
+        position: relative;
     }
 
-    /* ---------------- Footer ---------------- */
-    .hero-footer {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        align-items: center;
-        color: var(--text-muted);
-        font-size: 0.78rem;
-        line-height: 1.6;
-        animation: rise 0.9s var(--ease) 0.65s both;
+    @media (max-width: 900px) {
+        .hero-inner {
+            grid-template-columns: 1fr;
+            gap: 48px;
+        }
     }
-    .hero-footer-sep {
+
+    .hero-copy {
+        animation: enter 0.7s var(--ease) both;
+    }
+    @keyframes enter {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--blue);
+        padding: 6px 12px;
+        background: rgba(30, 80, 162, 0.07);
+        border-radius: 4px;
+        margin-bottom: 22px;
+    }
+    .hero-kicker::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+    }
+
+    .hero-title {
+        font-family: var(--serif);
+        font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+        font-weight: 700;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: var(--navy);
+        margin-bottom: 22px;
+    }
+    .hero-title em {
+        font-style: normal;
+        color: var(--green);
+    }
+
+    .hero-lede {
+        font-size: 1.05rem;
+        color: var(--ink-2);
+        line-height: 1.65;
+        max-width: 52ch;
+        margin-bottom: 34px;
+    }
+
+    .hero-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+
+    .btn {
         display: inline-flex;
         align-items: center;
         gap: 10px;
+        padding: 13px 24px;
+        border-radius: 8px;
+        font-size: 0.94rem;
         font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        font-size: 0.7rem;
+        letter-spacing: -0.005em;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background 0.2s var(--ease),
+                    border-color 0.2s var(--ease),
+                    color 0.2s var(--ease),
+                    box-shadow 0.2s var(--ease);
+        font-family: inherit;
     }
-    .hero-footer-sep::before,
-    .hero-footer-sep::after {
-        content: '';
-        height: 1px;
-        width: 36px;
-        background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.6), transparent);
+    .btn-primary {
+        background: var(--navy);
+        color: #fff;
+        border-color: var(--navy);
+        box-shadow: 0 1px 2px rgba(20, 40, 90, 0.15);
     }
-    .hero-footer-credits {
-        display: inline-flex;
+    .btn-primary:hover {
+        background: var(--blue);
+        border-color: var(--blue);
+        box-shadow: 0 6px 18px -6px rgba(20, 40, 90, 0.45);
+    }
+    .btn-primary i {
+        transition: transform 0.2s var(--ease);
+        font-size: 0.85rem;
+    }
+    .btn-primary:hover i {
+        transform: translateX(2px);
+    }
+
+    .btn-ghost {
+        background: transparent;
+        color: var(--ink-2);
+        border-color: var(--line-2);
+    }
+    .btn-ghost:hover {
+        color: var(--navy);
+        border-color: var(--navy);
+        background: var(--paper-2);
+    }
+
+    .hero-footnote {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.8rem;
+        color: var(--ink-3);
+    }
+    .hero-footnote i {
+        color: var(--green);
+        font-size: 0.85rem;
+    }
+
+    /* ---------------- Trust badges ---------------- */
+    .trust-row {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 20px 0 0;
+        margin-top: 28px;
+        border-top: 1px solid var(--line);
         flex-wrap: wrap;
-        justify-content: center;
-        gap: 6px 14px;
-        color: var(--text-secondary);
-        font-weight: 500;
     }
-    .hero-footer-credits span {
+    .trust-item {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 9px;
+        font-size: 0.82rem;
+        color: var(--ink-2);
+        font-weight: 500;
     }
-    .hero-footer-credits i {
-        color: var(--text-muted);
-        font-size: 0.7rem;
-        opacity: 0.7;
+    .trust-item i {
+        width: 16px;
+        text-align: center;
+        color: var(--blue);
+        font-size: 0.9rem;
+    }
+
+    /* ---------------- Right-side illustration ---------------- */
+    .hero-visual {
+        position: relative;
+        animation: enter 0.7s var(--ease) 0.15s both;
+    }
+    /* Card that holds the logo — feels like a "product seal" */
+    .seal-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 36px 32px 28px;
+        box-shadow:
+            0 1px 2px rgba(11, 20, 36, 0.04),
+            0 12px 40px -18px rgba(20, 40, 90, 0.18);
+        position: relative;
+    }
+    .seal-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 32px;
+        right: 32px;
+        height: 3px;
+        background: linear-gradient(90deg,
+            var(--navy) 0%, var(--navy) 40%,
+            var(--green) 40%, var(--green) 100%);
+        border-radius: 0 0 3px 3px;
+    }
+    .seal-logo {
+        width: 100%;
+        max-width: 340px;
+        height: auto;
+        display: block;
+        margin: 6px auto 22px;
+    }
+    .seal-divider {
+        height: 1px;
+        background: var(--line);
+        margin: 22px 0;
+    }
+    .seal-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 24px;
+    }
+    .seal-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .seal-meta-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+        font-weight: 600;
+    }
+    .seal-meta-value {
+        font-size: 0.9rem;
+        color: var(--ink);
+        font-weight: 600;
+        letter-spacing: -0.005em;
+    }
+    .seal-meta-value.mono {
+        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        color: var(--ink-2);
+    }
+
+    @media (max-width: 900px) {
+        .hero-visual { max-width: 460px; margin: 0 auto; }
+        .seal-meta { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ---------------- Capabilities section ---------------- */
+    .capabilities {
+        background: var(--paper-2);
+        padding: 72px 0;
+        border-top: 1px solid var(--line);
+    }
+    .cap-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+    .cap-head {
+        max-width: 620px;
+        margin-bottom: 44px;
+    }
+    .cap-head h2 {
+        font-family: var(--serif);
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: var(--navy);
+        letter-spacing: -0.015em;
+        line-height: 1.2;
+        margin-bottom: 12px;
+    }
+    .cap-head p {
+        color: var(--ink-3);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .cap-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    @media (max-width: 900px) {
+        .cap-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+        .cap-grid { grid-template-columns: 1fr; }
+    }
+
+    .cap-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 26px 22px;
+        transition: border-color 0.2s var(--ease),
+                    transform 0.2s var(--ease),
+                    box-shadow 0.2s var(--ease);
+    }
+    .cap-card:hover {
+        border-color: var(--line-2);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -18px rgba(20, 40, 90, 0.22);
+    }
+    .cap-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(30, 80, 162, 0.08);
+        color: var(--blue);
+        font-size: 0.95rem;
+        margin-bottom: 18px;
+    }
+    .cap-icon.green { background: rgba(59, 165, 92, 0.10); color: var(--green); }
+    .cap-icon.gold  { background: rgba(240, 160, 32, 0.11); color: #b6771a; }
+    .cap-icon.navy  { background: rgba(20, 40, 90, 0.08);  color: var(--navy); }
+
+    .cap-title {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+        letter-spacing: -0.005em;
+    }
+    .cap-desc {
+        font-size: 0.86rem;
+        color: var(--ink-3);
+        line-height: 1.55;
+    }
+
+    /* ---------------- CTA band ---------------- */
+    .cta-band {
+        background: var(--navy);
+        color: #fff;
+        padding: 56px 0;
+    }
+    .cta-band-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+    .cta-band-text h2 {
+        font-family: var(--serif);
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        margin-bottom: 6px;
+        line-height: 1.25;
+    }
+    .cta-band-text p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+        max-width: 52ch;
+        line-height: 1.55;
+    }
+    .cta-band .btn-primary {
+        background: #fff;
+        color: var(--navy);
+        border-color: #fff;
+        padding: 14px 26px;
+    }
+    .cta-band .btn-primary:hover {
+        background: var(--paper-2);
+        border-color: var(--paper-2);
+        box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ---------------- Footer ---------------- */
+    .site-footer {
+        background: var(--paper);
+        border-top: 1px solid var(--line);
+        padding: 44px 0 28px;
+        font-size: 0.83rem;
+        color: var(--ink-3);
+    }
+    .footer-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 32px;
+    }
+    @media (max-width: 720px) {
+        .footer-inner { grid-template-columns: 1fr; gap: 28px; }
+    }
+    .footer-brand {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .footer-brand img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .footer-brand-text p {
+        color: var(--ink-3);
+        line-height: 1.6;
+        margin-top: 6px;
+        max-width: 36ch;
+    }
+    .footer-brand-name {
+        font-family: var(--serif);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .footer-col h4 {
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+        margin-bottom: 14px;
+        font-weight: 700;
+    }
+    .footer-col ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+    .footer-col li {
+        color: var(--ink-2);
+        font-size: 0.86rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+    }
+    .footer-col li i {
+        color: var(--ink-4);
+        font-size: 0.75rem;
+        margin-top: 5px;
+        width: 12px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .footer-col a {
+        transition: color 0.15s var(--ease);
+    }
+    .footer-col a:hover {
+        color: var(--blue);
+    }
+
+    .footer-bottom {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 20px 24px 0;
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 0.78rem;
+        color: var(--ink-4);
+    }
+    .footer-version {
+        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        font-size: 0.72rem;
+        padding: 3px 8px;
+        background: var(--paper-2);
+        border-radius: 4px;
+        color: var(--ink-3);
+        letter-spacing: 0.02em;
     }
 
     /* ---------------- Reduced motion ---------------- */
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
         }
-        .bg-orb,
-        .particle,
-        .hero-logo,
-        .hero-logo::before {
-            animation: none !important;
-        }
-        .hero-logo::before { opacity: 0.4; }
     }
 
     /* ---------------- Mobile ---------------- */
     @media (max-width: 640px) {
-        .landing-page {
-            padding: 44px 20px 56px;
-        }
-        .hero-logo {
-            width: 78px;
-            height: 78px;
-            font-size: 2.3rem;
-            border-radius: 22px;
-        }
-        .kicker {
-            font-size: 0.68rem;
-            letter-spacing: 0.06em;
-            padding: 6px 13px 6px 10px;
-        }
-        .hero-title {
-            margin-bottom: 18px;
-        }
-        .hero-desc {
-            margin-bottom: 32px;
-            font-size: 0.98rem;
-        }
-        .features {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 34px;
-        }
-        .feature-card {
-            padding: 12px 13px;
-            gap: 10px;
-        }
-        .feature-icon {
-            width: 34px;
-            height: 34px;
-            font-size: 0.85rem;
-            border-radius: 10px;
-        }
-        .feature-label {
-            font-size: 0.78rem;
-        }
-        .cta {
-            padding: 16px 30px;
-            font-size: 0.96rem;
-            border-radius: 14px;
-        }
-        .cta-wrap {
-            margin-bottom: 38px;
-        }
-        .hero-footer {
-            font-size: 0.72rem;
-        }
-    }
+        .gov-strip-inner { justify-content: center; text-align: center; }
+        .gov-strip { font-size: 0.7rem; }
 
-    @media (max-width: 400px) {
-        .features {
-            grid-template-columns: 1fr;
+        .site-header { padding: 16px 0; }
+        .brand-mark { width: 40px; height: 40px; }
+        .brand-name { font-size: 1.15rem; }
+        .brand-sub { font-size: 0.66rem; }
+        .header-nav { display: none; }
+
+        .hero { padding: 44px 0 56px; }
+        .hero-title { margin-bottom: 18px; }
+        .hero-lede { font-size: 0.98rem; margin-bottom: 26px; }
+        .hero-actions { gap: 10px; }
+        .btn { padding: 12px 20px; font-size: 0.9rem; }
+        .hero-actions .btn { flex: 1; justify-content: center; }
+
+        .trust-row {
+            gap: 18px;
+            padding-top: 18px;
+            margin-top: 22px;
         }
+        .trust-item { font-size: 0.78rem; }
+
+        .seal-card { padding: 26px 22px 22px; }
+        .seal-logo { max-width: 260px; margin-bottom: 16px; }
+
+        .capabilities { padding: 52px 0; }
+        .cap-head { margin-bottom: 30px; }
+        .cap-head h2 { font-size: 1.5rem; }
+
+        .cta-band { padding: 40px 0; }
+        .cta-band-text h2 { font-size: 1.3rem; }
+        .cta-band-inner { gap: 22px; }
+        .cta-band .btn-primary { width: 100%; justify-content: center; }
+
+        .site-footer { padding: 36px 0 22px; }
+        .footer-bottom { flex-direction: column; text-align: center; gap: 10px; }
     }
     </style>
 </head>
 <body>
 
-<!-- ============ Animated background ============ -->
-<div class="bg-orbs" aria-hidden="true">
-    <div class="bg-orb bg-orb-1"></div>
-    <div class="bg-orb bg-orb-2"></div>
-    <div class="bg-orb bg-orb-3"></div>
+<!-- ============ Government strip ============ -->
+<div class="gov-strip">
+    <div class="gov-strip-inner">
+        <div class="gov-strip-left">
+            <span class="gov-strip-item">
+                <i class="fa-solid fa-landmark" aria-hidden="true"></i>
+                An initiative of Rajkot Municipal Corporation
+            </span>
+        </div>
+        <div class="gov-strip-right">
+            <span class="gov-strip-item">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                Official portal
+            </span>
+            <span class="gov-strip-item">
+                <i class="fa-solid fa-headset" aria-hidden="true"></i>
+                Support: 0281–222–0000
+            </span>
+        </div>
+    </div>
 </div>
-<div class="bg-grid" aria-hidden="true"></div>
-<div class="particles" id="particles" aria-hidden="true"></div>
 
-<!-- ============ Landing content ============ -->
-<main class="landing-page">
-    <div class="hero">
+<!-- ============ Header ============ -->
+<header class="site-header">
+    <div class="site-header-inner">
+        <a href="index.php" class="brand" aria-label="DigiShulk home">
+            <img src="includes/css/layout/logo.png"
+                 alt="DigiShulk"
+                 class="brand-mark">
+            <span class="brand-text">
+                <span class="brand-name">DigiShulk</span>
+                <span class="brand-sub">RMC Tax Collection</span>
+            </span>
+        </a>
 
-        <!-- Logo mark -->
-        <div class="hero-logo-wrap">
-            <div class="hero-logo" aria-hidden="true">
-                <i class="fa-solid fa-indian-rupee-sign"></i>
-            </div>
-        </div>
+        <nav class="header-nav" aria-label="Primary">
+            <a href="#capabilities">Capabilities</a>
+            <a href="#about">About</a>
+            <a href="includes/login.php">Sign in</a>
+        </nav>
+    </div>
+</header>
 
-        <!-- Kicker -->
-        <div class="kicker" role="presentation">
-            <span class="kicker-dot" aria-hidden="true"></span>
-            RMC Digital Initiative
-        </div>
+<!-- ============ Hero ============ -->
+<main class="hero">
+    <div class="hero-inner">
 
-        <!-- Title -->
-        <h1 class="hero-title">DigiShulk</h1>
+        <div class="hero-copy">
+            <div class="hero-kicker">Field-ready since 2024</div>
 
-        <!-- Description -->
-        <p class="hero-desc">
-            A modern digital platform for <strong>Rajkot Municipal Corporation</strong>
-            to streamline spot tax collection, seizure reporting, and field operations —
-            built for inspectors, by inspectors.
-        </p>
+            <h1 class="hero-title">
+                Collect smarter.<br>
+                Report cleaner.<br>
+                Serve <em>faster</em>.
+            </h1>
 
-        <!-- Features -->
-        <div class="features" role="list">
-            <div class="feature-card" role="listitem">
-                <div class="feature-icon blue">
-                    <i class="fa-solid fa-receipt" aria-hidden="true"></i>
-                </div>
-                <span class="feature-label">Spot Tax Collection</span>
-            </div>
+            <p class="hero-lede">
+                DigiShulk replaces paper slips and month-end reconciliation with
+                a single field app — spot tax collection, seizure logging, and
+                instant receipts, all synced back to RMC's central records in
+                real time.
+            </p>
 
-            <div class="feature-card" role="listitem">
-                <div class="feature-icon amber">
-                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                </div>
-                <span class="feature-label">Seizure Reporting</span>
-            </div>
-
-            <div class="feature-card" role="listitem">
-                <div class="feature-icon green">
-                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
-                </div>
-                <span class="feature-label">UPI &amp; Cash Payments</span>
-            </div>
-
-            <div class="feature-card" role="listitem">
-                <div class="feature-icon red">
-                    <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
-                </div>
-                <span class="feature-label">Instant Receipts</span>
-            </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="cta-wrap">
-            <a href="includes/login.php" class="cta">
-                <span class="cta-icon">
+            <div class="hero-actions">
+                <a href="includes/login.php" class="btn btn-primary">
                     <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                    Sign in to your account
+                </a>
+                <a href="#capabilities" class="btn btn-ghost">
+                    Learn more
+                </a>
+            </div>
+
+            <div class="hero-footnote">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                <span>Authorised RMC personnel only. Single sign-on enforced.</span>
+            </div>
+
+            <div class="trust-row" aria-label="Platform guarantees">
+                <span class="trust-item">
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                    Secure
                 </span>
-                <span>Sign In to Dashboard</span>
-                <span class="cta-arrow">
-                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                <span class="trust-item">
+                    <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                    Trusted
                 </span>
-            </a>
+                <span class="trust-item">
+                    <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                    Simple
+                </span>
+            </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="hero-footer">
-            <span class="hero-footer-sep">Authorized Personnel Only</span>
-            <div class="hero-footer-credits">
-                <span><i class="fa-solid fa-code" aria-hidden="true"></i> Sahdev Parmar</span>
-                <span><i class="fa-solid fa-code" aria-hidden="true"></i> Shubham Yadav</span>
-                <span><i class="fa-solid fa-code" aria-hidden="true"></i> Yashraj Solanki</span>
+        <div class="hero-visual">
+            <div class="seal-card">
+                <img src="includes/css/layout/logo.png"
+                     alt="DigiShulk — RMC Digital Tax Collection"
+                     class="seal-logo">
+
+                <div class="seal-divider"></div>
+
+                <div class="seal-meta">
+                    <div class="seal-meta-item">
+                        <span class="seal-meta-label">Deployment</span>
+                        <span class="seal-meta-value">Rajkot, Gujarat</span>
+                    </div>
+                    <div class="seal-meta-item">
+                        <span class="seal-meta-label">System status</span>
+                        <span class="seal-meta-value" style="color: var(--green);">
+                            <i class="fa-solid fa-circle" style="font-size: 0.5rem; vertical-align: middle; margin-right: 5px;" aria-hidden="true"></i>
+                            Operational
+                        </span>
+                    </div>
+                    <div class="seal-meta-item">
+                        <span class="seal-meta-label">Payments via</span>
+                        <span class="seal-meta-value">UPI &amp; Cash</span>
+                    </div>
+                    <div class="seal-meta-item">
+                        <span class="seal-meta-label">Build</span>
+                        <span class="seal-meta-value mono">v1.0.0</span>
+                    </div>
+                </div>
             </div>
-        </footer>
+        </div>
 
     </div>
 </main>
 
-<script>
-/* ================================================================
-   Floating particles — subtle background life.
-   Skips generation entirely for users who prefer reduced motion.
-   ================================================================ */
-(function () {
-    'use strict';
+<!-- ============ Capabilities ============ -->
+<section class="capabilities" id="capabilities">
+    <div class="cap-inner">
 
-    var reduced = window.matchMedia &&
-                  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return;
+        <div class="cap-head">
+            <h2>Built for the field, not the desk.</h2>
+            <p>
+                Every feature in DigiShulk was designed around what inspectors
+                actually need on the ground — one-handed use, unreliable
+                networks, and shopkeepers who want a receipt in hand.
+            </p>
+        </div>
 
-    var host = document.getElementById('particles');
-    if (!host) return;
+        <div class="cap-grid">
 
-    var palette = ['', 'gold', 'purple', 'green'];
-    var COUNT = 18;
+            <div class="cap-card">
+                <div class="cap-icon">
+                    <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+                </div>
+                <h3 class="cap-title">Spot tax collection</h3>
+                <p class="cap-desc">
+                    Inspector selects a stall type, enters size, and the fee is
+                    calculated instantly from the official rates table.
+                </p>
+            </div>
 
-    for (var i = 0; i < COUNT; i++) {
-        var p = document.createElement('span');
-        p.className = 'particle ' + palette[Math.floor(Math.random() * palette.length)];
+            <div class="cap-card">
+                <div class="cap-icon green">
+                    <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                </div>
+                <h3 class="cap-title">UPI &amp; cash payments</h3>
+                <p class="cap-desc">
+                    A QR code appears the moment UPI is chosen. Cash collections
+                    are confirmed with a single tap.
+                </p>
+            </div>
 
-        // Random horizontal position, random size, random duration/delay
-        p.style.left      = (Math.random() * 100) + '%';
-        p.style.width     = (2 + Math.random() * 4) + 'px';
-        p.style.height    = p.style.width;
-        p.style.opacity   = (0.35 + Math.random() * 0.5).toFixed(2);
-        p.style.animationDuration = (16 + Math.random() * 20) + 's';
-        p.style.animationDelay    = (-Math.random() * 30) + 's';
+            <div class="cap-card">
+                <div class="cap-icon gold">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                </div>
+                <h3 class="cap-title">Seizure reporting</h3>
+                <p class="cap-desc">
+                    Structured item logging with owner, location, godown register
+                    number, and estimated value — all in one form.
+                </p>
+            </div>
 
-        host.appendChild(p);
-    }
-})();
+            <div class="cap-card">
+                <div class="cap-icon navy">
+                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                </div>
+                <h3 class="cap-title">Supervisor oversight</h3>
+                <p class="cap-desc">
+                    Zone-wise dashboards, undercharge detection, and instant CSV
+                    or PDF exports for review meetings.
+                </p>
+            </div>
 
-/* ================================================================
-   Subtle parallax on background orbs — follows the mouse.
-   Very light (no continuous rAF); only reacts to mousemove with
-   a debounce-ish threshold.
-   ================================================================ */
-(function () {
-    'use strict';
+        </div>
+    </div>
+</section>
 
-    var reduced = window.matchMedia &&
-                  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return;
-    if (window.innerWidth < 768) return; // skip on mobile
+<!-- ============ CTA band ============ -->
+<section class="cta-band">
+    <div class="cta-band-inner">
+        <div class="cta-band-text">
+            <h2>Ready when you are.</h2>
+            <p>
+                Sign in with your RMC credentials to start collecting. If you
+                don't have an account yet, contact your zone supervisor.
+            </p>
+        </div>
+        <a href="includes/login.php" class="btn btn-primary">
+            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+            Sign in
+        </a>
+    </div>
+</section>
 
-    var orbs = document.querySelectorAll('.bg-orb');
-    if (!orbs.length) return;
+<!-- ============ Footer ============ -->
+<footer class="site-footer" id="about">
+    <div class="footer-inner">
 
-    var mx = 0, my = 0;
-    var ticking = false;
+        <div class="footer-brand">
+            <img src="includes/css/layout/logo.png" alt="DigiShulk">
+            <div class="footer-brand-text">
+                <div class="footer-brand-name">DigiShulk</div>
+                <p>
+                    A digital platform for RMC to streamline spot tax collection,
+                    seizure reporting, and field operations.
+                </p>
+            </div>
+        </div>
 
-    window.addEventListener('mousemove', function (e) {
-        mx = (e.clientX / window.innerWidth  - 0.5) * 2;
-        my = (e.clientY / window.innerHeight - 0.5) * 2;
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+                <li>
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                    <span>Rajkot Municipal Corporation,<br>Dhebarbhai Road, Rajkot 360001</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                    <span>0281–222–0000</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                    <span><a href="mailto:support@rmc.gov.in">support@rmc.gov.in</a></span>
+                </li>
+            </ul>
+        </div>
 
-        if (!ticking) {
-            ticking = true;
-            requestAnimationFrame(function () {
-                orbs.forEach(function (orb, idx) {
-                    var strength = 10 + idx * 6;
-                    orb.style.setProperty('--px', (mx * strength) + 'px');
-                    orb.style.setProperty('--py', (my * strength) + 'px');
-                    orb.style.transform =
-                        'translate(var(--px, 0), var(--py, 0))';
-                });
-                ticking = false;
-            });
-        }
-    }, { passive: true });
-})();
-</script>
+        <div class="footer-col">
+            <h4>Support hours</h4>
+            <ul>
+                <li>
+                    <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                    <span>Mon–Fri, 10:00 – 18:00 IST</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <span>For account issues, contact your zone supervisor first.</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <span>
+            &copy; <?= date('Y') ?> Rajkot Municipal Corporation. All rights reserved.
+        </span>
+        <span class="footer-version">DigiShulk v1.0.0</span>
+    </div>
+</footer>
 
 </body>
 </html>
