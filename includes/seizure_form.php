@@ -8,6 +8,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'inspector') {
 
 require_once 'db_connect.php';
 require_once 'helpers/csrf.php';
+require_once 'lang_engine.php';
 
 /* =========================================================
    FORM DATA REPOPULATION
