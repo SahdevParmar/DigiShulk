@@ -145,28 +145,7 @@
   --z-toast: 800;
 }
 
-/* ==========================================
-   Dark Mode (Optional - for future)
-   ========================================== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #101214;
-    --color-surface: #17191c;
-    --color-surface-muted: #202328;
-    --color-surface-hover: #2a2e35;
-    --color-border: #2b3037;
-    --color-border-strong: #3d4450;
-    --color-text: #f3f4f6;
-    --color-text-muted: #a6abb4;
-    --color-text-subtle: #7a828c;
-    --color-primary: #3b82f6;
-    --color-primary-hover: #60a5fa;
-    --color-primary-light: #1e3a5f;
-    --color-success: #22c55e;
-    --color-warning: #fbbf24;
-    --color-danger: #ef4444;
-  }
-}
+
 
 /* ==========================================
    Legacy Aliases (for backward compatibility)
