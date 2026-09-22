@@ -1,0 +1,147 @@
+/* ==========================================
+   Legacy Navbar Styles (Deprecated - use app shell in dual-ui.css)
+   Kept only for backward compatibility
+   ========================================== */
+
+.navarea {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-6);
+}
+
+.navbar {
+    width: 100%;
+    max-width: var(--max-content-width);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4) var(--space-6);
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-left: auto;
+}
+
+.logo {
+    background: url("logo.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 180px;
+    height: 45px;
+}
+
+.emptySpace {
+    flex: 1 1 auto;
+}
+
+.navbar a {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-semibold);
+    transition: background-color var(--motion-fast) var(--ease-standard),
+                color var(--motion-fast) var(--ease-standard);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-profile-photo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-primary);
+    transition: box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+/* Removed hover scale transform - use subtle shadow instead */
+.nav-profile-photo:hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.logout-btn {
+    background: var(--color-danger-light);
+    color: var(--color-danger) !important;
+    border-radius: var(--radius-md);
+    width: 80%;
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    font-weight: var(--font-semibold);
+}
+
+.logout-btn:hover {
+    background: var(--color-danger) !important;
+    color: var(--color-text-inverse) !important;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo-link:hover {
+    opacity: .9;
+}
+
+/* Navbar Profile */
+.profile-link {
+    padding: 0 !important;
+    background: none !important;
+    display: flex;
+    align-items: center;
+}
+
+.profile-link:hover {
+    background: none !important;
+}
+
+.nav-profile-photo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-primary);
+    transition: box-shadow var(--motion-fast) var(--ease-standard);
+    cursor: pointer;
+}
+
+.nav-profile-photo:hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.server-lang-select {
+    height: 44px;
+    width: auto;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    margin: 0;
+    color: var(--color-text);
+}
+
+.lang-form-wrapper {
+    display: flex;
+    align-items: center;
+}

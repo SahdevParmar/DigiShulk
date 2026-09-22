@@ -1,12 +1,16 @@
 <?php
-$servername="sql103.infinityfree.com";
-$username="if0_42310664";
-$password="dShulk05k9";
-$dbname="if0_42310664_digishulk_db";
-$conn=new mysqli($servername,$username,$password,$dbname);
+if (session_status() == PHP_SESSION_NONE) { session_start(); }
+include_once 'config.php';
 
-if($conn->connect_error){
-    die("Connection failed:". $conn->connect_error);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
-echo("Connected successfully");
+
+if (isset($_SESSION['user_id'])) {
+    $stmt = $conn->prepare("UPDATE users SET last_active = NOW() WHERE user_id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+}
 ?>
