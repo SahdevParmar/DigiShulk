@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['amount'])) {
 
     $shopName    = trim(isset($_POST['shop_name'])    ? $_POST['shop_name']    : '');
     $shopAddress = trim(isset($_POST['shop_address']) ? $_POST['shop_address'] : '');
-    $phone       = trim(isset($_POST['phone'])        ? $_POST['phone']        : '');
+    $phone = preg_replace('/\D/', '', (string)($_POST['phone'] ?? ''));
     $paymentMode = isset($_POST['payment_mode']) ? $_POST['payment_mode'] : '';
     $totalAmount = filter_var(isset($_POST['amount']) ? $_POST['amount'] : 0, FILTER_VALIDATE_FLOAT);
 
