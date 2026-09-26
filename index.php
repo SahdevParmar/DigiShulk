@@ -341,7 +341,7 @@ if (isset($_SESSION['role'])) {
     .hero-title {
         font-size: clamp(3rem, 9vw, 5.4rem);
         font-weight: 800;
-        line-height: 0.98;
+       
         letter-spacing: -0.045em;
         margin-bottom: 24px;
         background: linear-gradient(120deg,
