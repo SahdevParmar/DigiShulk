@@ -1,241 +1,173 @@
 <?php
+/**
+ * DigiShulk — Search API
+ * Endpoint: /includes/api/search.php?q=...
+ * Returns JSON shaped for search.js.
+ */
+
 session_start();
-require_once "../db_connect.php";
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
+    echo json_encode(['groups' => [], 'suggestions' => []]);
     exit;
 }
 
-$q = trim($_GET['q'] ?? '');
+require_once __DIR__ . '/../db_connect.php';
 
-if (strlen($q) < 1) {
-    echo json_encode([
-        'groups' => [],
-        'suggestions' => []
-    ]);
+$q = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
+$q = preg_replace('/\s+/', ' ', $q);
+
+if ($q === '' || mb_strlen($q) < 2) {
+    echo json_encode(['query' => $q, 'groups' => [], 'suggestions' => []]);
     exit;
 }
 
-$results = [
-    'groups' => [],
-    'suggestions' => []
-];
+$is_admin = (($_SESSION['role'] ?? '') === 'admin');
+$user_id  = (int) $_SESSION['user_id'];
+$like     = '%' . $q . '%';
 
-/* -----------------------------
-   Search Shops
------------------------------ */
+$groups = [];
+
+/* ---------- 1. Shops ---------- */
 $stmt = $conn->prepare("
-SELECT
-shop_id,
-shop_name,
-phone,
-address,
-stall_type
-FROM shops
-WHERE shop_name LIKE CONCAT('%', ?, '%')
-LIMIT 5
+    SELECT shop_id, shop_name, phone, address
+    FROM shops
+    WHERE shop_name LIKE ? OR phone LIKE ? OR address LIKE ?
+    ORDER BY shop_name ASC
+    LIMIT 6
 ");
-$stmt->bind_param("s", $q);
-$stmt->execute();
-$res = $stmt->get_result();
-
-$shops = [];
-while ($row = $res->fetch_assoc()) {
-    $shops[] = [
-        "type" => "shop",
-        "id" => $row["shop_id"],
-        "icon" => "fa-solid fa-store",
-        "title" => $row["shop_name"],
-        "subtitle" => $row["address"] . " • " . $row["stall_type"],
-        "url" => "spot_tax.php?shop=" . $row["shop_id"],
-        "action" => "Create collection"
-    ];
-}
-
-if (!empty($shops)) {
-    $results['groups'][] = [
-        'label' => 'Shops',
-        'icon' => 'fa-solid fa-store',
-        'items' => $shops
-    ];
-}
-
-/* -----------------------------
-   Search Transactions (by receipt # or shop)
------------------------------ */
-$stmt = $conn->prepare("
-SELECT t.transaction_id, t.receipt_number, t.shop_name, t.total_amount, t.status, t.created_at, u.username as inspector_name
-FROM transactions t
-JOIN users u ON t.inspector_id = u.user_id
-WHERE (t.receipt_number LIKE CONCAT('%', ?, '%') OR t.shop_name LIKE CONCAT('%', ?, '%'))
-ORDER BY t.created_at DESC
-LIMIT 5
-");
-$stmt->bind_param("ss", $q, $q);
-$stmt->execute();
-$res = $stmt->get_result();
-
-$transactions = [];
-while ($row = $res->fetch_assoc()) {
-    $statusClass = $row['status'] === 'paid' ? 'success' : ($row['status'] === 'pending' ? 'warning' : 'danger');
-    $transactions[] = [
-        "type" => "transaction",
-        "id" => $row["transaction_id"],
-        "icon" => "fa-solid fa-receipt",
-        "title" => "Receipt: " . $row["receipt_number"],
-        "subtitle" => $row["shop_name"] . " • ₹" . number_format($row['total_amount'], 2) . " • " . ucfirst($row['status']),
-        "url" => "payment.php?id=" . $row["transaction_id"] . ($row['status'] === 'paid' ? '&paid=1' : ''),
-        "action" => "View details",
-        "badge" => [
-            "label" => ucfirst($row['status']),
-            "class" => "badge-$statusClass"
-        ]
-    ];
-}
-
-if (!empty($transactions)) {
-    $results['groups'][] = [
-        'label' => 'Transactions',
-        'icon' => 'fa-solid fa-receipt',
-        'items' => $transactions
-    ];
-}
-
-/* -----------------------------
-   Search Inspectors (Admin Only)
------------------------------ */
-if ($_SESSION['role'] == 'admin') {
-    $stmt = $conn->prepare("
-    SELECT user_id, username, full_name, last_active
-    FROM users
-    WHERE username LIKE CONCAT('%', ?, '%') AND role='inspector'
-    LIMIT 5
-    ");
-    $stmt->bind_param("s", $q);
+if ($stmt) {
+    $stmt->bind_param('sss', $like, $like, $like);
     $stmt->execute();
     $res = $stmt->get_result();
-
-    $inspectors = [];
+    $items = [];
     while ($row = $res->fetch_assoc()) {
-        $isOnline = strtotime($row['last_active']) > strtotime('-1 minutes');
-        $inspectors[] = [
-            "type" => "inspector",
-            "id" => $row["user_id"],
-            "icon" => "fa-solid fa-user",
-            "title" => $row["full_name"] ? $row["full_name"] . " (@{$row['username']})" : $row['username'],
-            "subtitle" => ($isOnline ? "Online" : "Offline") . " • Last: " . date('d M Y', strtotime($row['last_active'])),
-            "url" => "edit_inspector.php?id=" . $row["user_id"],
-            "action" => "Manage"
+        $sub = trim(($row['phone'] ?? '') . ' · ' . ($row['address'] ?? ''), ' ·');
+        $items[] = [
+            'icon' => 'fa-solid fa-store',
+            'title' => $row['shop_name'],
+            'subtitle' => $sub,
+            'url' => 'spot_tax.php?shop=' . (int) $row['shop_id'],
+            'badge' => null,
         ];
     }
-
-    if (!empty($inspectors)) {
-        $results['groups'][] = [
-            'label' => 'Inspectors',
-            'icon' => 'fa-solid fa-users-gear',
-            'items' => $inspectors
-        ];
-    }
+    if ($items) $groups[] = ['icon' => 'fa-solid fa-store', 'label' => 'Shops', 'items' => $items];
 }
 
-/* -----------------------------
-   Search Seizures (by team leader, zone)
------------------------------ */
-if ($conn->query("SHOW TABLES LIKE 'rmc_seizures'")->num_rows) {
-    $stmt = $conn->prepare("
-    SELECT s.session_id, s.team_leader_name, s.zone, s.team_number, s.seizure_date, u.full_name as inspector_name
-    FROM seizure_sessions s
-    LEFT JOIN users u ON s.inspector_id = u.user_id
-    WHERE s.team_leader_name LIKE CONCAT('%', ?, '%') OR s.zone LIKE CONCAT('%', ?, '%')
-    ORDER BY s.seizure_date DESC
-    LIMIT 5
-    ");
-    $stmt->bind_param("ss", $q, $q);
+/* ---------- 2. Transactions ---------- */
+$txn_sql = "
+    SELECT transaction_id, receipt_number, shop_name, shopkeeper_phone,
+           total_amount, status, created_at
+    FROM transactions
+    WHERE receipt_number LIKE ? OR shop_name LIKE ? OR shopkeeper_phone LIKE ?
+";
+$params = [$like, $like, $like];
+$types  = 'sss';
+
+if (!$is_admin) {
+    $txn_sql .= " AND inspector_id = ?";
+    $params[] = $user_id;
+    $types   .= 'i';
+}
+$txn_sql .= " ORDER BY created_at DESC LIMIT 6";
+
+$stmt = $conn->prepare($txn_sql);
+if ($stmt) {
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $res = $stmt->get_result();
-
-    $seizures = [];
+    $items = [];
     while ($row = $res->fetch_assoc()) {
-        $seizures[] = [
-            "type" => "seizure",
-            "id" => $row["session_id"],
-            "icon" => "fa-solid fa-triangle-exclamation",
-            "title" => $row["team_leader_name"] . " — Zone {$row['zone']}",
-            "subtitle" => "Team {$row['team_number']} • {$row['seizure_date']}",
-            "url" => "history.php?view=seizures",
-            "action" => "View report"
+        $statusClass = $row['status'] === 'paid' ? 'badge-success'
+                     : ($row['status'] === 'pending' ? 'badge-warning' : 'badge-danger');
+        $items[] = [
+            'icon' => 'fa-solid fa-receipt',
+            'title' => $row['receipt_number'] ?: ('Txn #' . $row['transaction_id']),
+            'subtitle' => $row['shop_name'] . ' · ₹' . number_format((float) $row['total_amount'], 2),
+            'url' => 'transaction_detail.php?id=' . (int) $row['transaction_id'],
+            'badge' => ['class' => $statusClass, 'label' => ucfirst($row['status'])],
         ];
     }
+    if ($items) $groups[] = ['icon' => 'fa-solid fa-receipt', 'label' => 'Transactions', 'items' => $items];
+}
 
-    if (!empty($seizures)) {
-        $results['groups'][] = [
-            'label' => 'Seizure Reports',
-            'icon' => 'fa-solid fa-triangle-exclamation',
-            'items' => $seizures
-        ];
+/* ---------- 3. Seizure sessions ---------- */
+if ($conn->query("SHOW TABLES LIKE 'seizure_sessions'")->num_rows) {
+    $seiz_sql = "
+        SELECT session_id, team_leader_name, zone, team_number, seizure_date
+        FROM seizure_sessions
+        WHERE team_leader_name LIKE ? OR zone LIKE ? OR team_number LIKE ?
+    ";
+    $params = [$like, $like, $like];
+    $types  = 'sss';
+
+    if (!$is_admin) {
+        $seiz_sql .= " AND inspector_id = ?";
+        $params[] = $user_id;
+        $types   .= 'i';
+    }
+    $seiz_sql .= " ORDER BY seizure_date DESC LIMIT 5";
+
+    $stmt = $conn->prepare($seiz_sql);
+    if ($stmt) {
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $items = [];
+        while ($row = $res->fetch_assoc()) {
+            $items[] = [
+                'icon' => 'fa-solid fa-triangle-exclamation',
+                'title' => $row['team_leader_name'] . ' — Zone ' . $row['zone'],
+                'subtitle' => 'Team ' . $row['team_number'] . ' · ' . date('d M Y', strtotime($row['seizure_date'])),
+                'url' => 'history.php?view=seizures',
+                'badge' => null,
+            ];
+        }
+        if ($items) $groups[] = ['icon' => 'fa-solid fa-triangle-exclamation', 'label' => 'Seizures', 'items' => $items];
     }
 }
 
-/* -----------------------------
-   Static Pages (always available)
------------------------------ */
-$role = $_SESSION['role'];
-$basePages = [
-    ["Dashboard", "dashboard.php", "fa-solid fa-house"],
-    ["New Spot Tax", "spot_tax.php", "fa-solid fa-receipt"],
-    ["Seizure Report", "seizure_form.php", "fa-solid fa-triangle-exclamation"],
-    ["History", "history.php", "fa-solid fa-clock-rotate-left"],
-    ["Settings", "settings.php", "fa-solid fa-gear"]
-];
-
-if ($role === 'admin') {
-    $basePages[] = ["Manage Inspectors", "add_inspector.php", "fa-solid fa-users-gear"];
-}
-
-$pages = [];
-foreach ($basePages as $page) {
-    if (stripos($page[0], $q) !== false) {
-        $pages[] = [
-            "type" => "page",
-            "icon" => $page[2],
-            "title" => $page[0],
-            "subtitle" => "Page",
-            "url" => $page[1],
-            "action" => "Open"
-        ];
+/* ---------- 4. Inspectors (admin only) ---------- */
+if ($is_admin) {
+    $stmt = $conn->prepare("
+        SELECT user_id, username, full_name
+        FROM users
+        WHERE role = 'inspector' AND (username LIKE ? OR full_name LIKE ?)
+        ORDER BY username ASC LIMIT 5
+    ");
+    if ($stmt) {
+        $stmt->bind_param('ss', $like, $like);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $items = [];
+        while ($row = $res->fetch_assoc()) {
+            $items[] = [
+                'icon' => 'fa-solid fa-user-shield',
+                'title' => $row['full_name'] ?: $row['username'],
+                'subtitle' => '@' . $row['username'],
+                'url' => 'edit_inspector.php?id=' . (int) $row['user_id'],
+                'badge' => null,
+            ];
+        }
+        if ($items) $groups[] = ['icon' => 'fa-solid fa-user-shield', 'label' => 'Inspectors', 'items' => $items];
     }
 }
 
-if (!empty($pages)) {
-    $results['groups'][] = [
-        'label' => 'Quick Actions',
-        'icon' => 'fa-solid fa-bolt',
-        'items' => $pages
-    ];
-}
-
-/* -----------------------------
-   Search Suggestions (for autocomplete)
------------------------------ */
+/* ---------- Suggestions ---------- */
 $suggestions = [];
-// Add shop name suggestions
-$stmt = $conn->prepare("SELECT shop_name FROM shops WHERE shop_name LIKE CONCAT('%', ?, '%') LIMIT 3");
-$stmt->bind_param("s", $q);
-$stmt->execute();
-$res = $stmt->get_result();
-while ($row = $res->fetch_assoc()) {
-    $suggestions[] = $row['shop_name'];
-}
-
-// Add page suggestions
-foreach ($basePages as $page) {
-    if (stripos($page[0], $q) !== false && strlen($q) > 1) {
-        $suggestions[] = $page[0];
+if (empty($groups)) {
+    $r = $conn->query("SELECT stall_type FROM rates LIMIT 3");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) $suggestions[] = $row['stall_type'];
     }
 }
-$results['suggestions'] = array_unique($suggestions);
 
-header('Content-Type: application/json');
-echo json_encode($results);
+echo json_encode([
+    'query' => $q,
+    'groups' => $groups,
+    'suggestions' => $suggestions,
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 exit;
