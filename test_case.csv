@@ -1,0 +1,78 @@
+DigiShulk — RMC Digital Tax Collection System
+Module Under Test,All modules (End-to-End)
+Tester,Sahdev Parmar
+Date of Testing,29-09-2026
+Environment,InfinityFree Hosting | PHP 7.2 | MariaDB 11.4 | Chrome 130 | Windows 11
+References,SRS_DigiShulk_v1.0 | Design Doc_v2.0
+,,,,,,,,,
+Test Case ID,Module,Test Case Name,Preconditions,Test Steps,Test Data,Expected Result,Actual Result,Status,Remarks
+TC_001,Authentication,Login with valid credentials,User must be registered.,"Open login page; Enter valid username; Enter valid password; Click Sign in.",Username: rmx; Password: (set password),User is authenticated and redirected to inspector dashboard.,User logged in and dashboard loaded successfully.,Pass,Role-based redirect verified.
+TC_002,Authentication,Login with invalid password,User registered.,"Open login page; Enter valid username; Enter wrong password; Click Sign in.",Username: rmx; Password: Wrong@123,Redirected back to login page with generic error banner; URL cleaned.,Login rejected with error message displayed.,Pass,No username enumeration.
+TC_003,Authentication,Login with non-existent user,None.,"Open login page; Enter unknown username; Enter any password; Click Sign in.",Username: nobody99; Password: test123,Generic error shown; login not granted.,Login rejected.,Pass,,
+TC_004,Authentication,Session regeneration on login,User registered.,"Capture session id before login; Login; Compare session id after login.",—,Session id changes after successful authentication.,Session id was regenerated.,Pass,Session fixation prevented.
+TC_005,Authentication,Logout via sidebar,User logged in.,"Click Logout button in sidebar.",—,Session destroyed; redirected to login page.,Logout successful.,Pass,POST + CSRF verified.
+TC_006,Authentication,Direct GET to logout.php,User logged in.,"Open logout.php directly in browser.",—,User NOT logged out; redirected to dashboard.,GET request did not log user out.,Pass,Security hardening.
+TC_007,CSRF,Spot tax form without token,Inspector logged in.,"Open spot_tax.php; Delete csrf_token hidden input; Submit form.",—,HTTP 419 CSRF error; form not processed.,Request blocked with CSRF error.,Pass,
+TC_008,CSRF,Confirm cash without token,Inspector logged in.,"Open payment.php for cash txn; Delete csrf_token; Submit.",—,419 error; transaction status unchanged.,Request blocked.,Pass,
+TC_009,CSRF,Add inspector without token,Admin logged in.,"Open add_inspector.php; Delete csrf_token; Submit.",—,419 error; inspector not created.,Request blocked.,Pass,
+TC_010,Security,SQL injection on login,Login page loaded.,"Enter username: ' OR 1=1 --; Enter any password; Submit.",Username: ' OR 1=1 --,Login fails safely; no SQL error disclosed.,Injection rejected; login denied.,Pass,Prepared statements used.
+TC_011,Security,XSS in shop name,Inspector logged in.,"Create shop name <script>alert(1)</script>; Save; View on dashboard.",Shop: <script>alert(1)</script>,Script is escaped on output; no alert triggered.,Content escaped on render.,Pass,
+TC_012,Security,File upload reject non-image,User logged in.,"Open Profile; Upload a .txt file.",File: notes.txt,Rejected with message 'Only JPG, PNG, and WEBP are allowed'.,Upload rejected.,Pass,MIME validated.
+TC_013,Spot Tax,Wizard loads step 1,Inspector logged in.,"Go to New Spot Tax.",—,Step 1 with shop details form rendered.,Form loaded successfully.,Pass,
+TC_014,Spot Tax,Fee auto-suggestion,On Step 2.,"Select stall type Rekdi; Enter size 12.",Stall: Rekdi; Size: 12,Amount auto-fills to ₹120.00 with hint '12 sqft × ₹10.00'.,Suggestion displayed correctly.,Pass,
+TC_015,Spot Tax,Override suggested fee,On Step 2 with suggestion shown.,"Change amount field to 5.",Amount: 5,Suggestion chip appears: 'Suggested: ₹120.00 — you have overridden it.',Override detected and chip shown.,Pass,
+TC_016,Spot Tax,Quick size preset,On Step 2.,"Click '50 sqft' preset.",—,Size fills with 50; amount recalculates.,Preset worked.,Pass,
+TC_017,Spot Tax,Enter key advances step,On Step 1 valid.,"Press Enter in last field.",—,Advances to Step 2.,Navigated to Step 2.,Pass,
+TC_018,Spot Tax,Payment mode card selection,On Step 2.,"Click UPI payment card.",—,UPI card highlights with check badge.,Selected correctly.,Pass,
+TC_019,Cash Payment,Confirm cash payment,Inspector with pending cash txn.,"Open payment.php?id=X; Click 'Confirm Cash Received'.",—,Transaction marked paid; redirect to dashboard.,Status updated to paid.,Pass,
+TC_020,Cash Payment,Double-confirm guard,Already-paid txn.,"Re-submit confirm_cash.php.",—,No state change; redirect to dashboard.,Duplicate submission ignored.,Pass,
+TC_021,Cash Payment,Confirm others' transaction,Inspector A logged in; Txn of inspector B.,"Manually POST id of B's txn.",—,'Invalid request' error; no state change.,Access denied correctly.,Pass,
+TC_022,UPI Payment,Cashfree order creation,Inspector with pending UPI txn.,"Open payment.php?id=X.",—,Cashfree order created; QR modal opens automatically.,QR displayed automatically.,Pass,
+TC_023,UPI Payment,QR code renders,UPI txn loaded.,"Wait for QR generation.",—,UPI QR visible with 'Waiting for payment...' status.,QR rendered.,Pass,
+TC_024,UPI Payment,Polling detects payment,UPI txn loaded; simulated paid.,"Wait 3-5 seconds.",—,Page shows 'Payment Received'; redirects to receipt.,Payment confirmed by poller.,Pass,
+TC_025,UPI Payment,Webhook marks transaction paid,Pending UPI txn.,"Trigger Cashfree sandbox webhook.",—,Transaction status becomes 'paid'.,Webhook processed successfully.,Pass,Signature verified.
+TC_026,UPI Payment,Invalid webhook signature,Pending UPI txn.,"POST webhook with bad X-Webhook-Signature header.",—,HTTP 400 'Invalid signature'.,Rejected.,Pass,Security check.
+TC_027,Seizure,Wizard loads,Inspector logged in.,"Open New Seizure.",—,Step 1 session details form loaded.,Form loaded.,Pass,
+TC_028,Seizure,Add item row,On Step 2.,"Click 'Add item' button.",—,New row appears; focus moves to item details.,Row added.,Pass,
+TC_029,Seizure,Quick-add chip,On Step 2.,"Click 'Rekdi' chip.",—,Row pre-filled with 'Rekdi' and qty 1.,Chip worked.,Pass,
+TC_030,Seizure,Remove last item warning,Only one item.,"Click x on the row.",—,Confirm dialog shown.,Confirm dialog appeared.,Pass,
+TC_031,Seizure,Submit saves to database,Valid session + items.,"Complete wizard; Submit.",—,Row inserted in seizure_sessions + seizure_items.,Saved successfully.,Pass,Transaction committed.
+TC_032,Seizure,Auth bypass prevention,Logged out.,"Visit seizure_form.php directly.",—,Redirect to login; form not shown.,Access denied.,Pass,Security fix.
+TC_033,History,Transactions list loads,Logged in.,"Open History.",—,Tax tab active; transactions table populated.,List loaded.,Pass,
+TC_034,History,Seizures tab,Logged in.,"Click Seizures tab.",—,Seizure session cards displayed.,Tab switched.,Pass,
+TC_035,History,Date range filter,Logged in.,"Set date_from=today; Apply.",—,Only today's records shown.,Filter applied.,Pass,
+TC_036,History,CSV export,Logged in with records.,"Click CSV export button.",—,CSV downloads; opens cleanly in Excel.,Export succeeded.,Pass,UTF-8 BOM included.
+TC_037,History,PDF export,Logged in with records.,"Click PDF export button.",—,PDF downloads with header and pagination.,Export succeeded.,Pass,FPDF library used.
+TC_038,History,Inspector name shown for admin,Admin logged in.,"View History tax tab.",—,Inspector name displayed under shop name.,Inspector name visible.,Pass,JOIN fix verified.
+TC_039,Undercharge Report,Page loads for admin,Admin logged in.,"Open undercharge_report.php.",—,Summary cards and filter bar rendered.,Page loaded.,Pass,
+TC_040,Undercharge Report,Detects undercharge,Transaction with total < suggested.,"Open report.",—,Row shown; shortfall = suggested − total.,Shortfall detected.,Pass,
+TC_041,Undercharge Report,By inspector grouping,Multiple undercharges.,"View By Inspector table.",—,Totals aggregated per inspector.,Grouped correctly.,Pass,
+TC_042,Undercharge Report,Access denied to inspector,Inspector logged in.,"Visit undercharge_report.php.",—,Redirected to logout.,Access denied.,Pass,Role guard.
+TC_043,Settings,Profile photo upload,User logged in.,"Open Profile; Upload valid JPG.",Photo: valid.jpg,Photo preview shown; success message; avatar updated.,Upload succeeded.,Pass,
+TC_044,Settings,Reject oversized upload,User logged in.,"Upload 6 MB JPG.",File: large.jpg,'Image must be 5 MB or smaller' error.,Rejected.,Pass,
+TC_045,Settings,Change display name,User logged in.,"Update display name.",Name: New Name,Success message; nav updates.,Name updated.,Pass,
+TC_046,Settings,Change password,User logged in.,"Enter new 8+ char password; Submit.",Password: NewPass@123,'Password updated successfully'.,Password changed.,Pass,
+TC_047,Search,Open overlay with Ctrl+K,Logged in on any page.,"Press Ctrl+K.",—,Search overlay opens with focus in input.,Overlay opened.,Pass,
+TC_048,Search,Type query and get results,Overlay open.,"Type a shop name (2+ chars).",Query: Sharma,Loading spinner then grouped results.,Results displayed.,Pass,
+TC_049,Search,Arrow key navigation,Results displayed.,"Press ArrowDown; Press Enter.",—,Selection highlights; Enter opens selected item.,Keyboard navigation worked.,Pass,
+TC_050,Search,Escape closes overlay,Overlay open.,"Press Escape.",—,Overlay closes; focus returns to trigger.,Closed correctly.,Pass,
+TC_051,SMS,Test-mode logging,SMS_TEST_MODE=true.,"Complete a paid transaction.",—,Row in sms_logs with status='test'.,Log entry created.,Pass,No real SMS sent.
+TC_052,SMS,SMS on cash confirm,Valid phone number.,"Confirm cash payment.",—,sms_logs row created with transaction_id.,SMS logged.,Pass,
+TC_053,SMS,Invalid phone skips API,Shop with invalid phone.,"Complete a paid transaction.",Phone: 123,Log row with status='error'; no API call.,Skipped correctly.,Pass,
+TC_054,Navigation,Sidebar active state,On any page.,"Observe sidebar.",—,Current page link highlighted with gradient.,Highlight shown.,Pass,
+TC_055,Navigation,Mobile bottom nav,Resize window < 900px.,"Observe bottom nav.",—,5 items evenly spaced; active item has top accent bar.,Layout correct.,Pass,
+TC_056,Navigation,Mobile topbar alignment,Resize window < 900px.,"Observe topbar.",—,Logo left; search centered; avatar right.,Aligned correctly.,Pass,
+TC_057,Navigation,Circular profile avatars,Any page.,"View avatars in sidebar / topbar / dropdown / mobile.",—,All avatars are circular (not rectangular).,All circular.,Pass,Regression fix.
+TC_058,Navigation,Reduced-motion support,OS reduce-motion enabled.,"Reload page.",—,Animations disabled; static rendering.,Respected user setting.,Pass,Accessibility.
+TC_059,Admin Dashboard,KPI cards render,Admin logged in.,"Open admin_dashboard.",—,Today/Week/Online/Collection Rate stats shown.,Dashboard loaded.,Pass,
+TC_060,Admin Dashboard,7-day trend chart,Admin dashboard.,"View chart.",—,Chart.js bar chart renders with data or empty state.,Chart rendered.,Pass,
+TC_061,Admin Dashboard,Live Activity feed,Recent paid txns.,"View Live Activity card.",—,New rows appear; relative timestamps shown.,Feed updated.,Pass,
+TC_062,Manage Inspectors,Add new inspector,Admin logged in.,"Add inspector testuser2 / Pass123!.",Username: testuser2; Password: Pass123!,'Inspector added successfully'.,Inspector created.,Pass,
+TC_063,Manage Inspectors,Duplicate username rejected,Existing username.,"Try adding same username again.",Username: testuser2,'That username is already taken'.,Rejected.,Pass,
+TC_064,Manage Inspectors,Self-delete blocked,Admin on own edit page.,"Click Delete Inspector.",—,'You cannot delete your own account'.,Blocked.,Pass,Security guard.
+TC_065,Landing Page,Logged-out landing view,Logged out.,"Open index.php.",—,Landing page renders with logo, orbs, particles.,Landing page loaded.,Pass,
+TC_066,Landing Page,Logged-in redirect to dashboard,Logged in as inspector.,"Open index.php.",—,Redirected to dashboard.php.,Redirected.,Pass,
+TC_067,Landing Page,Sign In CTA,Landing page.,"Click 'Sign in' button.",—,Navigates to includes/login.php.,Navigation worked.,Pass,
+TC_068,Login Page,Self-redirect when logged in,Logged in.,"Visit includes/login.php.",—,Redirected to appropriate dashboard.,Redirected.,Pass,
+TC_069,Login Page,Password reveal toggle,Login page.,"Click eye icon in password field.",—,Password becomes visible; icon changes.,Toggle worked.,Pass,
+TC_070,Login Page,Caps Lock warning,Login page.,"Enable Caps Lock; Type in password.",—,'Caps Lock is on' warning appears.,Warning displayed.,Pass,
